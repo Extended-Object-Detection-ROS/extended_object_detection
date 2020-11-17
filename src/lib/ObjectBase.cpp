@@ -289,11 +289,13 @@ namespace eod{
                 Attribute* aA = getByNameA(attributeA);                
                 if( aA == NULL ){
                     printf("Can't find attribute %s in base needed for LogicAnd attribute!\n", attributeA.c_str());
+                    attr = attr->NextSiblingElement("Attribute");
                     continue;
                 }
                 Attribute* aB = getByNameA(attributeB);
                 if( aB == NULL ){
                     printf("Can't find attribute %s in base needed for LogicAnd attribute!\n", attributeB.c_str());
+                    attr = attr->NextSiblingElement("Attribute");
                     continue;
                 }
                 tmpA = new AndAttribute(aA, aB, iou);                
@@ -306,6 +308,7 @@ namespace eod{
                 
                 if( aA == NULL ){
                     printf("Can't find attribute %s in base needed for LogicNot attribute!\n", attributeA.c_str());
+                    attr = attr->NextSiblingElement("Attribute");
                     continue;
                 }
                 
@@ -322,11 +325,13 @@ namespace eod{
                 Attribute* aA = getByNameA(attributeA);                
                 if( aA == NULL ){
                     printf("Can't find attribute %s in base needed for LogicOr attribute!\n", attributeA.c_str());
+                    attr = attr->NextSiblingElement("Attribute");
                     continue;
                 }
                 Attribute* aB = getByNameA(attributeB);
                 if( aB == NULL ){
                     printf("Can't find attribute %s in base needed for LogicOr attribute!\n", attributeB.c_str());
+                    attr = attr->NextSiblingElement("Attribute");
                     continue;
                 }
                 tmpA = new OrAttribute(aA, aB, iou);                
