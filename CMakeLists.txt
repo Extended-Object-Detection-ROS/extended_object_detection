@@ -5,7 +5,7 @@ project(extended_object_detection)
 add_compile_options(-std=c++11)
 
 ## Optional parts of library
-set(opencv_contrib ON)
+set(opencv_contrib OFF)
 set(zbar_lib OFF)
 set(TensorFlow OFF)
 
