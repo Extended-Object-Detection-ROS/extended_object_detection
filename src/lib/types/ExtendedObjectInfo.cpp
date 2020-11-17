@@ -119,11 +119,15 @@ namespace eod{
         scores_with_weights.push_back(make_pair(score, weight));        
     }
     
-    void ExtendedObjectInfo::draw(const cv::Mat& image, Scalar col){
+    void ExtendedObjectInfo::draw(const Mat& image, Scalar col){
+#if (CV_MAJOR_VERSION > 3)        
         rectangle(image, getRect(), col, 2, 8);
-        //drawContours( image, contour, -1, col, 1, 8);
-        if( contour.size() > 0)
-            //drawContours( image, vector<vector<cv::Point> >(contour.begin(), contour.begin()+1), -1, col, 1, 8);
+#else
+        Mat nimage;
+        nimage = (Mat)image;
+        rectangle(nimage, getRect(), col, 2, 8);
+#endif
+        if( contour.size() > 0)            
             drawContours( image, contour, 0, col, 1, 8);                
         
     }

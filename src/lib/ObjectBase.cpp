@@ -261,12 +261,12 @@ namespace eod{
                 tmpA = new DnnAttribute(obj_id, framework, weights, config, inpWidth, inpHeight, labels_str);
                 break;
             }
-#endif
             case QR_A:
             {
                 tmpA = new QrAttribute();
                 break;
             }
+#endif
 #ifdef USE_ZBAR
             case QR_ZBAR_A:
             {

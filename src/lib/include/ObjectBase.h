@@ -28,7 +28,9 @@ File: Class realises loading simple_simple_objects parameters from XML file
 #ifdef USE_OPENCV_CONTRIB
 #include "FeatureDetector.h"
 #endif
+#if (CV_MAJOR_VERSION > 3)
 #include "QrDetector.h"
+#endif
 #if USE_ZBAR
 #include "QrZbarDetector.h"
 #endif

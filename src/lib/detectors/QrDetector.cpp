@@ -1,5 +1,5 @@
+#if (CV_MAJOR_VERSION > 3)
 #include "QrDetector.h"
-
 using namespace std;
 using namespace cv;
 
@@ -47,3 +47,4 @@ namespace eod{
     }
     
 }
+#endif
