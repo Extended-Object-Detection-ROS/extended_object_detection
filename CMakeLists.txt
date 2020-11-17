@@ -23,8 +23,6 @@ find_package(catkin REQUIRED COMPONENTS
   cmake_modules
 )
 
-
-
 find_package(OpenCV REQUIRED)  
 find_package(TinyXML REQUIRED)
 message("OpenCV version is ${OpenCV_VERSION}")
@@ -87,7 +85,6 @@ add_executable(
     src/lib/types/Filtering.cpp    
     src/lib/types/Clusterization.cpp    
     # lib utils
-    #src/lib/utils/ClusterForel.cpp
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
     src/lib/utils/contour_utils.cpp
@@ -140,8 +137,7 @@ add_executable(
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
     src/lib/types/Clusterization.cpp    
-    # utils
-    #src/lib/utils/ClusterForel.cpp
+    # utils    
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
     src/lib/utils/contour_utils.cpp
@@ -161,7 +157,6 @@ add_executable(
     src/lib/types/Filtering.cpp
     src/lib/types/Clusterization.cpp    
     # utils
-    #src/lib/utils/ClusterForel.cpp
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
     src/lib/utils/contour_utils.cpp
@@ -180,8 +175,7 @@ add_executable(
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
     src/lib/types/Clusterization.cpp    
-    # utils
-    #src/lib/utils/ClusterForel.cpp
+    # utils   
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
     src/lib/utils/contour_utils.cpp
@@ -200,8 +194,7 @@ add_executable(
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
     src/lib/types/Clusterization.cpp    
-    # utils
-    #src/lib/utils/ClusterForel.cpp
+    # utils   
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
     src/lib/utils/contour_utils.cpp
@@ -220,8 +213,7 @@ add_executable(
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
     src/lib/types/Clusterization.cpp    
-    # utils
-    #src/lib/utils/ClusterForel.cpp
+    # utils    
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
     src/lib/utils/contour_utils.cpp
@@ -246,8 +238,7 @@ add_executable(
     src/lib/types/Relationship.cpp    
     src/lib/types/Filtering.cpp    
     src/lib/types/Clusterization.cpp    
-    # lib utils
-    #src/lib/utils/ClusterForel.cpp
+    # lib utils    
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
     src/lib/utils/contour_utils.cpp
