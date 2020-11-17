@@ -1,0 +1,17 @@
+# Asks to remove or add objects to detection queue by its ID's
+
+# List of changes, contains objects ID
+# For remove object from detection queue add its id with negative sign
+# To add object to detection queue add its id
+int64[] changes
+
+# if true removes all objects (node detects nothing)
+bool remove_all
+
+# if true includes all objects from base to detection queue 
+bool add_all
+
+# if both remove_all and add_all are true, does nothing
+---
+# List of objects in detection queue after changes
+int64[] result

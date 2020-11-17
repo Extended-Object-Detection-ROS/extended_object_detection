@@ -1,0 +1,19 @@
+<launch>
+    <arg name="output" value="screen"/>
+    
+    <node name="camera" pkg="usb_cam" type="usb_cam_node" output="$(arg output)" clear_params="true" respawn="false" required="false" launch-prefix="" >
+        <param name="video_device" value="/dev/video0" />
+        <param name="image_width" value="640" />
+        <param name="image_height" value="480" />
+        <param name="framerate" value="30" />
+        <param name="camera_frame_id" value="cam_optical_link" />
+        <param name="pixel_format" value="yuyv" />                
+        <param name="camera_name" value="camera"/>
+    </node>
+    
+    <node name="hsv_color_params_collector_node" pkg="extended_object_detection" type="hsv_color_params_collector_node" output="screen" required="true" >                
+        <remap from="image_raw" to="/camera/image_raw"/>                
+    </node>
+          
+    
+</launch>
