@@ -499,7 +499,7 @@ namespace eod{
             while (attr){
                 Attribute* tempA = getByNameA( attr->GetText() );
                 if( tempA == NULL ){
-                    printf("There are not attribute with name %s! \n",attr->GetText());
+                    printf("There are no attribute with name %s! \n",attr->GetText());
                 }
                 else{
                     
