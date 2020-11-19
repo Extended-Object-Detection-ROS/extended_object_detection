@@ -10,8 +10,7 @@
     
     <Attribute Name="HistColorBrightYellow" Type="HistColor" Histogram="histograms/BrightYellow.yaml"/>    
     
-    <Attribute Name="HistColorOrange" Type="HistColor" Histogram="histograms/Orange.yaml">
-        <!--<Clusterization Type="FOREL" R="90" eps="15"/>-->
+    <Attribute Name="HistColorOrange" Type="HistColor" Histogram="histograms/Orange.yaml">        
         <Filter Type="Insider"/>
     </Attribute>    
 
@@ -183,9 +182,7 @@
     <SimpleObject Name="RedCup" ID="61" Mode="Hard" MergingPolicy="Union">           
         <Attribute Type="Detect">HistDarkRed</Attribute>                    
         <Attribute Type="Check">NotFractal</Attribute>
-        <Attribute Type="Detect">CupDnn</Attribute>
-        <!--<Attribute Type="Extract" Channel="DEPTH">DepthKinect</Attribute>                  -->
-        <!--<Tracker IOU="0.25" decay="0.01">MOSSE</Tracker>-->
+        <Attribute Type="Detect">CupDnn</Attribute>        
     </SimpleObject>
     
     <SimpleObject Name="RedCup2" ID="62" Probability="0.5">                   
