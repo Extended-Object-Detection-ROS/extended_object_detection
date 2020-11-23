@@ -239,6 +239,16 @@
     <RelationShip Type="3DRange" Name="0.14" distLow="0.12" distHigh="0.18"/>   
     
     <RelationShip Type="SpaceIn" Name="in"/>
+    <RelationShip Type="SpaceLeft" Name="left"/>
+    <RelationShip Type="SpaceRight" Name="right"/>
+    <RelationShip Type="SpaceDown" Name="down"/>
+    <RelationShip Type="SpaceUp" Name="up"/>
+    
+    <RelationShip Type="LogicAnd" Name="up-right" A="up" B="right"/>
+    <RelationShip Type="LogicAnd" Name="up-left" A="up" B="left"/>
+    <RelationShip Type="LogicAnd" Name="bottom-right" A="down" B="right"/>
+    <RelationShip Type="LogicAnd" Name="bottom-left" A="down" B="left"/>
+    
     
 </RelationLib>
 
@@ -253,6 +263,62 @@
         <Relation Obj1="A4-1" Obj2="A6" Relationship="0.14"/>
         <Relation Obj1="A4-2" Obj2="A6" Relationship="0.14"/>
         
+    </ComplexObject>
+    
+    <ComplexObject ID="2" Name="ArucoLeft">
+        <SimpleObject Class="Aruco6" InnerName="A6"/>
+        <SimpleObject Class="Aruco4" InnerName="A4"/>
+        
+        <Relation Obj1="A4" Obj2="A6" Relationship="left"/>        
+    </ComplexObject>
+    
+    <ComplexObject ID="3" Name="ArucoRight">
+        <SimpleObject Class="Aruco6" InnerName="A6"/>
+        <SimpleObject Class="Aruco4" InnerName="A4"/>
+        
+        <Relation Obj1="A4" Obj2="A6" Relationship="right"/>        
+    </ComplexObject>
+        
+    <ComplexObject ID="4" Name="ArucoUp">
+        <SimpleObject Class="Aruco6" InnerName="A6"/>
+        <SimpleObject Class="Aruco4" InnerName="A4"/>
+        
+        <Relation Obj1="A4" Obj2="A6" Relationship="up"/>        
+    </ComplexObject>
+    
+    <ComplexObject ID="5" Name="ArucoDown">
+        <SimpleObject Class="Aruco6" InnerName="A6"/>
+        <SimpleObject Class="Aruco4" InnerName="A4"/>
+        
+        <Relation Obj1="A4" Obj2="A6" Relationship="down"/>        
+    </ComplexObject>
+    
+    <ComplexObject ID="6" Name="ArucoUpRight">
+        <SimpleObject Class="Aruco6" InnerName="A6"/>
+        <SimpleObject Class="Aruco4" InnerName="A4"/>
+        
+        <Relation Obj1="A4" Obj2="A6" Relationship="up-right"/>        
+    </ComplexObject>
+    
+    <ComplexObject ID="7" Name="ArucoUpLeft">
+        <SimpleObject Class="Aruco6" InnerName="A6"/>
+        <SimpleObject Class="Aruco4" InnerName="A4"/>
+        
+        <Relation Obj1="A4" Obj2="A6" Relationship="up-left"/>        
+    </ComplexObject>
+    
+    <ComplexObject ID="8" Name="ArucoBottomRight">
+        <SimpleObject Class="Aruco6" InnerName="A6"/>
+        <SimpleObject Class="Aruco4" InnerName="A4"/>
+        
+        <Relation Obj1="A4" Obj2="A6" Relationship="bottom-right"/>        
+    </ComplexObject>
+    
+    <ComplexObject ID="9" Name="ArucoBottomLeft">
+        <SimpleObject Class="Aruco6" InnerName="A6"/>
+        <SimpleObject Class="Aruco4" InnerName="A4"/>
+        
+        <Relation Obj1="A4" Obj2="A6" Relationship="bottom-left"/>        
     </ComplexObject>
     
     <ComplexObject ID="10" Name="FacedPerson">

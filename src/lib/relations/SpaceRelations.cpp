@@ -36,7 +36,7 @@ namespace eod{
     }
     
     bool SpaceUpRelation::checkRelation(const cv::Mat& image, ExtendedObjectInfo* A, ExtendedObjectInfo* B){
-        return A->getCenter().y > B->getCenter().y;
+        return A->getCenter().y < B->getCenter().y;
     }
     
     // ------------------------------------------------
@@ -48,7 +48,7 @@ namespace eod{
     }
     
     bool SpaceDownRelation::checkRelation(const cv::Mat& image, ExtendedObjectInfo* A, ExtendedObjectInfo* B){
-        return A->getCenter().y < B->getCenter().y;
+        return A->getCenter().y > B->getCenter().y;
     }
     
     // ------------------------------------------------

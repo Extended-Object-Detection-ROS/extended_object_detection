@@ -642,14 +642,14 @@ namespace eod{
                     RelationShip* A = getByNameR(A_name);
                     if( !A ){
                         rel = rel->NextSiblingElement("RelationShip");                                                    
-                        printf("Error! Relation with name %s hasn't found in ObjectBase!\n",A_name.c_str());
+                        printf("Error! Relation with name %s has not been found in ObjectBase!\n",A_name.c_str());
                         continue;                            
                     }                    
                     string B_name = rel->Attribute("B");
                     RelationShip* B = getByNameR(B_name);
                     if( !B ){
                         rel = rel->NextSiblingElement("RelationShip");                                                    
-                        printf("Error! Relation with name %s hasn't found in ObjectBase!\n",B_name.c_str());
+                        printf("Error! Relation with name %s has not been found in ObjectBase!\n",B_name.c_str());
                         continue;                            
                     }        
                     tmp_r = new AndRelation(A, B);
@@ -661,14 +661,14 @@ namespace eod{
                     RelationShip* A = getByNameR(A_name);
                     if( !A ){
                         rel = rel->NextSiblingElement("RelationShip");                                                    
-                        printf("Error! Relation with name %s hasn't found in ObjectBase!\n",A_name.c_str());
+                        printf("Error! Relation with name %s has not been found in ObjectBase!\n",A_name.c_str());
                         continue;                            
                     }                    
                     string B_name = rel->Attribute("B");
                     RelationShip* B = getByNameR(B_name);
                     if( !B ){
                         rel = rel->NextSiblingElement("RelationShip");                                                    
-                        printf("Error! Relation with name %s hasn't found in ObjectBase!\n",B_name.c_str());
+                        printf("Error! Relation with name %s has not been found in ObjectBase!\n",B_name.c_str());
                         continue;                            
                     }        
                     tmp_r = new OrRelation(A, B);
@@ -680,7 +680,7 @@ namespace eod{
                     RelationShip* A = getByNameR(A_name);
                     if( !A ){
                         rel = rel->NextSiblingElement("RelationShip");                                                    
-                        printf("Error! Relation with name %s hasn't found in ObjectBase!\n",A_name.c_str());
+                        printf("Error! Relation with name %s has not been found in ObjectBase!\n",A_name.c_str());
                         continue;                            
                     }                                        
                     tmp_r = new NotRelation(A);
@@ -724,81 +724,6 @@ namespace eod{
             relations.push_back(tmp_r);
             rel = rel->NextSiblingElement("RelationShip");                                    
         }
-//         while (rel)
-//         {
-//             int type;
-//             rel->Attribute("TypeID", &type);
-// 
-//             int ID;
-//             rel->Attribute("ID", &ID);
-// 
-//             RelationShip* tmp;
-// 
-//             switch (type)
-//             {
-//             case 1: // RangeRatio
-//             break;
-// 
-//             case 2: // AdaptRangeRatio
-//                 double Xk, Yk;
-//                 double xp, yp;
-//                 rel->Attribute("Xk",&Xk);
-//                 rel->Attribute("Yk",&Yk);
-//                 rel->Attribute("Xp",&xp);
-//                 rel->Attribute("Yp",&yp);
-//                 tmp = new AdaptRangeRelatio(Xk, Yk, (float)xp, (float)yp);
-//                 break;
-// 
-//             case 3: // Undirected Ratio
-//                 double R;
-//                 double prob;
-//                 rel->Attribute("R",&R);
-//                 rel->Attribute("prob",&prob);
-//                 tmp = new UndirectedRangeRelatio(R,(float)prob);
-//                 break;
-// 
-//             case 4: // SpaceRatio_ON
-//                 //double prob;
-//                 rel->Attribute("prob",&prob);
-//                 tmp = new OnRelation(prob);
-//                 break;
-// 
-//             case 5: // SpaceRatio_IN
-//                 tmp = new InRelation();
-//                 break;
-//             case 6: // SameSize
-//                 rel->Attribute("prob",&prob);
-//                 tmp = new SameSizeRelation(prob);
-//                 break;
-//             case 7: // On relation
-//                 rel->Attribute("prob",&prob);
-//                 tmp = new OnRelation(prob);
-//                 break;
-//             case 8:// In relation
-//                 tmp = new InRelation();
-//                 break;
-//             case 9: // on LinkEndChild
-//                 rel->Attribute("prob",&prob);
-//                 tmp = new OnVertLine(prob);
-//                 break;
-//     
-//             case 10: // AND
-//                 tmp = new AndRelation(getByNameR(rel->Attribute("R1")),getByNameR(rel->Attribute("R2")));
-//                 break;
-//             case 11: // NOT
-//                 tmp = new NotRelation(getByNameR(rel->Attribute("R")));
-//                 break;
-// 
-//             default:                  
-//                 break;
-// 
-//             }
-//             tmp->Name = rel->GetText();
-//             tmp->ID = ID;
-//             rel = rel->NextSiblingElement("RelationShip"); // ?!
-//             relations.push_back(tmp);
-// 
-//         }
         return true;
     }    
     
@@ -832,8 +757,13 @@ namespace eod{
             // RELATIONS READ
             TiXmlElement *relation = scene->FirstChildElement("Relation");
             while(relation){
-
-                tmpNs->AddRelation(getByNameR(relation->Attribute("Relationship")),relation->Attribute("Obj1"),relation->Attribute("Obj2"));
+                
+                RelationShip* r = getByNameR(relation->Attribute("Relationship"));
+                if( !r ){
+                    printf("RelationShip %s has not been found!\n",relation->Attribute("Relationship"));
+                }
+                
+                tmpNs->AddRelation(r,relation->Attribute("Obj1"),relation->Attribute("Obj2"));
 
                 relation = relation->NextSiblingElement("Relation");
             }
