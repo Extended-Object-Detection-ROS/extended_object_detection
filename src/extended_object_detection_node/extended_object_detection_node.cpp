@@ -772,15 +772,9 @@ void video_process_cb(const ros::TimerEvent&){
                           
             for(size_t j = 0; j < DetectedComplexObjects.size(); j++){
                 extended_object_detection::ComplexObject co_msg;
-                
-                //if( full_answer )
+                                
                 co_msg = ros_msg_from_complex(&DetectedComplexObjects[j], DetectedObjects[j]);                      
-                
-                //extended_object_detection::SimpleObject fake_co_msg = ros_msg_from_extended(&DetectedComplexObjects[j]);      
-                
-                //co_msg.rect = fake_co_msg.rect;
-                //co_msg.transform = fake_co_msg.transform;                
-                
+                                
                 co_msg.type_id = selected_to_detect_complex_objects[i]->ID;
                 co_msg.type_name = selected_to_detect_complex_objects[i]->name;
                     

@@ -60,17 +60,17 @@ int main(int argc, char **argv)
             objectBase->simple_objects[i]->Identify(frame, Mat(), seq);            
             //objectBase->simple_objects[i]->draw(image2draw,Scalar(0,255,0));
         }
-//         vector<ExtendedObjectInfo> DetectedScenes;
-//         for( size_t i = 0 ; i <  objectBase->complex_objects.size(); i++){
-//             objectBase->complex_objects.at(i)->prepareObjects(frame, seq);   
-//             bool fullans;
-//             DetectedScenes = objectBase->complex_objects.at(i)->Identify(fullans);
-//             objectBase->complex_objects.at(i)->drawAll(image2draw, Scalar(255,255,0),2);
-//         }
-//         if(!DetectedScenes.size()){
-//             for( size_t i = 0 ; i < objectBase->simple_objects.size() ; i++ )
-//                 objectBase->simple_objects[i]->draw(image2draw,Scalar(0,255,0));
-//         }
+        vector<ExtendedObjectInfo> DetectedScenes;
+        for( size_t i = 0 ; i <  objectBase->complex_objects.size(); i++){
+            //objectBase->complex_objects.at(i)->prepareObjects(frame, seq);   
+            bool fullans;
+            DetectedScenes = objectBase->complex_objects.at(i)->Identify(frame, Mat(), seq, fullans);
+            objectBase->complex_objects.at(i)->drawAll(image2draw, Scalar(255,255,0), 2);
+        }
+        if(!DetectedScenes.size()){
+            for( size_t i = 0 ; i < objectBase->simple_objects.size() ; i++ )
+                objectBase->simple_objects[i]->draw(image2draw,Scalar(0,255,0));
+        }
         
         video.write(image2draw);
         imshow("Detection result", image2draw);
