@@ -236,7 +236,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     mutex_image.lock();
     try
     {
-        last_image = cv_bridge::toCvShare(msg, "bgr8")->image;          
+        last_image = cv_bridge::toCvCopy(msg, "bgr8")->image;          
     }
     catch (cv_bridge::Exception& e)
     {
