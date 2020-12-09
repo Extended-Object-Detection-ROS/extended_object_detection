@@ -48,6 +48,7 @@ namespace eod{
         BLOB_A,
         DEPTH_A,
         ROUGH_DIST_A,
+        DIST_A,
     };
     
     AttributeTypes getAttributeTypeFromName(std::string name);

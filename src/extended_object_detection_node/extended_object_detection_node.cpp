@@ -236,7 +236,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     mutex_image.lock();
     try
     {
-        last_image = cv_bridge::toCvShare(msg, "bgr8")->image;          
+        last_image = cv_bridge::toCvCopy(msg, "bgr8")->image;          
     }
     catch (cv_bridge::Exception& e)
     {
@@ -324,6 +324,8 @@ extended_object_detection::SimpleObject ros_msg_from_extended(ExtendedObjectInfo
         current_object.track.status = extended_object_detection::Track::TRACKED;
     else if(ext_obj->track_status == LOST )
         current_object.track.status = extended_object_detection::Track::LOST;
+#else
+    current_object.track.status = extended_object_detection::Track::DETECTED;
 #endif        
     // if we have solved translation then use it
     if( ext_obj->tvec.size() > 0 ){                            
@@ -459,7 +461,6 @@ extended_object_detection::ComplexObject ros_msg_from_complex(ExtendedObjectInfo
 // SIMPLE OBJECT MARKERS
 //------------------------------------------------------
 
-//visualization_msgs::MarkerArray marker_array_simple(extended_object_detection::SimpleObjectArray array){
 visualization_msgs::MarkerArray marker_array_simple(vector<extended_object_detection::SimpleObject> objects){
     visualization_msgs::MarkerArray marker_array;    
     

@@ -41,6 +41,7 @@ File: Class realises loading simple_simple_objects parameters from XML file
 #include "BlobDetector.h"
 #include "DepthDetector.h"
 #include "RoughDistanceDetector.h"
+#include "DistanceDetector.h"
 
 #include "ComplexObject.h"
 // RELATIONS

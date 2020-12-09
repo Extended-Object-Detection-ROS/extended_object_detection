@@ -107,6 +107,7 @@ add_executable(
     src/lib/detectors/BlobDetector.cpp
     src/lib/detectors/DepthDetector.cpp
     src/lib/detectors/RoughDistanceDetector.cpp
+    src/lib/detectors/DistanceDetector.cpp 
 
     # lib relations        
     src/lib/relations/ImageRangeRelation.cpp
@@ -261,6 +262,7 @@ add_executable(
     src/lib/detectors/BlobDetector.cpp
     src/lib/detectors/DepthDetector.cpp
     src/lib/detectors/RoughDistanceDetector.cpp
+    src/lib/detectors/DistanceDetector.cpp    
 
     # lib relations
     src/lib/relations/ImageRangeRelation.cpp

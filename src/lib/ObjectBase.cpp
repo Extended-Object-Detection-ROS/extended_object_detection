@@ -374,6 +374,14 @@ namespace eod{
                 tmpA = new RoughDistAttribute(realW, realH);
                 break;
             }
+            case DIST_A:
+            {
+                double md = -1, Md = -1;
+                attr->Attribute("minDist", &md);
+                attr->Attribute("maxDist", &Md);
+                tmpA = new DistanceAttribute(md, Md);
+                break;
+            }
             default:
             {
                 attr = attr->NextSiblingElement("Attribute");

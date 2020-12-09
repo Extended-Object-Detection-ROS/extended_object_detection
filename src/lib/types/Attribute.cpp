@@ -114,6 +114,8 @@ namespace eod{
             return DEPTH_A;
         if(name == "roughdist")
             return ROUGH_DIST_A;
+        if(name == "dist")
+            return DIST_A;
         
         printf("Unknown attribute type %s!",name.c_str());
         return UNK_A;
