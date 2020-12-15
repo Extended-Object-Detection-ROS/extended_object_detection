@@ -1,4 +1,6 @@
 # Change Log
+## [unreleased] - 2020-12-15
+Added face recognition with dlib.
 
 ## [unreleased] - 2020-12-10
 Added RangeAttribute
