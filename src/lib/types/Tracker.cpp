@@ -74,7 +74,7 @@ namespace eod{
             printf("Frame for tracker init is empty!\n");
     }
     
-    bool Track::updateTracker(const Mat& frame){
+    void Track::updateTracker(const Mat& frame){
         Rect2d box = current_object.getRect2d();        
         if( tracker ){
             if( tracker->update(frame, box)){

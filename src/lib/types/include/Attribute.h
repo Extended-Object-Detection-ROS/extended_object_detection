@@ -49,6 +49,7 @@ namespace eod{
         DEPTH_A,
         ROUGH_DIST_A,
         DIST_A,
+        FACE_DLIB_A,
     };
     
     AttributeTypes getAttributeTypeFromName(std::string name);

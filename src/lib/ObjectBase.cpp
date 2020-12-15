@@ -9,10 +9,19 @@ namespace eod{
         loaded = false;
     }
     
+    string ObjectBase::getPathAttribute(TiXmlElement * attr, const char * at_name){
+        const char* path = attr->Attribute(at_name);
+        if( path == NULL or strlen(path) == 0)
+            return "";
+        if(path[0] != '/')
+            return object_base_path + "/" + string(path);
+        return string(path);            
+    }
+    
     bool ObjectBase::loadFromXML(string filename){
         
         size_t found = filename.find_last_of("/");
-        string object_base_path = filename.substr(0,found);
+        object_base_path = filename.substr(0,found);
         
         TiXmlDocument *doc = new TiXmlDocument(filename.c_str());
         loaded = doc->LoadFile();
@@ -382,6 +391,21 @@ namespace eod{
                 tmpA = new DistanceAttribute(md, Md);
                 break;
             }
+#if (USE_DLIB)
+            case FACE_DLIB_A:
+            {
+                string base_dir_path = getPathAttribute(attr, "base_dir_path");
+                
+                string base_file_path = getPathAttribute(attr, "base_file_path");
+                
+                string sp_path = getPathAttribute(attr, "sp_path");
+                
+                string net_path = getPathAttribute(attr, "net_path");                                           
+                
+                tmpA = new FaceDlibAttribute(base_dir_path, base_file_path, sp_path, net_path);
+                break;
+            }
+#endif
             default:
             {
                 attr = attr->NextSiblingElement("Attribute");

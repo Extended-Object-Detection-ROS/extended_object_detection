@@ -79,9 +79,10 @@ namespace eod{
         // rotation vectors
         std::vector<cv::Vec3d> rvec;        
         
+        void initVars();       
     private:            
         void inheritData(ExtendedObjectInfo* a, ExtendedObjectInfo* b);        
-        void initVars();                
+                 
     };
     
     double getRange(ExtendedObjectInfo a, ExtendedObjectInfo b);    

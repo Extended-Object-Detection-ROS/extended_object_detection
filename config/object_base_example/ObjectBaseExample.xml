@@ -79,6 +79,7 @@
     
     <Attribute Name="DepthKinect" Type="Depth" depthScale="0.001"/>
     
+    <Attribute Name="DlibFace" Type="FaceDlib" Probability="0.4" base_file_path="/home/anton/catkin_ws/src/wheelchair_detection_data/config/face_recognition/base_faces.db" base_dir_path="/home/anton/catkin_ws/src/wheelchair_detection_data/config/face_recognition/base_faces/" sp_path="/home/anton/catkin_ws/src/wheelchair_detection_data/config/face_recognition/shape_predictor_5_face_landmarks.dat" net_path="/home/anton/catkin_ws/src/wheelchair_detection_data/config/face_recognition/dlib_face_recognition_resnet_model_v1.dat"/>
     
 </AttributeLib>
 
@@ -130,6 +131,15 @@
     
     <SimpleObject Name="Skin" ID="11">              
         <Attribute Type="Detect">HistSkin</Attribute>            
+    </SimpleObject>
+    
+    <SimpleObject Name="FaceRecognition1" ID="12">                      
+        <Attribute Type="Detect">DlibFace</Attribute>        
+    </SimpleObject>
+    
+    <SimpleObject Name="FaceRecognition2" ID="13">              
+        <Attribute Type="Detect">HaarFace</Attribute>        
+        <Attribute Type="Extract">DlibFace</Attribute>            
     </SimpleObject>
     
     <SimpleObject Name="Circle" ID="20">              

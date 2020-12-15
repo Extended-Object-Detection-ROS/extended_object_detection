@@ -25,7 +25,7 @@ namespace eod{
                 
                 
         void initTracker(const cv::Mat&);
-        bool updateTracker(const cv::Mat&);
+        void updateTracker(const cv::Mat&);
     private:        
         
         cv::Ptr<cv::Tracker> tracker;

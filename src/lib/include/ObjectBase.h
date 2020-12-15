@@ -42,6 +42,10 @@ File: Class realises loading simple_simple_objects parameters from XML file
 #include "DepthDetector.h"
 #include "RoughDistanceDetector.h"
 #include "DistanceDetector.h"
+#if (USE_DLIB)
+#include "FaceDlibDetector.h"
+#endif
+
 
 #include "ComplexObject.h"
 // RELATIONS
@@ -143,6 +147,8 @@ namespace eod{
 
     private:        
         
+        std::string object_base_path;
+        
         /// <summary>
         /// Loads list of relationships from XML file
         /// </summary>
@@ -175,6 +181,8 @@ namespace eod{
         /// <returns>Pointer to object, or NULL if is not successful</returns>
         SimpleObject* getByName(std::string objectname);
 	
+        std::string getPathAttribute(TiXmlElement * attr, const char * at_name);
+        
         /*
         /// <summary>
         /// Gets pointer to scene from list by its name

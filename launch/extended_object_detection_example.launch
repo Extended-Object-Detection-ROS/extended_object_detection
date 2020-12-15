@@ -24,10 +24,15 @@
         <param name="subscribeDepth" value="false"/>        
         <param name="maxContourPoints" value="-1"/>        
         
+        <rosparam param="selectedOnStartSimple">[12]</rosparam>
+        <rosparam param="selectedOnStartComplex">[-1]</rosparam>
+        
         <remap from="camera/image_raw" to="/camera/image_raw"/>
         <remap from="camera/info" to="/camera/camera_info"/>
     </node>        
-          
+    
+    <node pkg="rqt_service_caller" name="rqt_service_caller" type="rqt_service_caller"/>
+    
     <!-- visualization -->
     <node pkg="rviz" type="rviz" name="rviz"
     args="-d $(find extended_object_detection)/config/eod_example.rviz" />

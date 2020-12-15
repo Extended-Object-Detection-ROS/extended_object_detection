@@ -7,7 +7,6 @@
 
 #include "SimpleObject.h"
 #include "BlobDetector.h"
-//#include "SizeDetector.h"
 
 using namespace cv;
 using namespace std;

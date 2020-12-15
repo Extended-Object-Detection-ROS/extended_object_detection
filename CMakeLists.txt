@@ -8,6 +8,7 @@ add_compile_options(-std=c++11)
 set(opencv_contrib OFF)
 set(zbar_lib OFF)
 set(TensorFlow OFF)
+set(DLib OFF)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -30,6 +31,11 @@ if(zbar_lib)
     find_package(PkgConfig REQUIRED)
     pkg_search_module(ZBAR REQUIRED zbar)
 endif(zbar_lib)
+
+if(DLib)
+    add_subdirectory(/home/anton/Lib/dlib dlib_build)
+endif(DLib)
+
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -108,6 +114,7 @@ add_executable(
     src/lib/detectors/DepthDetector.cpp
     src/lib/detectors/RoughDistanceDetector.cpp
     src/lib/detectors/DistanceDetector.cpp 
+    src/lib/detectors/FaceDlibDetector.cpp 
 
     # lib relations        
     src/lib/relations/ImageRangeRelation.cpp
@@ -127,6 +134,10 @@ endif(opencv_contrib)
 if(zbar_lib)
     target_compile_definitions(extended_object_detection_node PUBLIC USE_ZBAR)
 endif(zbar_lib)
+
+if(DLib)
+    target_compile_definitions(extended_object_detection_node PUBLIC USE_DLIB)    
+endif(DLib)
 
 #collect hsv color c++ utility
 add_executable(
@@ -220,11 +231,32 @@ add_executable(
     src/lib/utils/contour_utils.cpp
     # detectors
     src/lib/detectors/BlobDetector.cpp
-    src/lib/detectors/SizeDetector.cpp
+    #src/lib/detectors/SizeDetector.cpp
 )
     
+# dlib face descriptors saver
+if(DLib)
+    add_executable(
+        face_dlib_descriptors_extractor
+        src/utils/face_dlib_descriptors_extractor.cpp
+        # types
+        src/lib/types/ExtendedObjectInfo.cpp
+        src/lib/types/Attribute.cpp
+        src/lib/types/SimpleObject.cpp
+        src/lib/types/Filtering.cpp
+        src/lib/types/Clusterization.cpp    
+        # utils    
+        src/lib/utils/geometry_utils.cpp
+        src/lib/utils/drawing_utils.cpp
+        src/lib/utils/contour_utils.cpp
+        # detectors
+        src/lib/detectors/FaceDlibDetector.cpp
+    )
+    
+    target_compile_definitions(face_dlib_descriptors_extractor PUBLIC USE_DLIB)
+endif(DLib)
+    
 #offline video processor
-
 add_executable(
     offline_video
     src/offline_video/offline_video.cpp
@@ -263,6 +295,7 @@ add_executable(
     src/lib/detectors/DepthDetector.cpp
     src/lib/detectors/RoughDistanceDetector.cpp
     src/lib/detectors/DistanceDetector.cpp    
+    src/lib/detectors/FaceDlibDetector.cpp 
 
     # lib relations
     src/lib/relations/ImageRangeRelation.cpp
@@ -417,6 +450,36 @@ if(zbar_lib)
     )
 endif(zbar_lib)
 
+if(DLib)
+    target_link_libraries(extended_object_detection_node  
+        dlib::dlib
+    )
+    
+    target_link_libraries(offline_video  
+        dlib::dlib
+    )
+
+    target_include_directories(
+        face_dlib_descriptors_extractor
+        PRIVATE
+        include
+        src/lib/include    
+        src/lib/types/include
+        src/lib/detectors/include
+        src/lib/utils/include
+        src/lib/relations/include
+        ${OpenCV_INCLUDE_DIRS}    
+        ${catkin_INCLUDE_DIRS}
+    )
+    
+    target_link_libraries(face_dlib_descriptors_extractor  
+        ${OpenCV_LIBRARIES}
+        ${catkin_LIBRARIES}    
+        dlib::dlib
+    )
+
+endif(DLib)
+
 target_link_libraries(extended_object_detection_node  
   ${OpenCV_LIBRARIES}
   ${TinyXML_LIBRARIES}
@@ -451,5 +514,5 @@ target_link_libraries(blob_params_collector_node
 target_link_libraries(offline_video  
   ${OpenCV_LIBRARIES}
   ${TinyXML_LIBRARIES}
-  ${catkin_LIBRARIES}    
+  ${catkin_LIBRARIES}      
 )

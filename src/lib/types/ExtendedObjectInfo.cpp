@@ -30,6 +30,7 @@ namespace eod{
         total_score = 0;
         sub_id.push_back(-1);
         extracted_info.push_back("");
+        track_status = 0;
     }    
     
     void ExtendedObjectInfo::inheritData(ExtendedObjectInfo* a, ExtendedObjectInfo* b){
