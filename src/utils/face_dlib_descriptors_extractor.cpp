@@ -7,7 +7,8 @@ using namespace std;
 
 int main(int argc, char **argv){
     
-    if(argc != 5){
+    if(argc < 5){
+        //printf("Args %i\n",argc);
         printf("Usage: ./face_dlib_descriptors_extractor base_dir_path output_base_file_path shape_preditor_path recognition_model_path\n");
         return 1;
     }

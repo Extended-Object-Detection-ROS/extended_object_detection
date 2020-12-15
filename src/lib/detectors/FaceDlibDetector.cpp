@@ -154,6 +154,7 @@ namespace eod{
                 
                 vector<dlib::rectangle> dets = face_detector(input_image);
                 if( dets.size() == 1 ){
+                    printf("[Face_dlib] calculating face descriptors for %s...\n",file.name().c_str());
                     auto shape = sp(input_image, dets[0]);
                     dlib::matrix<dlib::rgb_pixel> face_chip;
                     dlib::extract_image_chip(input_image, dlib::get_face_chip_details(shape,150,0.25), face_chip);
@@ -164,7 +165,7 @@ namespace eod{
                     person_names.push_back(rawname);
                 }
                 else{
-                    printf("[Face_dlib] file %s has no or more than one faces!\n", file.full_name().c_str());
+                    printf("[Face_dlib] file %s has no or more than one faces!\n", file.name().c_str());
                 }
                                         
             }
