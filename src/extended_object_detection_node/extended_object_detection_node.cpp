@@ -63,6 +63,7 @@ double updateRateMs = 0;
 bool subscribeDepth = false;
 double depth_scale = 0.001;
 int maxContourPoints = 10;
+bool rotate_image_180 = false;
 
 // Intrinsic and other cam parameters
 double fx, fy, cx, cy;
@@ -731,6 +732,10 @@ void video_process_cb(const ros::TimerEvent&){
             return;
         }
         
+        if( rotate_image_180 ){
+            rotate(last_image, last_image, 1);
+        }
+        
         Mat image2draw = last_image.clone();
         extended_object_detection::SimpleObjectArray array_objects;
                 
@@ -871,6 +876,9 @@ int main(int argc, char **argv)
   if( !nh_p.getParam("publishMarkers",publishMarkers) ){
       publishMarkers = false;  
   }
+  
+  nh_p.getParam("rotate_image_180", rotate_image_180);
+  
   if( publishMarkers ){
       if( !nh_p.getParam("visualizationTypes",visualizationTypes) ){
           visualizationTypes.push_back("arrows");
