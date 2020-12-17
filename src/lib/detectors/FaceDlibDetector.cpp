@@ -52,6 +52,7 @@ namespace eod{
     vector<ExtendedObjectInfo> FaceDlibAttribute::Detect2(const Mat& image, int seq){
         vector<ExtendedObjectInfo> answers;
         
+
         dlib::cv_image<dlib::bgr_pixel> img(image);
         
         vector<dlib::rectangle> dets = face_detector(img);
@@ -165,7 +166,7 @@ namespace eod{
                     person_names.push_back(rawname);
                 }
                 else{
-                    printf("[Face_dlib] file %s has no or more than one faces!\n", file.name().c_str());
+                    printf("[Face_dlib] file %s has %s faces!\n", file.name().c_str(), dets.size() == 0 ? "no" : "more than one");
                 }
                                         
             }
