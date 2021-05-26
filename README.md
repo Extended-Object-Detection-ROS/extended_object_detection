@@ -1,5 +1,5 @@
 # Extended Object Detection
-
+[![GitHub issues](https://img.shields.io/github/issues/Extended-Object-Detection-ROS/extended_object_detection.svg)](https://github.com/Extended-Object-Detection-ROS/extended_object_detection/issues)
 ## Short information
 
 Extended Object Detection is an ROS package and has ample opportunities for describing objects for detection in the video image. 
