@@ -2,6 +2,7 @@
 #if CV_MAJOR_VERSION > 3
 #include "DnnDetector.h"
 #include <regex>
+#include <fstream> 
 
 using namespace std;
 using namespace cv;
@@ -81,7 +82,7 @@ namespace eod{
     GlobalDnnDetector::GlobalDnnDetector(){
     }
     
-    GlobalDnnDetector::GlobalDnnDetector(string framework_name, string weights_file, string config_file, int inpWidth_, int inpHeight_, string labelMapFile){        
+    GlobalDnnDetector::GlobalDnnDetector(string framework_name, string weights_file, string config_file, int inpWidth_, int inpHeight_, string labelMapFile, bool forceCuda){        
         this->framework_name = framework_name;
         this->weights_file = weights_file;
         this->config_file = config_file;
@@ -114,7 +115,13 @@ namespace eod{
         else{
             printf("Error: unknown DNN framework '%s' in DnnAtribute\n",framework_name.c_str());
             return;
-        }       
+        }     
+        
+        if( forceCuda ){
+            net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
+            net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
+        }
+    
         inpWidth = inpWidth_;
         inpHeight = inpHeight_;
         prev_seq = -1;
@@ -219,7 +226,7 @@ namespace eod{
         GDNND = NULL;
     }
     
-    DnnAttribute::DnnAttribute(int object_id_, string framework_name, string weights_file, string config_file, int inpWidth, int inpHeight, string labelmapfile){
+    DnnAttribute::DnnAttribute(int object_id_, string framework_name, string weights_file, string config_file, int inpWidth, int inpHeight, string labelmapfile, bool forceCuda ){
         Type = DNN_A;  
         GDNND = NULL;         
         object_id = object_id_;
@@ -236,7 +243,7 @@ namespace eod{
                 return;
             }
         }
-        GDNND = new GlobalDnnDetector(framework_name, weights_file, config_file, inpWidth, inpHeight, labelmapfile);
+        GDNND = new GlobalDnnDetector(framework_name, weights_file, config_file, inpWidth, inpHeight, labelmapfile, forceCuda);
         if( GDNND->inited ){
             inited = true;
             GDNNDS.push_back(GDNND);

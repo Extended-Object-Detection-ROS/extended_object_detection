@@ -267,7 +267,10 @@ namespace eod{
                 int obj_id = -1;
                 attr->Attribute("obj_id", &obj_id);    
                 
-                tmpA = new DnnAttribute(obj_id, framework, weights, config, inpWidth, inpHeight, labels_str);
+                int forceCuda = 0;
+                attr->Attribute("forceCuda", &forceCuda);                
+                
+                tmpA = new DnnAttribute(obj_id, framework, weights, config, inpWidth, inpHeight, labels_str, (forceCuda != 0));
                 break;
             }
             case QR_A:

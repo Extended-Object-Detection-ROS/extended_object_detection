@@ -1,4 +1,5 @@
 # Extended Object Detection
+[![GitHub issues](https://img.shields.io/github/issues/Extended-Object-Detection-ROS/extended_object_detection.svg)](https://github.com/Extended-Object-Detection-ROS/extended_object_detection/issues) [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) ![version](https://img.shields.io/badge/version-1.0.0-blue)
 
 ## Short information
 
@@ -8,7 +9,7 @@ Extended Object Detection is an ROS package and has ample opportunities for desc
  - Wiki on russian: https://github.com/Extended-Object-Detection-ROS/extended_object_detection/wiki
  - Bug tracker: https://github.com/Extended-Object-Detection-ROS/extended_object_detection/issues
  - Youtube channel: https://youtube.com/channel/UCrZtFXAhxJIyk-T3d9-GLhw
- - ROS distro support: Noetic (full capabilities), Melodic (partial capabilities), Kinetic (partial capabilities)
+ - ROS distro support: <a><img src="https://img.shields.io/badge/ROS-Noetic-blue" alt="ros_version_noetic" /></a> (full capabilities), <a><img src="https://img.shields.io/badge/ROS-Melodic-yellow" alt="ros_version_melodic" /></a> (partial capabilities), <a><img src="https://img.shields.io/badge/ROS-Kinetic-yellow" alt="ros_version_kinetic" /></a> (partial capabilities)
 
 ## Abstract
 
