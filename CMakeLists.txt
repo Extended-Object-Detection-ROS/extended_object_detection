@@ -8,7 +8,7 @@ add_compile_options(-std=c++11)
 set(opencv_contrib OFF)
 set(zbar_lib OFF)
 set(TensorFlow OFF)
-set(DLib OFF)
+set(DLib ON)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -33,7 +33,7 @@ if(zbar_lib)
 endif(zbar_lib)
 
 if(DLib)
-    add_subdirectory(/home/anton/Lib/dlib dlib_build)
+    add_subdirectory(/home/anton/Libs/dlib dlib_build)
 endif(DLib)
 
 

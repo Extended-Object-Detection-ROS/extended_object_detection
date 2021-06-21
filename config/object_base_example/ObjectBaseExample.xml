@@ -77,7 +77,7 @@
     
     <Attribute Name="StickerRoughDist" Type="RoughDist" realWidth="0.075"/>
     
-    <Attribute Name="DepthKinect" Type="Depth" depthScale="0.001"/>
+    <!--<Attribute Name="DepthKinect" Type="Depth" depthScale="0.001"/>-->
     
     <Attribute Name="DlibFace" Type="FaceDlib" Probability="0.4" base_file_path="face_recognition/base_faces.db" base_dir_path="face_recognition/base_faces/" sp_path="face_recognition/shape_predictor_5_face_landmarks.dat" net_path="face_recognition/dlib_face_recognition_resnet_model_v1.dat"/>
     
@@ -264,7 +264,7 @@
 
 
 <ComplexObjectBase>
-    <ComplexObject ID="1" Name="ArucoTriangle">
+    <!--<ComplexObject ID="1" Name="ArucoTriangle">
         <SimpleObject Class="Aruco6" InnerName="A6"/>
         <SimpleObject Class="Aruco4" InnerName="A4-1"/>
         <SimpleObject Class="Aruco4" InnerName="A4-2"/>
@@ -273,9 +273,9 @@
         <Relation Obj1="A4-1" Obj2="A6" Relationship="0.14"/>
         <Relation Obj1="A4-2" Obj2="A6" Relationship="0.14"/>
         
-    </ComplexObject>
+    </ComplexObject>-->
     
-    <ComplexObject ID="2" Name="ArucoLeft">
+    <!--<ComplexObject ID="2" Name="ArucoLeft">
         <SimpleObject Class="Aruco6" InnerName="A6"/>
         <SimpleObject Class="Aruco4" InnerName="A4"/>
         
@@ -322,21 +322,21 @@
         <SimpleObject Class="Aruco4" InnerName="A4"/>
         
         <Relation Obj1="A4" Obj2="A6" Relationship="bottom-right"/>        
-    </ComplexObject>
+    </ComplexObject>-->
     
-    <ComplexObject ID="9" Name="ArucoBottomLeft">
+    <!--<ComplexObject ID="9" Name="ArucoBottomLeft">
         <SimpleObject Class="Aruco6" InnerName="A6"/>
         <SimpleObject Class="Aruco4" InnerName="A4"/>
         
         <Relation Obj1="A4" Obj2="A6" Relationship="bottom-left"/>        
     </ComplexObject>
-    
-    <ComplexObject ID="10" Name="FacedPerson">
+    -->
+    <!--<ComplexObject ID="10" Name="FacedPerson">
         <SimpleObject Class="CnnPerson" InnerName="Person"/>
         <SimpleObject Class="Face" InnerName="Face"/>
         
         <Relation Obj1="Face" Obj2="Person" Relationship="in"/>        
         
-    </ComplexObject>
+    </ComplexObject>-->
     
 </ComplexObjectBase>

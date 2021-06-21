@@ -21,6 +21,9 @@
         <remap from="depth/image_raw" to="/camera/depth_registered/image_raw"/>
         <remap from="depth/info" to="/camera/depth_registered/camera_info"/>
         
+        <rosparam param="selectedOnStartSimple">[]</rosparam>
+        <rosparam param="selectedOnStartComplex">[-1]</rosparam>
+        
     </node>
               
     <!-- visualization -->
