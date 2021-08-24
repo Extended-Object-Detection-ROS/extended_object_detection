@@ -168,8 +168,9 @@ namespace eod{
             }
         }while(changes > 0);
         
+        
+        //printf("First part is done!\n");
         /*
-        printf("First part is done!\n");
         for( size_t i = 0 ; i < objectArray.size() ; i++){
             printf("Objects at %i candidate %i\n",i,objectArray.at(i).elements.back().size());
         }
@@ -214,8 +215,8 @@ namespace eod{
         }
         //printf("Second part is done!\n");
         
-        int repa = deleteRepeats();
-        
+        //int repa = deleteRepeats();
+        //printf("After delete repeaters\n");
         // add all of them
         vector<ExtendedObjectInfo> vec_res;        
         
@@ -223,6 +224,7 @@ namespace eod{
             if( answerArray.at(i).size() > 0 ){
                 ExtendedObjectInfo result = answerArray.at(i).at(0).getRect();
                 for( size_t j = 1 ; j < answerArray.at(i).size(); j++ ){
+                    //printf("%i %i\n",i,j);
                     result = result | answerArray.at(i).at(j).getRect();                
                 }                
                 vec_res.push_back(result);
@@ -230,6 +232,7 @@ namespace eod{
         }
         objects = vec_res;
         full_answer = true;
+        //printf("Everything are done!\n");
         return vec_res;
     }
 
@@ -403,18 +406,38 @@ namespace eod{
     // DELETE REPEATS
     // ================
     int ComplexObject::deleteRepeats(){
-        int reps = 0;
-        for(size_t i = 0 ; i < answerArray.size(); i++){
-            for(size_t j = i+1 ; j < answerArray.size();){
-                if( answerArray.at(i) == answerArray.at(j) ){
-                    answerArray.erase(answerArray.begin() + j);
-                    reps++;
-                }
-                else{
-                    j++;
-                }
-            }
+        //int reps = 0;
+//         for(size_t i = 0 ; i < answerArray.size(); i++){
+//             for(size_t j = i+1 ; j < answerArray.size();){
+//                 if( answerArray.at(i) == answerArray.at(j) ){
+//                     answerArray.erase(answerArray.begin() + j);
+//                     reps++;
+//                 }
+//                 else{
+//                     j++;
+//                 }
+//             }
+//         }
+//         auto it = answerArray.begin();
+//         while( it != answerArray.end() ){
+//             auto it2 = it+1;
+//             while( it2 < answerArray.end() ){
+//                 if( *it == *it2){
+//                     it2 = answerArray.erase(it2);        
+//                 }
+//                 else{
+//                     ++it2;
+//                 }                
+//             }
+//             it++;
+//         }
+//         for(int i = 0 ; i < answerArray.size(); i++)
+//             answerArray[i].print();
+        auto end = answerArray.end();
+        for( auto it = answerArray.begin(); it != end; ++it){
+            end = std::remove(it+1, end, *it);
         }
+        answerArray.erase(end, answerArray.end());        
     }
     // ================
     // DRAW
