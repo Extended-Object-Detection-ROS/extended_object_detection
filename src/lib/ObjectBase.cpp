@@ -103,10 +103,12 @@ namespace eod{
             }                
             case HAAR_CASCADE_A:
             {
+                int min_size = 30;
+                attr->Attribute("min_size", &min_size);
                 string cascade_path = attr->Attribute("Cascade");
                 if(cascade_path.c_str()[0] != '/')
                     cascade_path = object_base_path + "/" + cascade_path;
-                tmpA = new HaarCascadeAttribute(cascade_path );
+                tmpA = new HaarCascadeAttribute(cascade_path, min_size);
                 break;
             }   
             case SIZE_A:

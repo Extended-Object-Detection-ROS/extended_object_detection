@@ -27,7 +27,7 @@ namespace eod{
         /// </summary>
         /// <param name="name">Path to cascade</param>
         /// <returns>Vector of rects of found objects</returns>
-        HaarCascadeAttribute(std::string name);
+        HaarCascadeAttribute(std::string name, int min_size = 30);
         
         ~HaarCascadeAttribute();
 
@@ -44,6 +44,9 @@ namespace eod{
 	
 	private:
         cv::CascadeClassifier shapeClassifier;
+        
+        int min_size;
+        int max_size;
 
 	};	
 

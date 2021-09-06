@@ -9,7 +9,7 @@ namespace eod{
         Type = HAAR_CASCADE_A;
     }
     
-    HaarCascadeAttribute::HaarCascadeAttribute(string name){
+    HaarCascadeAttribute::HaarCascadeAttribute(string name, int min_size_){
         Type = HAAR_CASCADE_A;
         cascade_name = name;
         if (!shapeClassifier.load(cascade_name)){
@@ -17,6 +17,7 @@ namespace eod{
             inited = false;            
         }
         inited = true;
+        min_size = min_size_;
     }
 
     HaarCascadeAttribute::~HaarCascadeAttribute(){
@@ -43,7 +44,7 @@ namespace eod{
 #endif
             equalizeHist(frame_gray, frame_gray);
 
-            shapeClassifier.detectMultiScale(frame_gray, shapes, 1.1, 1, 0 , Size(30, 30), image.size() );
+            shapeClassifier.detectMultiScale(frame_gray, shapes, 1.1, 1, 0 , Size(min_size, min_size), image.size() );
             
             /*
             vector<int> rejectLevels;
