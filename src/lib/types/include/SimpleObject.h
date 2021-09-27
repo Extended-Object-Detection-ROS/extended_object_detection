@@ -9,8 +9,8 @@
 namespace eod{
     
     enum IdentifyMode {
-        STRONG,
-        WEAK
+        HARD,
+        SOFT
     };
         
     
@@ -49,18 +49,18 @@ namespace eod{
         virtual std::vector <ExtendedObjectInfo> Identify(const cv::Mat& frame, const cv::Mat& depth, int seq = 0 );
         
         /// <summary>
-        /// Strong identification
+        /// Hard identification
         /// </summary>		 
         /// <param name="frame">Destination image</param>	
         /// <returns>List of identified objects</returns>
-        virtual std::vector <ExtendedObjectInfo> IdentifyStrong(const cv::Mat& frame, const cv::Mat& depth, int seq = 0 );
+        virtual std::vector <ExtendedObjectInfo> IdentifyHard(const cv::Mat& frame, const cv::Mat& depth, int seq = 0 );
                             
         /// <summary>
-        /// Weak identification
+        /// Soft identification
         /// </summary>		 
         /// <param name="frame">Destination image</param>	
         /// <returns>List of identified objects</returns>
-        virtual std::vector<ExtendedObjectInfo> IdentifyWeak(const cv::Mat& frame, const cv::Mat& depth, int seq = 0 );        
+        virtual std::vector<ExtendedObjectInfo> IdentifySoft(const cv::Mat& frame, const cv::Mat& depth, int seq = 0 );        
     
         /// <summary>
         /// Draws found objets

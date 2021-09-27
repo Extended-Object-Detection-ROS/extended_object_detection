@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+
+<AttributeLib>
+    
+    <Attribute Name="HoughCircle" Type="Hough" HoughType="0" dp="1" md="10" p1="142" p2="30" mr="0" Mr="0"/>
+    
+</AttributeLib>
+
+<SimpleObjectBase>  
+    
+    <SimpleObject Name="Circle" ID="1" Mode="Hard">              
+        <Attribute Type="Detect">HoughCircle</Attribute>            
+    </SimpleObject>
+    
+    
+</SimpleObjectBase>
+
+<RelationLib>  
+    
+</RelationLib>
+
+<ComplexObjectBase>
+    
+</ComplexObjectBase>

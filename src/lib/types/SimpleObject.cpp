@@ -25,7 +25,7 @@ namespace eod{
         totalWeight = 0;
         borderPc = 0.02;
         image_samples = 0;       
-        identify_mode = STRONG;        
+        identify_mode = HARD;        
         merging_policy = INTERSECTION_MP;
     }
 
@@ -53,16 +53,16 @@ namespace eod{
     // Ordinary Detection Stuff
     //-----------------------------------------------------------------
     vector<ExtendedObjectInfo> SimpleObject::Identify(const Mat& frame, const Mat& depth, int seq){
-        if( identify_mode == STRONG ){
-            IdentifyStrong(frame, depth, seq);
+        if( identify_mode == HARD ){
+            IdentifyHard(frame, depth, seq);
         }
-        else if( identify_mode == WEAK ){
-            IdentifyWeak(frame, depth, seq);
+        else if( identify_mode == SOFT ){
+            IdentifySoft(frame, depth, seq);
         }        
         return objects;
     }
     
-    vector<ExtendedObjectInfo> SimpleObject::IdentifyStrong(const Mat& frame, const Mat& depth, int seq){
+    vector<ExtendedObjectInfo> SimpleObject::IdentifyHard(const Mat& frame, const Mat& depth, int seq){
         // speed up fo only for one attribute objects
         if( mode_attributes.size() == 1 ){
             objects.clear(); // need I this?
@@ -149,7 +149,7 @@ namespace eod{
     }
 
     
-    vector<ExtendedObjectInfo> SimpleObject::IdentifyWeak(const Mat& frame, const Mat& depth, int seq){
+    vector<ExtendedObjectInfo> SimpleObject::IdentifySoft(const Mat& frame, const Mat& depth, int seq){
         ExtendedObjectInfo fake_empty_rect = ExtendedObjectInfo(0,0,frame.size().width, frame.size().height);
         vector<ExtendedObjectInfo> prev;
         

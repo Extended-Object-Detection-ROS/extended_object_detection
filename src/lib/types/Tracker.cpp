@@ -18,13 +18,10 @@ namespace eod{
     Track::Track(int id_, ExtendedObjectInfo first, string trackerType){
         id = id_;
         current_object = first;
-        current_object.track_id = id;
-        //current_object.track_history_image = &history_image;
+        current_object.track_id = id;        
         track_counter = 0;
         status = DETECTED;
-                
-                    
-        //tracker = cv::Tracker::create(trackerType);
+                                            
         if (trackerType == "BOOSTING")
             tracker = cv::TrackerBoosting::create();
         else if (trackerType == "MIL")
@@ -44,7 +41,6 @@ namespace eod{
         else{
             printf("Unknow tracker type %s!",trackerType.c_str());
         }
-
 
         if( ! tracker )
             printf("Failed tracker %s init!",trackerType.c_str());
@@ -171,11 +167,8 @@ namespace eod{
                 tracks[i]->updateTracker(frame);                                    
             }
         }        
-        closenessMap.release();
-        //previous_frame = frame; //NOTE maybe here should be deep copy
-        //previous_frame = frame.clone();
-        frame.copyTo(previous_frame);
-        // change SimpleObject's objects
+        closenessMap.release();        
+        frame.copyTo(previous_frame);        
         vector<ExtendedObjectInfo> tracked_objects = setTrackingResult();                
         // check and extract from tracking results
         for (size_t i = 0; i < mode_attributes.size(); i++){            
@@ -192,8 +185,7 @@ namespace eod{
                     mode_attributes[i].second->Extract(depth, &tracked_objects);
             }            
         }
-        for( size_t i = 0 ; i < tracked_objects.size(); i++)
-            //tracked_objects[i].calcTotalScore();
+        for( size_t i = 0 ; i < tracked_objects.size(); i++)            
             tracked_objects[i].mergeAllData(merging_policy);
         objects.insert( objects.end(), tracked_objects.begin(), tracked_objects.end() );
                 

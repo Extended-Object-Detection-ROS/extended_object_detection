@@ -598,20 +598,20 @@ namespace eod{
                         
             const char* identify_mode_c = obj->Attribute("Mode");
             if( identify_mode_c == NULL ){                
-                temp->identify_mode = STRONG;
+                temp->identify_mode = HARD;
             }
             else{                
                 string identify_mode(identify_mode_c);
                 transform(identify_mode.begin(), identify_mode.end(), identify_mode.begin(),[](unsigned char c){ return tolower(c); });
                 
                 if( identify_mode == "hard" ){
-                    temp->identify_mode = STRONG;
+                    temp->identify_mode = HARD;
                 }
                 else if( identify_mode == "soft" ){
-                    temp->identify_mode = WEAK;
+                    temp->identify_mode = SOFT;
                 }
                 else{
-                    temp->identify_mode = STRONG;
+                    temp->identify_mode = HARD;
                 }
             }                                                
             
