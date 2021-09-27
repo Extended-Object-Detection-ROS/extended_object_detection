@@ -9,6 +9,7 @@ set(opencv_contrib OFF)
 set(zbar_lib OFF)
 set(TensorFlow OFF)
 set(DLib OFF)
+set(igraph ON)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -82,6 +83,7 @@ add_executable(
     # lib common
     src/lib/ObjectBase.cpp
     # types
+    src/lib/types/ComplexObjectGraph.cpp
     src/lib/types/ComplexObject.cpp
     src/lib/types/ExtendedObjectInfo.cpp
     src/lib/types/Attribute.cpp
@@ -138,6 +140,10 @@ endif(zbar_lib)
 if(DLib)
     target_compile_definitions(extended_object_detection_node PUBLIC USE_DLIB)    
 endif(DLib)
+
+if(igraph)
+    target_compile_definitions(extended_object_detection_node PUBLIC USE_IGRAPH)    
+endif(igraph)
 
 #collect hsv color c++ utility
 add_executable(
@@ -353,6 +359,15 @@ if(zbar_lib)
     )
 endif(zbar_lib)
 
+if(igraph)
+    target_include_directories(
+        extended_object_detection_node
+        PRIVATE
+        /usr/local/src/igraph-0.7.1/include/
+    )
+endif(igraph)
+
+
 target_include_directories(
     hsv_color_params_collector_node
     PRIVATE
@@ -479,6 +494,13 @@ if(DLib)
     )
 
 endif(DLib)
+
+if(igraph)    
+    target_link_libraries(extended_object_detection_node  
+        /usr/local/lib/libigraph.so
+    )
+endif(igraph)
+
 
 target_link_libraries(extended_object_detection_node  
   ${OpenCV_LIBRARIES}

@@ -48,6 +48,9 @@ File: Class realises loading simple_simple_objects parameters from XML file
 
 
 #include "ComplexObject.h"
+#ifdef USE_IGRAPH
+#include "ComplexObjectGraph.h"
+#endif
 // RELATIONS
 // #include "RangeRelations.h"
 // #include "SpaceRelations.h"
@@ -70,6 +73,9 @@ namespace eod{
         std::vector<SimpleObject*> simple_objects;
         std::vector<RelationShip*> relations;        
         std::vector<ComplexObject*> complex_objects;
+#ifdef USE_IGRAPH        
+        std::vector<ComplexObjectGraph*> complex_objects_graph;
+#endif
 
         /// <summary>
         /// Default constructor
@@ -173,6 +179,10 @@ namespace eod{
         /// </summary>
         /// <param name="doc">Object base TinyXML class</param>
         bool loadFromXMLsNM(TiXmlDocument *doc);
+        
+#ifdef USE_IGRAPH        
+        bool loadFromXMLsG(TiXmlDocument *doc);
+#endif
 
         /// <summary>
         /// Gets pointer to object from list by its name
@@ -210,6 +220,8 @@ namespace eod{
         
         bool loaded;        
         cv::Mat cameraMatrix, distCoeffs;
+        
+        int relation_counter;
 
     };
         
