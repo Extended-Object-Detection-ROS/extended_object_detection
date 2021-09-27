@@ -1,4 +1,7 @@
 # Change Log
+## [unreleased] - 2021-09-27
+Added soft mode tracking.
+
 ## [unreleased] - 2020-12-15
 Added face recognition with dlib.
 
