@@ -24,6 +24,10 @@
         <Clusterization Type="FOREL" R="100" eps="10"/>
     </Attribute>
     
+    <Attribute Name="BrightRed" Type="HistColor" Histogram="histograms/BrightRed.yaml">
+        <Filter Type="Insider"/>
+    </Attribute>
+    
     <Attribute Name="NotFractal" Type="Size" MinAreaPc="0.5" MaxAreaPc="100"/>
     
     <Attribute Name="HaarFace" Type="HaarCascade" Cascade="cascades/mallick_haarcascade_frontalface_default.xml"/>
@@ -144,6 +148,12 @@
     
     <SimpleObject Name="Circle" ID="20">              
         <Attribute Type="Detect">HoughCircle</Attribute>            
+    </SimpleObject>
+    
+    <SimpleObject Name="RedCircle" ID="21" Mode="Soft" Probability="1">       
+        <Tracker IOU="0.25" decay="0.01" soft_prob="0.5">NONE</Tracker>
+        <Attribute Type="Detect">HoughCircle</Attribute>
+        <Attribute Type="Detect">BrightRed</Attribute>            
     </SimpleObject>
     
     <SimpleObject Name="Motion" ID="30" MergingPolicy="Intersection">              
