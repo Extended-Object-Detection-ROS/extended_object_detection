@@ -4,12 +4,19 @@
     
     <Attribute Name="HoughCircle" Type="Hough" HoughType="0" dp="1" md="10" p1="142" p2="30" mr="0" Mr="0"/>
     
+    <Attribute Name="BrightRed" Type="HistColor" Histogram="histograms/BrightRed.yaml">
+        <Filter Type="Insider"/>
+    </Attribute>
+
+    
 </AttributeLib>
 
 <SimpleObjectBase>  
     
-    <SimpleObject Name="Circle" ID="1" Mode="Hard">              
-        <Attribute Type="Detect">HoughCircle</Attribute>            
+    <SimpleObject Name="RedCircle" ID="1" Mode="Soft" Probability="1">       
+        <Tracker IOU="0.25" decay="0.01" soft_prob="0.5">NONE</Tracker>
+        <Attribute Type="Detect">HoughCircle</Attribute>
+        <Attribute Type="Detect">BrightRed</Attribute>            
     </SimpleObject>
     
     

@@ -39,11 +39,12 @@ namespace eod{
         else if (trackerType == "CSRT")
             tracker = cv::TrackerCSRT::create();
         else{
-            printf("Unknow tracker type %s!",trackerType.c_str());
+            //printf("Unknow tracker type %s!",trackerType.c_str()); //NOTE it is ok have no inner tracker
         }
 
-        if( ! tracker )
-            printf("Failed tracker %s init!",trackerType.c_str());
+        if( ! tracker ){
+            //printf("Failed tracker %s init!",trackerType.c_str());
+        }
     }
     
     void Track::addObject(ExtendedObjectInfo new_one, TrackStatus status_update){
@@ -102,7 +103,15 @@ namespace eod{
     
     vector <ExtendedObjectInfo> eodTracker::Identify(const Mat& frame, const Mat& depth, int seq ){
         // do regular things        
+        double real_prob;
+        if( identify_mode == SOFT ){
+            real_prob = Probability;
+            Probability = soft_prob;
+        }            
         SimpleObject::Identify(frame, depth, seq);
+        if( identify_mode == SOFT ){            
+            Probability = real_prob;
+        }            
         
         // remove lost tracks
         auto it = tracks.begin();
@@ -119,7 +128,8 @@ namespace eod{
         // first time 
         if( tracks.size() == 0 ){            
             for( size_t i = 0 ; i < objects.size() ; i++ ){
-                tracks.push_back(new Track(id_cnt++, objects[i], tracker_type));
+                if( identify_mode == SOFT && objects[i].total_score >= Probability)
+                    tracks.push_back(new Track(id_cnt++, objects[i], tracker_type));
             }
             setTrackingResult();
             frame.copyTo(previous_frame);
@@ -155,7 +165,8 @@ namespace eod{
             for( size_t i = 0 ; i < objects.size() ; i++ ){
                 // for extras objects create new tracks
                 if( find(takenObjects.begin(), takenObjects.end(), i) == takenObjects.end() ){
-                    tracks.push_back(new Track(id_cnt++, objects[i], tracker_type));                    
+                    if( identify_mode == SOFT && objects[i].total_score >= Probability)
+                        tracks.push_back(new Track(id_cnt++, objects[i], tracker_type));                    
                 }
             }            
         }

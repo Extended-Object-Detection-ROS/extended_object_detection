@@ -38,6 +38,7 @@ namespace eod{
     public:
         double iou_threshold;
         double decay;  
+        double soft_prob;
         
         eodTracker();
         eodTracker(std::string name, std::string trackerType);

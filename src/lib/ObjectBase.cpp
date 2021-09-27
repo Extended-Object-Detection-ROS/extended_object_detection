@@ -515,11 +515,16 @@ namespace eod{
                 string trackerType(tracker_el->GetText());
                 temp = new eodTracker(object_name, trackerType);
                 double iou_threshold = 0.5;
-                double decay_rate = 0.1;                
+                double decay_rate = 0.1;        
+                double soft_prob = 0.5;
                 tracker_el->Attribute("IOU", &iou_threshold);
                 tracker_el->Attribute("decay", &decay_rate);
+                tracker_el->Attribute("soft_prob", &soft_prob);
+                
                 ((eodTracker*)temp)->iou_threshold = iou_threshold;
                 ((eodTracker*)temp)->decay = decay_rate;
+                ((eodTracker*)temp)->soft_prob = soft_prob;
+                
                 if( tracker_el->NextSiblingElement("Tracker") )
                     printf("Object %s has more that one Tracker insnace, every except first will be ignored!",object_name.c_str());                
             }
@@ -576,18 +581,7 @@ namespace eod{
                     }
                 }
                 attr = attr->NextSiblingElement("Attribute");
-            }            
-            /*
-            int cluster_i;
-            obj->Attribute("cluseter",&cluster_i);
-            bool cluster = bool(cluster_i);
-            temp->cluster = cluster;
-            if (cluster){
-                int r_cluster;
-                obj->Attribute("r_cluster",&r_cluster);
-                temp->r_cluster = r_cluster;
-            } 
-            */
+            }                        
             // COMMON PARAMS HERE
             double Probability = 0.75;
             obj->Attribute("Probability",&Probability);
