@@ -8,7 +8,7 @@ namespace eod{
         vertices_len = 0;
         edges_len = 0;
         igraph_empty(&graph, 0, IGRAPH_UNDIRECTED);
-    }
+    }        
     
     int Graph::add_vectice(std::string object_name, int object_type, int obj_num){
         // check this already 
@@ -21,13 +21,21 @@ namespace eod{
             VANV(&graph, "obj_num", &nums);
             
             
-            long int ind_type, ind_num;
+            //long int ind_type, ind_num;
+            
+            for( int i = 0 ; i < vertices_len ; i++){
+                if( object_type == VECTOR(types)[i] && obj_num == VECTOR(nums)[i] ){
+                    printf("Vertice %i alreday added\n", i);
+                    return i; //NOTE true?
+                }
+            }
+            /*
             if( igraph_vector_binsearch(&types, object_type, &ind_type) && igraph_vector_binsearch(&nums, obj_num, &ind_num) ){
                 if( ind_type == ind_num){
                     printf("Vertice %i alreday added\n", ind_type);
                     return (int)ind_type; //NOTE true?
                 }                                
-            }
+            }*/
         }
                 
         igraph_add_vertices( &graph, 1, NULL ); 
@@ -126,26 +134,35 @@ namespace eod{
     }
     
     void ComplexObjectGraph::add_relation(std::string o1_name, std::string o2_name, RelationShip* rs){
-        NamesToRelations.insert(std::pair<std::string, RelationShip*>(rs->Name, rs));
-        NamesToObjects.insert(std::pair<std::string, std::pair<std::string, std::string>>(rs->Name,std::pair<std::string, std::string>(o1_name, o2_name)));        
+        std::string auto_name = std::to_string(graph.get_edges_len());
         
-        graph.add_edge(rs->Name, rs->ID, ObjectsToGraphsVerticesIds[o1_name], ObjectsToGraphsVerticesIds[o2_name] );
+        NamesToRelations.insert(std::pair<std::string, RelationShip*>(auto_name, rs));
+        
+        NamesToObjects.insert(std::pair<std::string, std::pair<std::string, std::string>>(auto_name,std::pair<std::string, std::string>(o1_name, o2_name)));        
+        
+        graph.add_edge(auto_name, rs->ID, ObjectsToGraphsVerticesIds[o1_name], ObjectsToGraphsVerticesIds[o2_name] );
     }
     
     std::vector<ExtendedObjectInfo> ComplexObjectGraph::Identify(const cv::Mat& frame, const cv::Mat& depth, int seq ){
-        
+        printf("NEW GRAPH\n");
         std::vector <ExtendedObjectInfo> result;
         
         // FORM A GRAPH
         Graph current_view_graph;
         for(auto const& nto : NamesToObjects){
+            printf("Rel: %s %s\n", nto.first.c_str(), NamesToRelations[nto.first]->Name.c_str());
             std::vector<ExtendedObjectInfo> obj1 = ObjectsToSimpleObjects[nto.second.first]->Identify(frame, depth, seq);
             std::vector<ExtendedObjectInfo> obj2 = ObjectsToSimpleObjects[nto.second.second]->Identify(frame, depth, seq);
             
             for( size_t i = 0 ; i < obj1.size() ; i++ ){
                 int ind1 = current_view_graph.add_vectice(nto.second.first, ObjectsToSimpleObjects[nto.second.first]->ID, i);
+                printf("%i %i -> %i\n",ObjectsToSimpleObjects[nto.second.first]->ID, i, ind1);
+                
                 for( size_t j = 0 ; j < obj2.size(); j++){
+                    
                     int ind2 = current_view_graph.add_vectice(nto.second.second, ObjectsToSimpleObjects[nto.second.second]->ID, j);
+                    printf("%i %i -> %i\n",ObjectsToSimpleObjects[nto.second.second]->ID, j, ind2);
+                    
                     if( NamesToRelations[nto.first]->checkRelation(frame, &obj1[i], &obj2[j]) ){
                         current_view_graph.add_edge(NamesToRelations[nto.first]->Name, NamesToRelations[nto.first]->ID, ind1, ind2);
                     }

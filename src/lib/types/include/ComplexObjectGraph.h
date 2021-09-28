@@ -19,6 +19,10 @@ namespace eod{
         
         std::string get_vertice_params(int id, int* object_type, int* obj_num);
         
+        inline int get_edges_len(){
+            return edges_len;
+        }
+        
     private:
         // graph representation
         igraph_t graph;

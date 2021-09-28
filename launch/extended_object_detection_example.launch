@@ -24,8 +24,8 @@
         <param name="subscribeDepth" value="false"/>        
         <param name="maxContourPoints" value="-1"/>        
         
-        <rosparam param="selectedOnStartSimple">[]</rosparam>
-        <rosparam param="selectedOnStartComplex">[]</rosparam>
+        <rosparam param="selectedOnStartSimple">[44,45,46,41]</rosparam>
+        <rosparam param="selectedOnStartComplex">[20]</rosparam>
         
         <remap from="camera/image_raw" to="/camera/image_raw"/>
         <remap from="camera/info" to="/camera/camera_info"/>
