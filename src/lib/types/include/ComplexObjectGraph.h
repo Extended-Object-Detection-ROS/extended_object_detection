@@ -13,7 +13,7 @@ namespace eod{
         Graph();
         
         int add_vectice(std::string object_name, int object_type, int obj_num = 0);
-        int add_edge(std::string relation_name, int relation_type, int o1, int o2);                        
+        int add_edge(std::string relation_name, int relation_type, int o1, int o2, bool fake = false);                        
         
         std::vector<std::vector<int>> get_subisomorphisms(Graph * sub_graph);
         
@@ -48,6 +48,7 @@ namespace eod{
         IdentifyMode identify_mode;  
         
         Graph graph;
+        double degree_of_confidence;
         
         void add_object(std::string name, SimpleObject* so, int num = 0);
         void add_relation(std::string o1_name, std::string o2_name, RelationShip* rs);

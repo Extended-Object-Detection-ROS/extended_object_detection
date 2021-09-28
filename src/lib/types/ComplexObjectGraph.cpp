@@ -41,12 +41,13 @@ namespace eod{
         return vertices_len-1;
     }
     
-    int Graph::add_edge(std::string relation_name, int relation_type, int o1, int o2){
+    int Graph::add_edge(std::string relation_name, int relation_type, int o1, int o2, bool fake){
         //printf("Trying to added edge between vertices %i and %i\n", o1, o2);
         
         igraph_add_edge(&graph, o1, o2);
         SETEAS(&graph, "rel_name", edges_len, relation_name.c_str());
         SETEAN(&graph, "rel_type", edges_len, relation_type);
+        SETEAN(&graph, "fake", edges_len, int(fake));
         
         edges_colors.push_back(relation_type);
         
@@ -139,7 +140,7 @@ namespace eod{
     std::vector<ExtendedObjectInfo> ComplexObjectGraph::Identify(const cv::Mat& frame, const cv::Mat& depth, int seq ){
         if( identify_mode == HARD )
             return IdentifyHard(frame, depth, seq);
-        else if( identify_mode == SOFT )
+        else
             return IdentifySoft(frame, depth, seq);
     }
     
@@ -199,6 +200,71 @@ namespace eod{
     
     std::vector<ExtendedObjectInfo> ComplexObjectGraph::IdentifySoft(const cv::Mat& frame, const cv::Mat& depth, int seq ){        
         std::vector <ExtendedObjectInfo> result;
+        
+        printf("New graph\n");
+        // FORM A GRAPH WITH FAKES
+        Graph current_view_graph;
+        for(auto const& nto : NamesToObjects){
+            
+            std::vector<ExtendedObjectInfo> obj1 = ObjectsToSimpleObjects[nto.second.first]->Identify(frame, depth, seq);
+            std::vector<ExtendedObjectInfo> obj2 = ObjectsToSimpleObjects[nto.second.second]->Identify(frame, depth, seq);                        
+            
+            for( int i = -1 ; i < (int)obj1.size() ; i++ ){
+                printf("\t i: %i\n", i);
+                int ind1 = current_view_graph.add_vectice(nto.second.first, ObjectsToSimpleObjects[nto.second.first]->ID, i);                
+                
+                for( int j = -1 ; j < (int)obj2.size(); j++){
+                    printf("\t j: %i\n", j);
+                    
+                    int ind2 = current_view_graph.add_vectice(nto.second.second, ObjectsToSimpleObjects[nto.second.second]->ID, j);                    
+                     
+                    
+                    if( i == -1 || j == -1)
+                        current_view_graph.add_edge(NamesToRelations[nto.first]->Name, NamesToRelations[nto.first]->ID, ind1, ind2, true);
+                    else{
+                        if( NamesToRelations[nto.first]->checkRelation(frame, &obj1[i], &obj2[j]) ){
+                            current_view_graph.add_edge(NamesToRelations[nto.first]->Name, NamesToRelations[nto.first]->ID, ind1, ind2);
+                        }
+                        else{
+                            current_view_graph.add_edge(NamesToRelations[nto.first]->Name, NamesToRelations[nto.first]->ID, ind1, ind2, true);
+                        }
+                    }
+                }
+            }                        
+        }
+        printf("VF2\n");
+        // DO VF2
+        std::vector<std::vector<int>> maps = current_view_graph.get_subisomorphisms(&graph);                
+        
+        // maps:
+        // j - vert id graph, maps[_][j] - vert id current_view_graph
+        
+        // RETRIEVE DATA
+        printf("DATA\n");
+        for( size_t i = 0 ; i < maps.size() ; i++ ){
+            //printf("Merged\n");
+            int obj_type, obj_num;
+            std::string object_name = current_view_graph.get_vertice_params(maps[i][0], &obj_type, &obj_num);
+            
+            ExtendedObjectInfo merged;
+                        
+            if( obj_num == -1){
+            }
+            else
+                merged = ObjectsToSimpleObjects[object_name]->objects[obj_num];
+                        
+            for( int j = 1 ; j < maps[i].size(); j++){
+                object_name = current_view_graph.get_vertice_params(maps[i][j], &obj_type, &obj_num);
+                if( obj_num == -1){
+                }
+                else
+                    merged = merged | ObjectsToSimpleObjects[object_name]->objects[obj_num];                
+            }
+            result.push_back(merged);
+        }
+        
+        complex_objects = result;
+        
         return result;
     }
     

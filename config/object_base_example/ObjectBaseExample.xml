@@ -281,7 +281,7 @@
 </RelationLib>
 
 <ComplexObjectBase>
-    <ComplexObject ID="1" Name="ArucoTriangle" Mode="Hard">
+    <ComplexObject ID="1" Name="ArucoTriangle" Mode="soft">
         <SimpleObject Class="Aruco6" InnerName="A6"/>
         <SimpleObject Class="Aruco4" InnerName="A4-1"/>
         <SimpleObject Class="Aruco4" InnerName="A4-2"/>
