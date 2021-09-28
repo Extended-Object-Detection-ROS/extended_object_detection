@@ -12,30 +12,22 @@ namespace eod{
     
     int Graph::add_vectice(std::string object_name, int object_type, int obj_num){
         // check this already 
-        if( vertices_len > 0 ){
+        if( vertices_len > 0 ){            
             igraph_vector_t types;
-            igraph_vector_t nums;
+            igraph_vector_t nums;            
             igraph_vector_init (&types, 0);
-            igraph_vector_init (&nums, 0);
+            igraph_vector_init (&nums, 0);            
             VANV(&graph, "obj_type", &types);
             VANV(&graph, "obj_num", &nums);
-            
-            
+                        
             //long int ind_type, ind_num;
-            
+            // TODO if check that it exists will be faster
             for( int i = 0 ; i < vertices_len ; i++){
-                if( object_type == VECTOR(types)[i] && obj_num == VECTOR(nums)[i] ){
-                    printf("Vertice %i alreday added\n", i);
+                if( object_type == VECTOR(types)[i] && obj_num == VECTOR(nums)[i] && object_name == VAS(&graph, "obj_name", i) ){
+                    printf("Vertice %i already added\n", i);
                     return i; //NOTE true?
                 }
-            }
-            /*
-            if( igraph_vector_binsearch(&types, object_type, &ind_type) && igraph_vector_binsearch(&nums, obj_num, &ind_num) ){
-                if( ind_type == ind_num){
-                    printf("Vertice %i alreday added\n", ind_type);
-                    return (int)ind_type; //NOTE true?
-                }                                
-            }*/
+            }            
         }
                 
         igraph_add_vertices( &graph, 1, NULL ); 
@@ -177,16 +169,18 @@ namespace eod{
         // j - vert id graph, maps[_][j] - vert id current_view_graph
         
         // RETRIEVE DATA
+        
         for( size_t i = 0 ; i < maps.size() ; i++ ){
-            
+            printf("Merged\n");
             int obj_type, obj_num;
             std::string object_name = current_view_graph.get_vertice_params(maps[i][0], &obj_type, &obj_num);
             
             ExtendedObjectInfo merged = ObjectsToSimpleObjects[object_name]->objects[obj_num];
-            
+            printf("\t%s %i\n", object_name.c_str(), obj_num);
             for( int j = 1 ; j < maps[i].size(); j++){
                 object_name = current_view_graph.get_vertice_params(maps[i][j], &obj_type, &obj_num);
                 merged = merged | ObjectsToSimpleObjects[object_name]->objects[obj_num];
+                printf("\t%s %i\n", object_name.c_str(), obj_num);
             }
             result.push_back(merged);
         }
