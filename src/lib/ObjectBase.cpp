@@ -836,7 +836,26 @@ namespace eod{
             tmpGs->name = name;
             int ID;
             scene->Attribute("ID",&ID);
-            tmpGs->ID = ID;            
+            tmpGs->ID = ID;       
+                        
+            const char* identify_mode_c = scene->Attribute("Mode");
+            if( identify_mode_c == NULL ){                
+                tmpGs->identify_mode = HARD;
+            }
+            else{                
+                string identify_mode(identify_mode_c);
+                transform(identify_mode.begin(), identify_mode.end(), identify_mode.begin(),[](unsigned char c){ return tolower(c); });
+                
+                if( identify_mode == "hard" ){
+                    tmpGs->identify_mode = HARD;
+                }
+                else if( identify_mode == "soft" ){
+                    tmpGs->identify_mode = SOFT;
+                }
+                else{
+                    tmpGs->identify_mode = HARD;
+                }
+            }  
             
             TiXmlElement *object = scene->FirstChildElement("SimpleObject");
             while (object){

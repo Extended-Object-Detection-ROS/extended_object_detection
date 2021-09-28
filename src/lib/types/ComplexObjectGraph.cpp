@@ -24,7 +24,7 @@ namespace eod{
             // TODO if check that it exists will be faster
             for( int i = 0 ; i < vertices_len ; i++){
                 if( object_type == VECTOR(types)[i] && obj_num == VECTOR(nums)[i] && object_name == VAS(&graph, "obj_name", i) ){
-                    printf("Vertice %i already added\n", i);
+                    //printf("Vertice %i already added\n", i);
                     return i; //NOTE true?
                 }
             }            
@@ -36,13 +36,13 @@ namespace eod{
         SETVAN(&graph, "obj_num", vertices_len, obj_num);
         vertices_colors.push_back(object_type);
         
-        printf("Added %i vertice\n", vertices_len);
+        //printf("Added %i vertice\n", vertices_len);
         vertices_len++;        
         return vertices_len-1;
     }
     
     int Graph::add_edge(std::string relation_name, int relation_type, int o1, int o2){
-        printf("Trying to added edge between vertices %i and %i\n", o1, o2);
+        //printf("Trying to added edge between vertices %i and %i\n", o1, o2);
         
         igraph_add_edge(&graph, o1, o2);
         SETEAS(&graph, "rel_name", edges_len, relation_name.c_str());
@@ -69,7 +69,7 @@ namespace eod{
         
         for( int i = 0 ; i < edges_len ; i++ )
             VECTOR(ec)[i] = edges_colors[i];
-        printf("Edges len %i\n",edges_len);
+        //printf("Edges len %i\n",edges_len);
         return ec;
     }
     
@@ -117,6 +117,7 @@ namespace eod{
     
     ComplexObjectGraph::ComplexObjectGraph(){
         graph = Graph();
+        identify_mode = HARD;
     }
     
     void ComplexObjectGraph::add_object(std::string name, SimpleObject* so, int num){
@@ -136,24 +137,31 @@ namespace eod{
     }
     
     std::vector<ExtendedObjectInfo> ComplexObjectGraph::Identify(const cv::Mat& frame, const cv::Mat& depth, int seq ){
-        printf("NEW GRAPH\n");
+        if( identify_mode == HARD )
+            return IdentifyHard(frame, depth, seq);
+        else if( identify_mode == SOFT )
+            return IdentifySoft(frame, depth, seq);
+    }
+    
+    std::vector<ExtendedObjectInfo> ComplexObjectGraph::IdentifyHard(const cv::Mat& frame, const cv::Mat& depth, int seq ){
+        //printf("NEW GRAPH\n");
         std::vector <ExtendedObjectInfo> result;
         
         // FORM A GRAPH
         Graph current_view_graph;
         for(auto const& nto : NamesToObjects){
-            printf("Rel: %s %s\n", nto.first.c_str(), NamesToRelations[nto.first]->Name.c_str());
+            //printf("Rel: %s %s\n", nto.first.c_str(), NamesToRelations[nto.first]->Name.c_str());
             std::vector<ExtendedObjectInfo> obj1 = ObjectsToSimpleObjects[nto.second.first]->Identify(frame, depth, seq);
             std::vector<ExtendedObjectInfo> obj2 = ObjectsToSimpleObjects[nto.second.second]->Identify(frame, depth, seq);
             
             for( size_t i = 0 ; i < obj1.size() ; i++ ){
                 int ind1 = current_view_graph.add_vectice(nto.second.first, ObjectsToSimpleObjects[nto.second.first]->ID, i);
-                printf("%i %i -> %i\n",ObjectsToSimpleObjects[nto.second.first]->ID, i, ind1);
+                //printf("%i %i -> %i\n",ObjectsToSimpleObjects[nto.second.first]->ID, i, ind1);
                 
                 for( size_t j = 0 ; j < obj2.size(); j++){
                     
                     int ind2 = current_view_graph.add_vectice(nto.second.second, ObjectsToSimpleObjects[nto.second.second]->ID, j);
-                    printf("%i %i -> %i\n",ObjectsToSimpleObjects[nto.second.second]->ID, j, ind2);
+                    //printf("%i %i -> %i\n",ObjectsToSimpleObjects[nto.second.second]->ID, j, ind2);
                     
                     if( NamesToRelations[nto.first]->checkRelation(frame, &obj1[i], &obj2[j]) ){
                         current_view_graph.add_edge(NamesToRelations[nto.first]->Name, NamesToRelations[nto.first]->ID, ind1, ind2);
@@ -171,16 +179,16 @@ namespace eod{
         // RETRIEVE DATA
         
         for( size_t i = 0 ; i < maps.size() ; i++ ){
-            printf("Merged\n");
+            //printf("Merged\n");
             int obj_type, obj_num;
             std::string object_name = current_view_graph.get_vertice_params(maps[i][0], &obj_type, &obj_num);
             
             ExtendedObjectInfo merged = ObjectsToSimpleObjects[object_name]->objects[obj_num];
-            printf("\t%s %i\n", object_name.c_str(), obj_num);
+            //printf("\t%s %i\n", object_name.c_str(), obj_num);
             for( int j = 1 ; j < maps[i].size(); j++){
                 object_name = current_view_graph.get_vertice_params(maps[i][j], &obj_type, &obj_num);
                 merged = merged | ObjectsToSimpleObjects[object_name]->objects[obj_num];
-                printf("\t%s %i\n", object_name.c_str(), obj_num);
+                //printf("\t%s %i\n", object_name.c_str(), obj_num);
             }
             result.push_back(merged);
         }
@@ -188,6 +196,12 @@ namespace eod{
         complex_objects = result;
         return result;
     }
+    
+    std::vector<ExtendedObjectInfo> ComplexObjectGraph::IdentifySoft(const cv::Mat& frame, const cv::Mat& depth, int seq ){        
+        std::vector <ExtendedObjectInfo> result;
+        return result;
+    }
+    
     
     void ComplexObjectGraph::drawOne(const cv::Mat& frameTd, int no, cv::Scalar color, int tickness){
         if( no < complex_objects.size() ){

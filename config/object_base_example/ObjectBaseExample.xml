@@ -263,7 +263,6 @@
     
 </SimpleObjectBase>
 
-
 <RelationLib>    
     <RelationShip Type="3DRange" Name="0.09" distLow="0.075" distHigh="0.11"/>        
     <RelationShip Type="3DRange" Name="0.14" distLow="0.12" distHigh="0.18"/>   
@@ -278,20 +277,18 @@
     <RelationShip Type="LogicAnd" Name="up-left" A="up" B="left"/>
     <RelationShip Type="LogicAnd" Name="bottom-right" A="down" B="right"/>
     <RelationShip Type="LogicAnd" Name="bottom-left" A="down" B="left"/>
-    
-    
+        
 </RelationLib>
 
-
 <ComplexObjectBase>
-    <ComplexObject ID="1" Name="ArucoTriangle">
-        <!--<SimpleObject Class="Aruco6" InnerName="A6"/>-->
+    <ComplexObject ID="1" Name="ArucoTriangle" Mode="Hard">
+        <SimpleObject Class="Aruco6" InnerName="A6"/>
         <SimpleObject Class="Aruco4" InnerName="A4-1"/>
         <SimpleObject Class="Aruco4" InnerName="A4-2"/>
         
         <Relation Obj1="A4-1" Obj2="A4-2" Relationship="0.09"/>
-        <!--<Relation Obj1="A4-1" Obj2="A6" Relationship="0.14"/>
-        <Relation Obj1="A4-2" Obj2="A6" Relationship="0.14"/>-->
+        <Relation Obj1="A4-1" Obj2="A6" Relationship="0.14"/>
+        <Relation Obj1="A4-2" Obj2="A6" Relationship="0.14"/>
         
     </ComplexObject>
     
@@ -370,8 +367,7 @@
         <Relation Obj1="A4" Obj2="A7" Relationship="up"/>
         
     </ComplexObject>
-        
-    
+            
 </ComplexObjectBase>
 
     

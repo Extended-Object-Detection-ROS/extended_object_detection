@@ -45,6 +45,7 @@ namespace eod{
                 
         std::string name;
         int ID;                
+        IdentifyMode identify_mode;  
         
         Graph graph;
         
@@ -52,6 +53,9 @@ namespace eod{
         void add_relation(std::string o1_name, std::string o2_name, RelationShip* rs);
         
         std::vector<ExtendedObjectInfo> Identify(const cv::Mat& frame, const cv::Mat& depth, int seq);
+        
+        std::vector<ExtendedObjectInfo> IdentifyHard(const cv::Mat& frame, const cv::Mat& depth, int seq);
+        std::vector<ExtendedObjectInfo> IdentifySoft(const cv::Mat& frame, const cv::Mat& depth, int seq);
         
         void drawOne(const cv::Mat& frameTD, int no, cv::Scalar color, int tickness);
         void drawAll(const cv::Mat& frameTD, cv::Scalar color, int tickness);
