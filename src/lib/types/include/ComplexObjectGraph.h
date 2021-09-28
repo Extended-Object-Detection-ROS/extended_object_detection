@@ -13,10 +13,11 @@ namespace eod{
         Graph();
         
         int add_vectice(std::string object_name, int object_type, int obj_num = 0);
-        int add_edge(std::string relation_name, int relation_type, int o1, int o2);
-                
-        igraph_vector_int_t get_vertices_colors();
-        igraph_vector_int_t get_edges_colors();
+        int add_edge(std::string relation_name, int relation_type, int o1, int o2);                        
+        
+        std::vector<std::vector<int>> get_subisomorphisms(Graph * sub_graph);
+        
+        std::string get_vertice_params(int id, int* object_type, int* obj_num);
         
     private:
         // graph representation
@@ -25,6 +26,9 @@ namespace eod{
         // colors, needed for VF2                
         std::vector<int> vertices_colors;
         std::vector<int> edges_colors;
+        
+        igraph_vector_int_t get_vertices_colors();
+        igraph_vector_int_t get_edges_colors();
         
         int vertices_len;
         int edges_len;
@@ -40,14 +44,23 @@ namespace eod{
         
         Graph graph;
         
-        void add_object(std::string name, SimpleObject* so);
+        void add_object(std::string name, SimpleObject* so, int num = 0);
         void add_relation(std::string o1_name, std::string o2_name, RelationShip* rs);
         
         std::vector<ExtendedObjectInfo> Identify(const cv::Mat& frame, const cv::Mat& depth, int seq);
+        
+        void drawOne(const cv::Mat& frameTD, int no, cv::Scalar color, int tickness);
+        void drawAll(const cv::Mat& frameTD, cv::Scalar color, int tickness);
+        
+        std::vector<ExtendedObjectInfo> complex_objects;
                         
     private:
         std::map<std::string, int> ObjectsToGraphsVerticesIds;
         std::map<std::string, SimpleObject*> ObjectsToSimpleObjects;
+        
+        std::map<std::string, RelationShip*> NamesToRelations;
+        std::map<std::string, std::pair<std::string, std::string>> NamesToObjects;
+        
         
     };
     

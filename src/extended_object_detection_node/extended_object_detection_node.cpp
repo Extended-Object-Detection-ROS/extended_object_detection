@@ -48,7 +48,7 @@ ros::Publisher marker_array_complex_pub_;
 
 vector<SimpleObject*> selected_to_detect_simple_objects;
 vector<int> selected_on_start_simple;
-vector<ComplexObject*> selected_to_detect_complex_objects;
+vector<ComplexObjectGraph*> selected_to_detect_complex_objects;
 vector<int> selected_on_start_complex;
 
 
@@ -168,6 +168,14 @@ int findIdComplexObjects(int id){
     }
     return -1;
 }
+
+// int findIdComplexObjectsGraph(int id){
+//     for( size_t i = 0 ; i < selected_to_detect_complex_objects.size() ; i++ ){
+//         if( id == selected_to_detect_complex_objects[i]->ID )
+//             return i;        
+//     }
+//     return -1;
+// }
     
 // set ComplexObjects srv
 bool setComplexObjects(extended_object_detection::SetSimpleObjects::Request &req, extended_object_detection::SetSimpleObjects::Response &res){
@@ -183,13 +191,13 @@ bool setComplexObjects(extended_object_detection::SetSimpleObjects::Request &req
         }
         else if( req.add_all ){
             selected_to_detect_complex_objects.clear();
-            for( size_t i = 0 ; i < objectBase->complex_objects.size() ; i++ )
-                selected_to_detect_complex_objects.push_back(objectBase->complex_objects[i]);
+            for( size_t i = 0 ; i < objectBase->complex_objects_graph.size() ; i++ )
+                selected_to_detect_complex_objects.push_back(objectBase->complex_objects_graph[i]);
             return_value = true;
         }
         else{
             for( size_t i = 0 ; i < req.changes.size() ; i++ ){
-                ComplexObject* co = objectBase->getComplexObjectByID(abs(req.changes[i]));
+                ComplexObjectGraph* co = objectBase->getComplexObjectGraphByID(abs(req.changes[i]));
                 if(co){
                     if( req.changes[i] > 0 ){
                         // add
@@ -763,7 +771,7 @@ void video_process_cb(const ros::TimerEvent&){
         // COMPLEX OBJECTS
         extended_object_detection::ComplexObjectArray array_co_msg;        
         for( size_t i = 0 ; i < selected_to_detect_complex_objects.size(); i++){   
-            
+            /*
             vector<ExtendedObjectInfo> DetectedComplexObjects;
             vector<vector<ExtendedObjectInfo> > DetectedObjects;
             
@@ -785,7 +793,14 @@ void video_process_cb(const ros::TimerEvent&){
                 co_msg.type_name = selected_to_detect_complex_objects[i]->name;
                     
                 array_co_msg.complex_objects.push_back(co_msg);
-            }            
+            } 
+            */
+            vector<ExtendedObjectInfo> DetectedComplexObjects;
+            
+            DetectedComplexObjects = selected_to_detect_complex_objects.at(i)->Identify(last_image, last_depth, seq);     
+            
+            if( screenOutputFlag || publishImage)
+                selected_to_detect_complex_objects.at(i)->drawAll(image2draw, Scalar(255, 255, 0), 2);
         }
         seq++;
         ros::Time end_detection = ros::Time::now();
@@ -917,14 +932,14 @@ int main(int argc, char **argv)
   ros::ServiceServer setSimpleObjectsSrv = nh_p.advertiseService("set_simple_objects", setSimpleObjects);
   
   if( selected_on_start_complex.size() == 0 )
-    for( size_t i = 0 ; i < objectBase->complex_objects.size() ; i++ ){
-        selected_to_detect_complex_objects.push_back(objectBase->complex_objects[i]);
+    for( size_t i = 0 ; i < objectBase->complex_objects_graph.size() ; i++ ){
+        selected_to_detect_complex_objects.push_back(objectBase->complex_objects_graph[i]);
     }
   else{
       if( selected_on_start_complex[0] != -1 ){
-        for( size_t i = 0 ; i < objectBase->complex_objects.size() ; i++ ){
-            if( find(selected_on_start_complex.begin(), selected_on_start_complex.end(), objectBase->complex_objects[i]->ID) != selected_on_start_complex.end() )
-                selected_to_detect_complex_objects.push_back(objectBase->complex_objects[i]);
+        for( size_t i = 0 ; i < objectBase->complex_objects_graph.size() ; i++ ){
+            if( find(selected_on_start_complex.begin(), selected_on_start_complex.end(), objectBase->complex_objects_graph[i]->ID) != selected_on_start_complex.end() )
+                selected_to_detect_complex_objects.push_back(objectBase->complex_objects_graph[i]);
         }
     }        
   }

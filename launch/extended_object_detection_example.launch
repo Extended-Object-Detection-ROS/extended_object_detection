@@ -2,7 +2,7 @@
     <arg name="output" default="screen"/>
     <arg name="objectBasePath" default="$(find extended_object_detection)/config/object_base_example/ObjectBaseExample.xml"/>
     
-    <node name="camera" pkg="usb_cam" type="usb_cam_node" output="$(arg output)" clear_params="true" respawn="false" required="false" launch-prefix="" >
+    <node name="camera" pkg="usb_cam" type="usb_cam_node" output="$(arg output)" clear_params="true" respawn="false" required="true">
         <param name="video_device" value="/dev/video0" />
         <param name="image_width" value="640" />
         <param name="image_height" value="480" />
@@ -14,7 +14,7 @@
         <param name="camera_name" value="camera" />
     </node>
     
-    <node name="extended_object_detection" pkg="extended_object_detection" type="extended_object_detection_node" output="screen">
+    <node name="extended_object_detection" pkg="extended_object_detection" type="extended_object_detection_node" output="screen" required="true">
         
         <param name="objectBasePath" value="$(arg objectBasePath)"/>
         <param name="videoProcessUpdateRate" value="5"/>

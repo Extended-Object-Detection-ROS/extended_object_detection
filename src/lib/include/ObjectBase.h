@@ -101,6 +101,10 @@ namespace eod{
 
         SimpleObject* getSimpleObjectByID(int id);
         ComplexObject* getComplexObjectByID(int id);
+        
+#ifdef USE_IGRAPH 
+        ComplexObjectGraph* getComplexObjectGraphByID(int id);
+#endif
 
         /// <summary>
         /// Reloaded operator, returns element of object list

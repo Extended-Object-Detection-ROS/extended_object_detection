@@ -821,11 +821,11 @@ namespace eod{
         /* turn on attribute handling */
         igraph_i_set_attribute_table(&igraph_cattribute_table);
         
-        TiXmlElement *baseO = doc->FirstChildElement("ComplexObjectGraphBase");
+        TiXmlElement *baseO = doc->FirstChildElement("ComplexObjectBase");
 
         if (!baseO) return false;
 
-        TiXmlElement *scene = baseO->FirstChildElement("ComplexObjectGraph");
+        TiXmlElement *scene = baseO->FirstChildElement("ComplexObject");
 
 
         while (scene){
@@ -858,7 +858,7 @@ namespace eod{
             }
             
             complex_objects_graph.push_back(tmpGs);
-            scene = scene->NextSiblingElement("ComplexObjectGraph");
+            scene = scene->NextSiblingElement("ComplexObject");
         }
 
         
@@ -962,5 +962,15 @@ namespace eod{
         }
         return NULL;
     }
+    
+#ifdef USE_IGRAPH    
+    ComplexObjectGraph* ObjectBase::getComplexObjectGraphByID(int id){
+        for( size_t i = 0 ; i < complex_objects_graph.size(); i++ ){
+            if( id == complex_objects_graph[i]->ID )
+                return complex_objects_graph[i];
+        }
+        return NULL;
+    }
+#endif
 
 }

@@ -22,6 +22,7 @@ namespace eod{
     
     void SimpleObject::defaultInit(){
         identified = false;
+        ident_seq = -1;
         totalWeight = 0;
         borderPc = 0.02;
         image_samples = 0;       
@@ -53,12 +54,17 @@ namespace eod{
     // Ordinary Detection Stuff
     //-----------------------------------------------------------------
     vector<ExtendedObjectInfo> SimpleObject::Identify(const Mat& frame, const Mat& depth, int seq){
+        if (seq == ident_seq){
+            return objects;
+        }
+        
         if( identify_mode == HARD ){
             IdentifyHard(frame, depth, seq);
         }
         else if( identify_mode == SOFT ){
             IdentifySoft(frame, depth, seq);
         }        
+        ident_seq = seq;
         return objects;
     }
     
