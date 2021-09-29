@@ -837,6 +837,10 @@ namespace eod{
             int ID;
             scene->Attribute("ID",&ID);
             tmpGs->ID = ID;       
+            
+            double Probability = 0.75;
+            scene->Attribute("Probability",&Probability);
+            tmpGs->Probability = Probability;
                         
             const char* identify_mode_c = scene->Attribute("Mode");
             if( identify_mode_c == NULL ){                

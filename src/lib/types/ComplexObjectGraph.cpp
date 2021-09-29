@@ -8,9 +8,10 @@ namespace eod{
         vertices_len = 0;
         edges_len = 0;
         igraph_empty(&graph, 0, IGRAPH_UNDIRECTED);
+        accuracy = 100;
     }        
     
-    int Graph::add_vectice(std::string object_name, int object_type, int obj_num){
+    int Graph::add_vectice(std::string object_name, int object_type, int obj_num, double dc){
         // check this already 
         if( vertices_len > 0 ){            
             igraph_vector_t types;
@@ -34,6 +35,7 @@ namespace eod{
         SETVAS(&graph, "obj_name", vertices_len, object_name.c_str());
         SETVAN(&graph, "obj_type", vertices_len, object_type);
         SETVAN(&graph, "obj_num", vertices_len, obj_num);
+        SETVAN(&graph, "dc", vertices_len, int(dc*accuracy));
         vertices_colors.push_back(object_type);
         
         //printf("Added %i vertice\n", vertices_len);
@@ -74,7 +76,7 @@ namespace eod{
         return ec;
     }
     
-    std::vector<std::vector<int>> Graph::get_subisomorphisms(Graph * sub_graph){
+    std::vector<std::pair<std::vector<int>, double>> Graph::get_subisomorphisms(Graph * sub_graph){
         
         igraph_vector_ptr_t maps;
         igraph_vector_ptr_init(&maps, 0);
@@ -86,7 +88,7 @@ namespace eod{
 
         igraph_get_subisomorphisms_vf2(&graph, &(sub_graph->graph), &vert1, &vert2, &edg1, &edg2, &maps, 0, 0, 0);
         
-        std::vector<std::vector<int>> vect_maps;
+        std::vector<std::pair<std::vector<int>, double>> vect_maps;
         
         int n_subis = igraph_vector_ptr_size(&maps);
         for(size_t i = 0; i < n_subis; i++ ){
@@ -98,11 +100,49 @@ namespace eod{
                 // j of graph2 --> VECTOR(*temp)[j] of graph1;
                 map.push_back(VECTOR(*temp)[j]);
             }
-            vect_maps.push_back(map);      
+            vect_maps.push_back(std::pair<std::vector<int>,double>(map, 0));      
             igraph_vector_destroy(temp);
             igraph_free(temp);
         }
-        igraph_vector_ptr_destroy(&maps);
+        igraph_vector_ptr_destroy(&maps);       
+        
+        // get Dc
+        //std::vector<double> Dcs;
+        
+        igraph_vector_t pair;
+        igraph_vector_init(&pair, 2);
+        igraph_vector_t edge_id;
+        igraph_vector_init(&edge_id, 0);
+        
+        for( size_t i = 0 ; i < vect_maps.size() ; i++ ){
+            double Dc = 0;
+            int edges_cnt = 0;
+            for( size_t j1 = 0; j1 < vect_maps[i].first.size(); j1++ ){
+                for( size_t j2 = j1+1; j2 < vect_maps[i].first.size(); j2++ ){
+                    //if( j1 != j2 ){
+                        VECTOR(pair)[0] = vect_maps[i].first[j1];
+                        VECTOR(pair)[1] = vect_maps[i].first[j2];
+                        igraph_get_eids(&graph, &edge_id, &pair, NULL, 0, 0);
+                        int edge_id_ind = VECTOR(edge_id)[0];
+                        if( edge_id_ind != -1){                        
+                            if( EAN(&graph, "fake", edge_id_ind) ){
+                                // IT IS FAKE       
+                                //printf("Fake\n");
+                            }
+                            else{
+                                Dc += 0.5*(double(VAN(&graph, "dc", vect_maps[i].first[j1]))/accuracy + 
+                                double(VAN(&graph, "dc", vect_maps[i].first[j2]))/accuracy);
+                            }
+                            edges_cnt++;
+                        }
+                    //}
+                }
+            }
+            //printf("Ec %i\n",edges_cnt);
+            Dc /= edges_cnt;            
+            //Dcs.push_back(Dc);
+            vect_maps[i].second = Dc;
+        }        
         return vect_maps;                
     }
     
@@ -119,6 +159,7 @@ namespace eod{
     ComplexObjectGraph::ComplexObjectGraph(){
         graph = Graph();
         identify_mode = HARD;
+        Probability = 0.75;
     }
     
     void ComplexObjectGraph::add_object(std::string name, SimpleObject* so, int num){
@@ -172,7 +213,7 @@ namespace eod{
         }
         
         // DO VF2
-        std::vector<std::vector<int>> maps = current_view_graph.get_subisomorphisms(&graph);                
+        std::vector<std::pair<std::vector<int>, double>> maps = current_view_graph.get_subisomorphisms(&graph);                
         
         // maps:
         // j - vert id graph, maps[_][j] - vert id current_view_graph
@@ -180,17 +221,21 @@ namespace eod{
         // RETRIEVE DATA
         
         for( size_t i = 0 ; i < maps.size() ; i++ ){
+            if( maps[i].second < Probability ){
+                continue;
+            }            
             //printf("Merged\n");
             int obj_type, obj_num;
-            std::string object_name = current_view_graph.get_vertice_params(maps[i][0], &obj_type, &obj_num);
+            std::string object_name = current_view_graph.get_vertice_params(maps[i].first[0], &obj_type, &obj_num);
             
             ExtendedObjectInfo merged = ObjectsToSimpleObjects[object_name]->objects[obj_num];
             //printf("\t%s %i\n", object_name.c_str(), obj_num);
-            for( int j = 1 ; j < maps[i].size(); j++){
-                object_name = current_view_graph.get_vertice_params(maps[i][j], &obj_type, &obj_num);
+            for( int j = 1 ; j < maps[i].first.size(); j++){
+                object_name = current_view_graph.get_vertice_params(maps[i].first[j], &obj_type, &obj_num);
                 merged = merged | ObjectsToSimpleObjects[object_name]->objects[obj_num];
                 //printf("\t%s %i\n", object_name.c_str(), obj_num);
             }
+            merged.total_score = maps[i].second;
             result.push_back(merged);
         }
         
@@ -201,7 +246,7 @@ namespace eod{
     std::vector<ExtendedObjectInfo> ComplexObjectGraph::IdentifySoft(const cv::Mat& frame, const cv::Mat& depth, int seq ){        
         std::vector <ExtendedObjectInfo> result;
         
-        printf("New graph\n");
+        //printf("New graph\n");
         // FORM A GRAPH WITH FAKES
         Graph current_view_graph;
         for(auto const& nto : NamesToObjects){
@@ -210,13 +255,20 @@ namespace eod{
             std::vector<ExtendedObjectInfo> obj2 = ObjectsToSimpleObjects[nto.second.second]->Identify(frame, depth, seq);                        
             
             for( int i = -1 ; i < (int)obj1.size() ; i++ ){
-                printf("\t i: %i\n", i);
-                int ind1 = current_view_graph.add_vectice(nto.second.first, ObjectsToSimpleObjects[nto.second.first]->ID, i);                
+                //printf("\t i: %i\n", i);
+                double dc1 = 0;
+                if( i != -1)
+                    dc1 = obj1[i].total_score;
+                
+                int ind1 = current_view_graph.add_vectice(nto.second.first, ObjectsToSimpleObjects[nto.second.first]->ID, i, dc1);  
                 
                 for( int j = -1 ; j < (int)obj2.size(); j++){
-                    printf("\t j: %i\n", j);
+                    //printf("\t j: %i\n", j);
+                    double dc2 = 0;
+                    if( j != -1)
+                        dc2 = obj2[j].total_score;
                     
-                    int ind2 = current_view_graph.add_vectice(nto.second.second, ObjectsToSimpleObjects[nto.second.second]->ID, j);                    
+                    int ind2 = current_view_graph.add_vectice(nto.second.second, ObjectsToSimpleObjects[nto.second.second]->ID, j, dc2);  
                      
                     
                     if( i == -1 || j == -1)
@@ -232,19 +284,23 @@ namespace eod{
                 }
             }                        
         }
-        printf("VF2\n");
+        //printf("VF2\n");
         // DO VF2
-        std::vector<std::vector<int>> maps = current_view_graph.get_subisomorphisms(&graph);                
+        std::vector<std::pair<std::vector<int>, double>> maps = current_view_graph.get_subisomorphisms(&graph);                
         
         // maps:
         // j - vert id graph, maps[_][j] - vert id current_view_graph
         
         // RETRIEVE DATA
-        printf("DATA\n");
+        //printf("DATA\n");
         for( size_t i = 0 ; i < maps.size() ; i++ ){
-            //printf("Merged\n");
+            
+            if( maps[i].second < Probability ){
+                continue;
+            }            
+            
             int obj_type, obj_num;
-            std::string object_name = current_view_graph.get_vertice_params(maps[i][0], &obj_type, &obj_num);
+            std::string object_name = current_view_graph.get_vertice_params(maps[i].first[0], &obj_type, &obj_num);
             
             ExtendedObjectInfo merged;
                         
@@ -253,27 +309,30 @@ namespace eod{
             else
                 merged = ObjectsToSimpleObjects[object_name]->objects[obj_num];
                         
-            for( int j = 1 ; j < maps[i].size(); j++){
-                object_name = current_view_graph.get_vertice_params(maps[i][j], &obj_type, &obj_num);
+            for( size_t j = 1 ; j < maps[i].first.size(); j++){
+                object_name = current_view_graph.get_vertice_params(maps[i].first[j], &obj_type, &obj_num);
                 if( obj_num == -1){
                 }
                 else
                     merged = merged | ObjectsToSimpleObjects[object_name]->objects[obj_num];                
             }
+            merged.total_score = maps[i].second;
             result.push_back(merged);
+                                    
+            
         }
-        
+                        
+        //TODO destroy graph
         complex_objects = result;
         
         return result;
     }
-    
-    
+        
     void ComplexObjectGraph::drawOne(const cv::Mat& frameTd, int no, cv::Scalar color, int tickness){
         if( no < complex_objects.size() ){
             complex_objects[no].draw(frameTd, color);
             
-            std::string objectInfo = std::to_string(ID)+": "+name;
+            std::string objectInfo = std::to_string(ID)+": "+name +" ["+ std::to_string(complex_objects[no].total_score).substr(0,4)+"]";
             cv::Point prevBr = drawFilledRectangleWithText(frameTd, cv::Point(complex_objects[no].x,complex_objects[no].y -12)  , objectInfo, color);     
         }
     }

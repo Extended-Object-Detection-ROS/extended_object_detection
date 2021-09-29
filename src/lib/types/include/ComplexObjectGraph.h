@@ -12,10 +12,10 @@ namespace eod{
     public:
         Graph();
         
-        int add_vectice(std::string object_name, int object_type, int obj_num = 0);
+        int add_vectice(std::string object_name, int object_type, int obj_num = 0, double dc = 1);
         int add_edge(std::string relation_name, int relation_type, int o1, int o2, bool fake = false);                        
         
-        std::vector<std::vector<int>> get_subisomorphisms(Graph * sub_graph);
+        std::vector<std::pair<std::vector<int>, double>> get_subisomorphisms(Graph * sub_graph);
         
         std::string get_vertice_params(int id, int* object_type, int* obj_num);
         
@@ -36,6 +36,8 @@ namespace eod{
         
         int vertices_len;
         int edges_len;
+        
+        int accuracy;                
                 
     };
     
@@ -49,6 +51,8 @@ namespace eod{
         
         Graph graph;
         double degree_of_confidence;
+        
+        double Probability;
         
         void add_object(std::string name, SimpleObject* so, int num = 0);
         void add_relation(std::string o1_name, std::string o2_name, RelationShip* rs);

@@ -281,7 +281,7 @@
 </RelationLib>
 
 <ComplexObjectBase>
-    <ComplexObject ID="1" Name="ArucoTriangle" Mode="soft">
+    <ComplexObject ID="1" Name="ArucoTriangle" Mode="soft" Probability="0.7">
         <SimpleObject Class="Aruco6" InnerName="A6"/>
         <SimpleObject Class="Aruco4" InnerName="A4-1"/>
         <SimpleObject Class="Aruco4" InnerName="A4-2"/>
@@ -320,7 +320,7 @@
         <Relation Obj1="A4" Obj2="A6" Relationship="down"/>        
     </ComplexObject>
     
-    <ComplexObject ID="6" Name="ArucoUpRight">
+    <ComplexObject ID="6" Name="ArucoUpRight" Mode="soft" Probability="0.0">
         <SimpleObject Class="Aruco6" InnerName="A6"/>
         <SimpleObject Class="Aruco4" InnerName="A4"/>
         
