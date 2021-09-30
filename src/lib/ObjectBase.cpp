@@ -863,19 +863,24 @@ namespace eod{
             
             TiXmlElement *object = scene->FirstChildElement("SimpleObject");
             while (object){
-                tmpGs->add_object(object->Attribute("InnerName"), getByName(object->Attribute("Class")));                
+                double w = 1;
+                object->Attribute("Weight", &w);
+                tmpGs->add_object(object->Attribute("InnerName"), getByName(object->Attribute("Class")), 0, w);
                 object = object ->NextSiblingElement("SimpleObject");
             }
             
             TiXmlElement *relation = scene->FirstChildElement("Relation");
             while(relation){
                 
+                double w = 1;
+                relation->Attribute("Weight", &w);
+                
                 RelationShip* r = getByNameR(relation->Attribute("Relationship"));
                 if( !r ){
                     printf("RelationShip %s has not been found!\n",relation->Attribute("Relationship"));
                 }
                 
-                tmpGs->add_relation(relation->Attribute("Obj1"),relation->Attribute("Obj2"), r);
+                tmpGs->add_relation(relation->Attribute("Obj1"),relation->Attribute("Obj2"), r, w);
 
                 relation = relation->NextSiblingElement("Relation");
             }

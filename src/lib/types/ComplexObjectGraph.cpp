@@ -11,7 +11,7 @@ namespace eod{
         accuracy = 100;
     }        
     
-    int Graph::add_vectice(std::string object_name, int object_type, int obj_num, double dc){
+    int Graph::add_vectice(std::string object_name, int object_type, int obj_num, double dc, double weight){
         // check this already 
         if( vertices_len > 0 ){            
             igraph_vector_t types;
@@ -36,6 +36,8 @@ namespace eod{
         SETVAN(&graph, "obj_type", vertices_len, object_type);
         SETVAN(&graph, "obj_num", vertices_len, obj_num);
         SETVAN(&graph, "dc", vertices_len, int(dc*accuracy));
+        SETVAN(&graph, "weight", vertices_len, int(weight*accuracy));
+        
         vertices_colors.push_back(object_type);
         
         //printf("Added %i vertice\n", vertices_len);
@@ -43,13 +45,14 @@ namespace eod{
         return vertices_len-1;
     }
     
-    int Graph::add_edge(std::string relation_name, int relation_type, int o1, int o2, bool fake){
+    int Graph::add_edge(std::string relation_name, int relation_type, int o1, int o2, bool fake, double weight){
         //printf("Trying to added edge between vertices %i and %i\n", o1, o2);
         
         igraph_add_edge(&graph, o1, o2);
         SETEAS(&graph, "rel_name", edges_len, relation_name.c_str());
         SETEAN(&graph, "rel_type", edges_len, relation_type);
         SETEAN(&graph, "fake", edges_len, int(fake));
+        SETEAN(&graph, "weight", edges_len, int(weight*accuracy));
         
         edges_colors.push_back(relation_type);
         
@@ -116,7 +119,8 @@ namespace eod{
         
         for( size_t i = 0 ; i < vect_maps.size() ; i++ ){
             double Dc = 0;
-            int edges_cnt = 0;
+            //int edges_cnt = 0;
+            double denominator = 0; // TODO calc on graph init
             for( size_t j1 = 0; j1 < vect_maps[i].first.size(); j1++ ){
                 for( size_t j2 = j1+1; j2 < vect_maps[i].first.size(); j2++ ){
                     //if( j1 != j2 ){
@@ -125,22 +129,35 @@ namespace eod{
                         igraph_get_eids(&graph, &edge_id, &pair, NULL, 0, 0);
                         int edge_id_ind = VECTOR(edge_id)[0];
                         if( edge_id_ind != -1){                        
+                            double dc1 = double(VAN(&graph, "dc", vect_maps[i].first[j1]))/accuracy;
+                            double dc2 = double(VAN(&graph, "dc", vect_maps[i].first[j2]))/accuracy;
+                            double k1 = double(VAN(&(sub_graph->graph), "weight", j1))/accuracy;
+                            double k2 = double(VAN(&(sub_graph->graph), "weight", j2))/accuracy;
+                            
+                            // extract edge w from target graph
+                            VECTOR(pair)[0] = j1;
+                            VECTOR(pair)[1] = j2;
+                            igraph_get_eids(&(sub_graph -> graph), &edge_id, &pair, NULL, 0, 0);
+                            int edge_id_ind_tar = VECTOR(edge_id)[0];
+                            double k_edge = double(EAN(&(sub_graph->graph), "weight", edge_id_ind_tar));
+                            
                             if( EAN(&graph, "fake", edge_id_ind) ){
                                 // IT IS FAKE       
                                 //printf("Fake\n");
                             }
                             else{
-                                Dc += 0.5*(double(VAN(&graph, "dc", vect_maps[i].first[j1]))/accuracy + 
-                                double(VAN(&graph, "dc", vect_maps[i].first[j2]))/accuracy);
-                            }
-                            edges_cnt++;
+                                                                
+                                // calc
+                                Dc += k_edge*(k1 * dc1 + k2 * dc2);                                
+                            }   
+                            denominator += k_edge*(k1 + k2);
                         }
                     //}
                 }
-            }
-            //printf("Ec %i\n",edges_cnt);
-            Dc /= edges_cnt;            
-            //Dcs.push_back(Dc);
+            }            
+            printf("Denominator %f\n", denominator);            
+            Dc /= denominator;                      
+            printf("Dc %f\n", Dc);
             vect_maps[i].second = Dc;
         }        
         return vect_maps;                
@@ -162,13 +179,13 @@ namespace eod{
         Probability = 0.75;
     }
     
-    void ComplexObjectGraph::add_object(std::string name, SimpleObject* so, int num){
-        int vid = graph.add_vectice(name, so->ID, num);
+    void ComplexObjectGraph::add_object(std::string name, SimpleObject* so, int num, double weight){
+        int vid = graph.add_vectice(name, so->ID, num, 1, weight);
         ObjectsToGraphsVerticesIds.insert(std::pair<std::string, int>(name, vid));
         ObjectsToSimpleObjects.insert(std::pair<std::string, SimpleObject*>(name, so));
     }
     
-    void ComplexObjectGraph::add_relation(std::string o1_name, std::string o2_name, RelationShip* rs){
+    void ComplexObjectGraph::add_relation(std::string o1_name, std::string o2_name, RelationShip* rs, double weight){
         std::string auto_name = std::to_string(graph.get_edges_len());
         
         NamesToRelations.insert(std::pair<std::string, RelationShip*>(auto_name, rs));
@@ -197,12 +214,12 @@ namespace eod{
             std::vector<ExtendedObjectInfo> obj2 = ObjectsToSimpleObjects[nto.second.second]->Identify(frame, depth, seq);
             
             for( size_t i = 0 ; i < obj1.size() ; i++ ){
-                int ind1 = current_view_graph.add_vectice(nto.second.first, ObjectsToSimpleObjects[nto.second.first]->ID, i);
+                int ind1 = current_view_graph.add_vectice(nto.second.first, ObjectsToSimpleObjects[nto.second.first]->ID, i, obj1[i].total_score);
                 //printf("%i %i -> %i\n",ObjectsToSimpleObjects[nto.second.first]->ID, i, ind1);
                 
                 for( size_t j = 0 ; j < obj2.size(); j++){
                     
-                    int ind2 = current_view_graph.add_vectice(nto.second.second, ObjectsToSimpleObjects[nto.second.second]->ID, j);
+                    int ind2 = current_view_graph.add_vectice(nto.second.second, ObjectsToSimpleObjects[nto.second.second]->ID, j, obj2[j].total_score);
                     //printf("%i %i -> %i\n",ObjectsToSimpleObjects[nto.second.second]->ID, j, ind2);
                     
                     if( NamesToRelations[nto.first]->checkRelation(frame, &obj1[i], &obj2[j]) ){

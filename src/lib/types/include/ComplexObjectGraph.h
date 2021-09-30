@@ -12,8 +12,8 @@ namespace eod{
     public:
         Graph();
         
-        int add_vectice(std::string object_name, int object_type, int obj_num = 0, double dc = 1);
-        int add_edge(std::string relation_name, int relation_type, int o1, int o2, bool fake = false);                        
+        int add_vectice(std::string object_name, int object_type, int obj_num = 0, double dc = 1, double weight = 1);
+        int add_edge(std::string relation_name, int relation_type, int o1, int o2, bool fake = false, double weight = 1);                        
         
         std::vector<std::pair<std::vector<int>, double>> get_subisomorphisms(Graph * sub_graph);
         
@@ -54,8 +54,8 @@ namespace eod{
         
         double Probability;
         
-        void add_object(std::string name, SimpleObject* so, int num = 0);
-        void add_relation(std::string o1_name, std::string o2_name, RelationShip* rs);
+        void add_object(std::string name, SimpleObject* so, int num = 0, double weight = 1);
+        void add_relation(std::string o1_name, std::string o2_name, RelationShip* rs, double weight = 1);
         
         std::vector<ExtendedObjectInfo> Identify(const cv::Mat& frame, const cv::Mat& depth, int seq);
         

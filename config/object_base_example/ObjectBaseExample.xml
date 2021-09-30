@@ -282,11 +282,11 @@
 
 <ComplexObjectBase>
     <ComplexObject ID="1" Name="ArucoTriangle" Mode="soft" Probability="0.7">
-        <SimpleObject Class="Aruco6" InnerName="A6"/>
+        <SimpleObject Class="Aruco6" InnerName="A6" Weight="2"/>
         <SimpleObject Class="Aruco4" InnerName="A4-1"/>
         <SimpleObject Class="Aruco4" InnerName="A4-2"/>
         
-        <Relation Obj1="A4-1" Obj2="A4-2" Relationship="0.09"/>
+        <Relation Obj1="A4-1" Obj2="A4-2" Relationship="0.09" Weight="1"/>
         <Relation Obj1="A4-1" Obj2="A6" Relationship="0.14"/>
         <Relation Obj1="A4-2" Obj2="A6" Relationship="0.14"/>
         
