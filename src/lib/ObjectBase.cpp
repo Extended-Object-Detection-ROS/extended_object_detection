@@ -92,7 +92,8 @@ namespace eod{
             }
             
             double weight = 1;
-            attr->Attribute("Weight",&weight);                 
+            attr->Attribute("Weight",&weight);
+            
             
             switch (type) {
             case HSV_COLOR_A:

@@ -155,9 +155,9 @@ namespace eod{
                     //}
                 }
             }            
-            printf("Denominator %f\n", denominator);            
+            //printf("Denominator %f\n", denominator);            
             Dc /= denominator;                      
-            printf("Dc %f\n", Dc);
+            //printf("Dc %f\n", Dc);
             vect_maps[i].second = Dc;
         }        
         return vect_maps;                
@@ -177,6 +177,7 @@ namespace eod{
         graph = Graph();
         identify_mode = HARD;
         Probability = 0.75;
+        plot_offset = 3;
     }
     
     void ComplexObjectGraph::add_object(std::string name, SimpleObject* so, int num, double weight){
@@ -347,10 +348,16 @@ namespace eod{
         
     void ComplexObjectGraph::drawOne(const cv::Mat& frameTd, int no, cv::Scalar color, int tickness){
         if( no < complex_objects.size() ){
+            // NOTE temp
+            complex_objects[no].x -= plot_offset;
+            complex_objects[no].y -= plot_offset;
+            complex_objects[no].height += 2*plot_offset;
+            complex_objects[no].width += 2*plot_offset;
+            
             complex_objects[no].draw(frameTd, color);
             
             std::string objectInfo = std::to_string(ID)+": "+name +" ["+ std::to_string(complex_objects[no].total_score).substr(0,4)+"]";
-            cv::Point prevBr = drawFilledRectangleWithText(frameTd, cv::Point(complex_objects[no].x,complex_objects[no].y -12)  , objectInfo, color);     
+            cv::Point prevBr = drawFilledRectangleWithText(frameTd, cv::Point(complex_objects[no].x,complex_objects[no].y /*-12*/)  , objectInfo, color);     
         }
     }
     

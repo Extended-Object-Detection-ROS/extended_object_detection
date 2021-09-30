@@ -53,6 +53,7 @@ namespace eod{
         double degree_of_confidence;
         
         double Probability;
+        int plot_offset;
         
         void add_object(std::string name, SimpleObject* so, int num = 0, double weight = 1);
         void add_relation(std::string o1_name, std::string o2_name, RelationShip* rs, double weight = 1);

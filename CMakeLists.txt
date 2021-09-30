@@ -265,10 +265,60 @@ endif(DLib)
 #offline video processor
 add_executable(
     offline_video
-    src/offline_video/offline_video.cpp
+    src/offline/offline_video.cpp
     # lib common
     src/lib/ObjectBase.cpp
     # types
+    src/lib/types/ComplexObjectGraph.cpp
+    src/lib/types/ComplexObject.cpp
+    src/lib/types/ExtendedObjectInfo.cpp
+    src/lib/types/Attribute.cpp
+    src/lib/types/SimpleObject.cpp
+    src/lib/types/Tracker.cpp
+    src/lib/types/Relationship.cpp    
+    src/lib/types/Filtering.cpp    
+    src/lib/types/Clusterization.cpp    
+    # lib utils    
+    src/lib/utils/geometry_utils.cpp
+    src/lib/utils/drawing_utils.cpp
+    src/lib/utils/contour_utils.cpp
+    # lib detectors
+    src/lib/detectors/HsvColorDetector.cpp
+    src/lib/detectors/HaarCascadeDetector.cpp
+    src/lib/detectors/SizeDetector.cpp
+    src/lib/detectors/HistColorDetector.cpp
+    src/lib/detectors/DimentionDetector.cpp
+    src/lib/detectors/HoughDetector.cpp    
+    src/lib/detectors/BasicMotionDetector.cpp    
+    src/lib/detectors/ArucoDetector.cpp
+    src/lib/detectors/PoseDetector.cpp
+    src/lib/detectors/TensorFlowDetector.cpp
+    src/lib/detectors/FeatureDetector.cpp
+    src/lib/detectors/DnnDetector.cpp
+    src/lib/detectors/QrDetector.cpp
+    src/lib/detectors/QrZbarDetector.cpp
+    src/lib/detectors/LogicDetector.cpp
+    src/lib/detectors/BlobDetector.cpp
+    src/lib/detectors/DepthDetector.cpp
+    src/lib/detectors/RoughDistanceDetector.cpp
+    src/lib/detectors/DistanceDetector.cpp    
+    src/lib/detectors/FaceDlibDetector.cpp 
+
+    # lib relations
+    src/lib/relations/ImageRangeRelation.cpp
+    src/lib/relations/LogicRelations.cpp
+    src/lib/relations/ThreeDimRangeRelation.cpp
+    src/lib/relations/SpaceRelations.cpp
+)
+
+#offline image processor
+add_executable(
+    offline_image
+    src/offline/offline_image.cpp
+    # lib common
+    src/lib/ObjectBase.cpp
+    # types
+    src/lib/types/ComplexObjectGraph.cpp
     src/lib/types/ComplexObject.cpp
     src/lib/types/ExtendedObjectInfo.cpp
     src/lib/types/Attribute.cpp
@@ -311,15 +361,21 @@ add_executable(
 )
 
 if(TensorFlow)
-    target_compile_definitions(offline_video PUBLIC USE_TF) 
+    target_compile_definitions(offline_video PUBLIC USE_TF)
+    target_compile_definitions(offline_image PUBLIC USE_TF) 
 endif(TensorFlow)
 
 
 if(opencv_contrib)
-    target_compile_definitions(offline_video PUBLIC USE_OPENCV_CONTRIB)         
+    target_compile_definitions(offline_video PUBLIC USE_OPENCV_CONTRIB)
+    target_compile_definitions(offline_image PUBLIC USE_OPENCV_CONTRIB)         
 endif(opencv_contrib)
     
-
+if(igraph)
+    target_compile_definitions(offline_video PUBLIC USE_IGRAPH)
+    target_compile_definitions(offline_image PUBLIC USE_IGRAPH)         
+endif(igraph)
+    
 add_dependencies(extended_object_detection_node
     extended_object_detection_generate_messages_cpp
 )
@@ -362,6 +418,18 @@ endif(zbar_lib)
 if(igraph)
     target_include_directories(
         extended_object_detection_node
+        PRIVATE
+        /usr/local/src/igraph-0.7.1/include/
+    )
+    
+    target_include_directories(
+        offline_video
+        PRIVATE
+        /usr/local/src/igraph-0.7.1/include/
+    )
+    
+    target_include_directories(
+        offline_image
         PRIVATE
         /usr/local/src/igraph-0.7.1/include/
     )
@@ -447,6 +515,20 @@ target_include_directories(
     ${catkin_INCLUDE_DIRS}
 )
 
+target_include_directories(
+    offline_image
+    PRIVATE
+    include
+    src/lib/include
+    src/lib/detectors/include
+    src/lib/relations/include
+    src/lib/utils/include
+    src/lib/types/include
+    ${OpenCV_INCLUDE_DIRS}
+    ${TinyXML_INCLUDE_DIRS}
+    ${catkin_INCLUDE_DIRS}
+)
+
 if(TensorFlow)
     target_link_libraries(extended_object_detection_node  
         /usr/local/src/lib/libtensorflow_cc.so
@@ -499,6 +581,14 @@ if(igraph)
     target_link_libraries(extended_object_detection_node  
         /usr/local/lib/libigraph.so
     )
+    
+    target_link_libraries(offline_video  
+        /usr/local/lib/libigraph.so
+    )
+    
+    target_link_libraries(offline_image  
+        /usr/local/lib/libigraph.so
+    )
 endif(igraph)
 
 
@@ -534,6 +624,12 @@ target_link_libraries(blob_params_collector_node
 )
 
 target_link_libraries(offline_video  
+  ${OpenCV_LIBRARIES}
+  ${TinyXML_LIBRARIES}
+  ${catkin_LIBRARIES}      
+)
+
+target_link_libraries(offline_image  
   ${OpenCV_LIBRARIES}
   ${TinyXML_LIBRARIES}
   ${catkin_LIBRARIES}      

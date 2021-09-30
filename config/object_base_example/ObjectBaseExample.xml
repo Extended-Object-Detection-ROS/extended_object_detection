@@ -168,7 +168,7 @@
         <Attribute Type="Detect">BasicMotion</Attribute>            
         <Attribute Type="Check">NotFractal</Attribute>
         <Attribute Type="Detect">HaarFace</Attribute>            
-    </SimpleObject>
+    </SimpleObject>aruco_space
     
     <SimpleObject Name="Aruco4-13" ID="40">              
         <Attribute Type="Detect">Aruco4-13</Attribute>            
