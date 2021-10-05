@@ -1,4 +1,9 @@
 # Change Log
+## [[1.0.1](https://github.com/Extended-Object-Detection-ROS/extended_object_detection/tree/r1.0.1)] - 2021-10-5
+Fully changed logic of complex object detection.
+Now this part is optional and need igraph library installed (see [wiki](https://github.com/Extended-Object-Detection-ROS/extended_object_detection/wiki/igraph_install)).
+Also added offline_image node.
+
 ## [unreleased] - 2021-09-27
 Added soft mode tracking.
 
