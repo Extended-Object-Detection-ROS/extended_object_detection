@@ -1,6 +1,6 @@
 <launch>
     <arg name="output" default="screen"/>
-    <arg name="objectBasePath" default="$(find extended_object_detection)/config/object_base_example/ObjectBaseExample.xml"/>
+    <arg name="objectBasePath" default="$(find extended_object_detection)/config/object_base_example/sems_experiments.xml"/>
     
     <node name="camera" pkg="usb_cam" type="usb_cam_node" output="$(arg output)" clear_params="true" respawn="false" required="true">
         <param name="video_device" value="/dev/video0" />
@@ -31,11 +31,13 @@
         <remap from="camera/info" to="/camera/camera_info"/>
     </node>        
     
-    <node pkg="rqt_service_caller" name="rqt_service_caller" type="rqt_service_caller"/>
+    <!--<node pkg="rqt_service_caller" name="rqt_service_caller" type="rqt_service_caller"/>-->
+    
+    <node pkg="rqt_image_view" name="rqt_image_view" type="rqt_image_view"/>
     
     <!-- visualization -->
-    <node pkg="rviz" type="rviz" name="rviz"
-    args="-d $(find extended_object_detection)/config/eod_example.rviz" />
+    <!--<node pkg="rviz" type="rviz" name="rviz"
+    args="-d $(find extended_object_detection)/config/eod_example.rviz" />-->
     
     <node pkg="tf" type="static_transform_publisher" name="static_cam_pub"
         args="0 0 0 -1.57 0 -1.57 map cam_optical_link 100"/>  

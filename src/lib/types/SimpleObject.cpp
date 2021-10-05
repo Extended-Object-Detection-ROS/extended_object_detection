@@ -22,6 +22,7 @@ namespace eod{
     
     void SimpleObject::defaultInit(){
         identified = false;
+        ident_seq = -1;
         totalWeight = 0;
         borderPc = 0.02;
         image_samples = 0;       
@@ -53,12 +54,17 @@ namespace eod{
     // Ordinary Detection Stuff
     //-----------------------------------------------------------------
     vector<ExtendedObjectInfo> SimpleObject::Identify(const Mat& frame, const Mat& depth, int seq){
+        if (seq == ident_seq){
+            return objects;
+        }
+        
         if( identify_mode == HARD ){
             IdentifyHard(frame, depth, seq);
         }
         else if( identify_mode == SOFT ){
             IdentifySoft(frame, depth, seq);
         }        
+        ident_seq = seq;
         return objects;
     }
     
@@ -76,6 +82,16 @@ namespace eod{
                     objects[i].mergeAllData(merging_policy);
             }
             // else TODO how about to use checker on whole image in such case
+            auto it = objects.begin();
+            while (it != objects.end() ){   
+                //it->calcTotalScore();
+                it->mergeAllData(merging_policy);
+                if( it->total_score < Probability ){
+                    it = objects.erase(it);
+                }
+                else
+                    ++it;
+            }    
             return objects;
         }
                 
@@ -145,6 +161,17 @@ namespace eod{
         for( size_t i = 0 ; i < objects.size(); i++)
             //objects[i].calcTotalScore();
             objects[i].mergeAllData(merging_policy);
+        auto it = objects.begin();
+        while (it != objects.end() ){   
+            //it->calcTotalScore();
+            it->mergeAllData(merging_policy);
+            if( it->total_score < Probability ){
+                it = objects.erase(it);
+            }
+            else
+                ++it;
+        }    
+        
         return objects;
     }
 

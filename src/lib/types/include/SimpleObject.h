@@ -27,6 +27,7 @@ namespace eod{
         double iou_threshold_d;
         int totalWeight;
         bool identified;
+        int ident_seq;
         IdentifyMode identify_mode;  
         MergingPolicy merging_policy;
 

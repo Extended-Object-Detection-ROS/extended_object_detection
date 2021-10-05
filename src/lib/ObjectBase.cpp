@@ -1,4 +1,5 @@
 #include "ObjectBase.h"
+//#include "igraph.h"
 
 using namespace std;
 using namespace cv;
@@ -7,6 +8,7 @@ namespace eod{
 
     ObjectBase::ObjectBase(){
         loaded = false;
+        relation_counter = 1;
     }
     
     string ObjectBase::getPathAttribute(TiXmlElement * attr, const char * at_name){
@@ -40,14 +42,20 @@ namespace eod{
         if( loaded ) printf("Simple objects have been readed sucsessfuly.\n");
         else printf("Error reading simple_objects.\n");
 
+#ifdef USE_IGRAPH                
         loaded &= loadFromXMLr(doc);
         if( loaded ) printf("Relationship list has been readed sucsessfuly.\n");
         else printf("Error reading relations.\n");
         
-        loaded &= loadFromXMLsNM(doc);
-        if( loaded ) printf("Complex objects have been loaded successfully!\n");
-        else printf("Error reading NM-scenes.\n");
+        
+//         loaded &= loadFromXMLsNM(doc);
+//         if( loaded ) printf("Complex objects SubDef have been loaded successfully!\n");
+//         else printf("Error reading SubDef complex objects.\n");
 
+        loaded &= loadFromXMLsG(doc);
+        if( loaded ) printf("Complex objects Graph have been loaded successfully!\n");
+        else printf("Error reading Graph complex objects.\n");
+#endif
         doc->~TiXmlDocument();
 
         checkIDobj();
@@ -86,7 +94,8 @@ namespace eod{
             }
             
             double weight = 1;
-            attr->Attribute("Weight",&weight);                 
+            attr->Attribute("Weight",&weight);
+            
             
             switch (type) {
             case HSV_COLOR_A:
@@ -751,7 +760,10 @@ namespace eod{
                 printf("Error! Relation of type %s has no \'Name\' attribute provided!\n",type_name.c_str());
                 continue;
             }
-                
+            
+            
+            tmp_r->ID = relation_counter;    
+            relation_counter++;
             relations.push_back(tmp_r);
             rel = rel->NextSiblingElement("RelationShip");                                    
         }
@@ -759,7 +771,7 @@ namespace eod{
     }    
     
     // -------------------
-    //  Complex Objects 
+    //  Complex Objects SubDef
     // -------------------
     bool ObjectBase::loadFromXMLsNM (TiXmlDocument *doc){
 
@@ -803,7 +815,87 @@ namespace eod{
         }
         return true;
     }
+    
+    // -------------------
+    //  Complex Objects Graph
+    // -------------------
+#ifdef USE_IGRAPH
+    bool ObjectBase::loadFromXMLsG(TiXmlDocument * doc){
+        /* turn on attribute handling */
+        igraph_i_set_attribute_table(&igraph_cattribute_table);
+        
+        TiXmlElement *baseO = doc->FirstChildElement("ComplexObjectBase");
 
+        if (!baseO) return false;
+
+        TiXmlElement *scene = baseO->FirstChildElement("ComplexObject");
+
+
+        while (scene){
+            
+            ComplexObjectGraph* tmpGs = new ComplexObjectGraph();
+            
+            String name = scene->Attribute("Name");
+            tmpGs->name = name;
+            int ID;
+            scene->Attribute("ID",&ID);
+            tmpGs->ID = ID;       
+            
+            double Probability = 0.75;
+            scene->Attribute("Probability",&Probability);
+            tmpGs->Probability = Probability;
+                        
+            const char* identify_mode_c = scene->Attribute("Mode");
+            if( identify_mode_c == NULL ){                
+                tmpGs->identify_mode = HARD;
+            }
+            else{                
+                string identify_mode(identify_mode_c);
+                transform(identify_mode.begin(), identify_mode.end(), identify_mode.begin(),[](unsigned char c){ return tolower(c); });
+                
+                if( identify_mode == "hard" ){
+                    tmpGs->identify_mode = HARD;
+                }
+                else if( identify_mode == "soft" ){
+                    tmpGs->identify_mode = SOFT;
+                }
+                else{
+                    tmpGs->identify_mode = HARD;
+                }
+            }  
+            
+            TiXmlElement *object = scene->FirstChildElement("SimpleObject");
+            while (object){
+                double w = 1;
+                object->Attribute("Weight", &w);
+                tmpGs->add_object(object->Attribute("InnerName"), getByName(object->Attribute("Class")), 0, w);
+                object = object ->NextSiblingElement("SimpleObject");
+            }
+            
+            TiXmlElement *relation = scene->FirstChildElement("Relation");
+            while(relation){
+                
+                double w = 1;
+                relation->Attribute("Weight", &w);
+                
+                RelationShip* r = getByNameR(relation->Attribute("Relationship"));
+                if( !r ){
+                    printf("RelationShip %s has not been found!\n",relation->Attribute("Relationship"));
+                }
+                
+                tmpGs->add_relation(relation->Attribute("Obj1"),relation->Attribute("Obj2"), r, w);
+
+                relation = relation->NextSiblingElement("Relation");
+            }
+            
+            complex_objects_graph.push_back(tmpGs);
+            scene = scene->NextSiblingElement("ComplexObject");
+        }
+
+        
+        return true;
+    }
+#endif
     
     SimpleObject* ObjectBase::getByName(string objectname){
         for( int i = 0 ; i < simple_objects.size(); i++){
@@ -901,5 +993,15 @@ namespace eod{
         }
         return NULL;
     }
+    
+#ifdef USE_IGRAPH    
+    ComplexObjectGraph* ObjectBase::getComplexObjectGraphByID(int id){
+        for( size_t i = 0 ; i < complex_objects_graph.size(); i++ ){
+            if( id == complex_objects_graph[i]->ID )
+                return complex_objects_graph[i];
+        }
+        return NULL;
+    }
+#endif
 
 }

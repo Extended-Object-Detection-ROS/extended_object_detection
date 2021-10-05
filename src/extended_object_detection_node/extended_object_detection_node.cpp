@@ -41,16 +41,19 @@ using namespace message_filters;
 ObjectBase * objectBase = NULL;
 static const std::string OUTPUT_WINDOW = "Object and scene detection node output";
 ros::Publisher objects_pub_;
-ros::Publisher scenes_pub_;
+
 image_transport::Publisher detected_image_pub_;
 ros::Publisher marker_array_simple_pub_;
-ros::Publisher marker_array_complex_pub_;
+
 
 vector<SimpleObject*> selected_to_detect_simple_objects;
 vector<int> selected_on_start_simple;
-vector<ComplexObject*> selected_to_detect_complex_objects;
+#ifdef IGRAPH
+vector<ComplexObjectGraph*> selected_to_detect_complex_objects;
 vector<int> selected_on_start_complex;
-
+ros::Publisher scenes_pub_;
+ros::Publisher marker_array_complex_pub_;
+#endif
 
 std::mutex mutex_image;
 
@@ -160,7 +163,7 @@ bool setSimpleObjects(extended_object_detection::SetSimpleObjects::Request &req,
     return return_value;
 }
     
-    
+#ifdef IGRAPH    
 int findIdComplexObjects(int id){
     for( size_t i = 0 ; i < selected_to_detect_complex_objects.size() ; i++ ){
         if( id == selected_to_detect_complex_objects[i]->ID )
@@ -168,7 +171,7 @@ int findIdComplexObjects(int id){
     }
     return -1;
 }
-    
+
 // set ComplexObjects srv
 bool setComplexObjects(extended_object_detection::SetSimpleObjects::Request &req, extended_object_detection::SetSimpleObjects::Response &res){
     bool return_value = true;
@@ -183,13 +186,13 @@ bool setComplexObjects(extended_object_detection::SetSimpleObjects::Request &req
         }
         else if( req.add_all ){
             selected_to_detect_complex_objects.clear();
-            for( size_t i = 0 ; i < objectBase->complex_objects.size() ; i++ )
-                selected_to_detect_complex_objects.push_back(objectBase->complex_objects[i]);
+            for( size_t i = 0 ; i < objectBase->complex_objects_graph.size() ; i++ )
+                selected_to_detect_complex_objects.push_back(objectBase->complex_objects_graph[i]);
             return_value = true;
         }
         else{
             for( size_t i = 0 ; i < req.changes.size() ; i++ ){
-                ComplexObject* co = objectBase->getComplexObjectByID(abs(req.changes[i]));
+                ComplexObjectGraph* co = objectBase->getComplexObjectGraphByID(abs(req.changes[i]));
                 if(co){
                     if( req.changes[i] > 0 ){
                         // add
@@ -226,7 +229,7 @@ bool setComplexObjects(extended_object_detection::SetSimpleObjects::Request &req
     }
     return return_value;
 }
-    
+#endif
     
 //------------------------------------------------------
 // IMAGE AND DEPTH AND INFO CALLBACKS
@@ -760,10 +763,11 @@ void video_process_cb(const ros::TimerEvent&){
                 array_objects.objects.push_back(current_object);
             }                                
         }        
+#ifdef IGRAPH
         // COMPLEX OBJECTS
         extended_object_detection::ComplexObjectArray array_co_msg;        
         for( size_t i = 0 ; i < selected_to_detect_complex_objects.size(); i++){   
-            
+            /*
             vector<ExtendedObjectInfo> DetectedComplexObjects;
             vector<vector<ExtendedObjectInfo> > DetectedObjects;
             
@@ -785,8 +789,16 @@ void video_process_cb(const ros::TimerEvent&){
                 co_msg.type_name = selected_to_detect_complex_objects[i]->name;
                     
                 array_co_msg.complex_objects.push_back(co_msg);
-            }            
+            } 
+            */
+            vector<ExtendedObjectInfo> DetectedComplexObjects;
+            
+            DetectedComplexObjects = selected_to_detect_complex_objects.at(i)->Identify(last_image, last_depth, seq);     
+            
+            if( screenOutputFlag || publishImage)
+                selected_to_detect_complex_objects.at(i)->drawAll(image2draw, Scalar(255, 255, 0), 2);
         }
+#endif
         seq++;
         ros::Time end_detection = ros::Time::now();
         double detection_time = (end_detection - begin_detection).toSec();
@@ -805,6 +817,7 @@ void video_process_cb(const ros::TimerEvent&){
             }
             array_objects.objects.clear();
         }
+#ifdef IGRAPH        
         if( array_co_msg.complex_objects.size() > 0){
             array_co_msg.header.stamp = ros::Time::now();
             array_co_msg.header.frame_id = image_frame_id;
@@ -813,6 +826,7 @@ void video_process_cb(const ros::TimerEvent&){
                 marker_array_complex_pub_.publish(marker_array_complex(array_co_msg));
             }                
         }
+#endif
         if( screenOutputFlag ){
             imshow(OUTPUT_WINDOW, image2draw);
 #if (CV_MAJOR_VERSION > 3)
@@ -892,7 +906,10 @@ int main(int argc, char **argv)
   }
   
   nh_p.getParam("selectedOnStartSimple",selected_on_start_simple);
+  
+#ifdef IGRAPH
   nh_p.getParam("selectedOnStartComplex",selected_on_start_complex);
+#endif
   
   objectBase = new ObjectBase();
   if( !objectBase->loadFromXML(objectBasePath) ){
@@ -915,26 +932,28 @@ int main(int argc, char **argv)
     }
   }
   ros::ServiceServer setSimpleObjectsSrv = nh_p.advertiseService("set_simple_objects", setSimpleObjects);
-  
+
+#ifdef IGRAPH
   if( selected_on_start_complex.size() == 0 )
-    for( size_t i = 0 ; i < objectBase->complex_objects.size() ; i++ ){
-        selected_to_detect_complex_objects.push_back(objectBase->complex_objects[i]);
+    for( size_t i = 0 ; i < objectBase->complex_objects_graph.size() ; i++ ){
+        selected_to_detect_complex_objects.push_back(objectBase->complex_objects_graph[i]);
     }
   else{
       if( selected_on_start_complex[0] != -1 ){
-        for( size_t i = 0 ; i < objectBase->complex_objects.size() ; i++ ){
-            if( find(selected_on_start_complex.begin(), selected_on_start_complex.end(), objectBase->complex_objects[i]->ID) != selected_on_start_complex.end() )
-                selected_to_detect_complex_objects.push_back(objectBase->complex_objects[i]);
+        for( size_t i = 0 ; i < objectBase->complex_objects_graph.size() ; i++ ){
+            if( find(selected_on_start_complex.begin(), selected_on_start_complex.end(), objectBase->complex_objects_graph[i]->ID) != selected_on_start_complex.end() )
+                selected_to_detect_complex_objects.push_back(objectBase->complex_objects_graph[i]);
         }
     }        
   }
   ros::ServiceServer setComplexObjectsSrv = nh_p.advertiseService("set_complex_objects", setComplexObjects);
-    
+#endif    
   ROS_INFO("Starting process...");
     
   objects_pub_ = nh_p.advertise<extended_object_detection::SimpleObjectArray>("simple_objects",1);
+#ifdef IGRAPH
   scenes_pub_ = nh_p.advertise<extended_object_detection::ComplexObjectArray>("complex_objects",1); 
-
+#endif
   // mono
   image_transport::ImageTransport it(nh_);
   image_transport::ImageTransport it_p(nh_p);
@@ -945,7 +964,9 @@ int main(int argc, char **argv)
   }
   if( publishMarkers ){
       marker_array_simple_pub_ = nh_p.advertise<visualization_msgs::MarkerArray>("simple_objects_markers",1);
+#ifdef IGRAPH
       marker_array_complex_pub_ = nh_p.advertise<visualization_msgs::MarkerArray>("complex_objects_markers",1);
+#endif
   }
   
   updateRateMs =1/videoProcessUpdateRate;

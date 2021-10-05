@@ -44,8 +44,11 @@
   
     <Attribute Name="Aruco4" Type="Aruco" Dict="0" IDmarker="-1" Lenght="0.082"/>
     
+    <Attribute Name="Aruco5" Type="Aruco" Dict="4" IDmarker="-1" Lenght="0.082"/>
+    
     <Attribute Name="Aruco6" Type="Aruco" Contour="true" Dict="8" IDmarker="-1" Lenght="0.125"/>    
     
+    <Attribute Name="Aruco7" Type="Aruco" Dict="12" IDmarker="-1" Lenght="0.082"/>
     
     <Attribute Name="SocialRobotsCover" Type="Feature" featureExtractorType="SIFT" min_matches="100" height="0.215" sample_image="feature_samples/social_robots.jpg"/>
     
@@ -165,7 +168,7 @@
         <Attribute Type="Detect">BasicMotion</Attribute>            
         <Attribute Type="Check">NotFractal</Attribute>
         <Attribute Type="Detect">HaarFace</Attribute>            
-    </SimpleObject>
+    </SimpleObject>aruco_space
     
     <SimpleObject Name="Aruco4-13" ID="40">              
         <Attribute Type="Detect">Aruco4-13</Attribute>            
@@ -174,8 +177,7 @@
     <SimpleObject Name="Aruco6" ID="41">              
         <Attribute Type="Detect">Aruco6</Attribute>            
     </SimpleObject>
-        
-    
+            
     <SimpleObject Name="Aruco6Black" ID="42" Mode="Hard" Probability="0.5">              
         <Attribute Type="Detect">Aruco6</Attribute>
         <Attribute Type="Detect">HSVColorBlack</Attribute>            
@@ -188,6 +190,14 @@
     
     <SimpleObject Name="Aruco4" ID="44">              
         <Attribute Type="Detect">Aruco4</Attribute>            
+    </SimpleObject>
+    
+    <SimpleObject Name="Aruco5" ID="45">              
+        <Attribute Type="Detect">Aruco5</Attribute>            
+    </SimpleObject>
+    
+    <SimpleObject Name="Aruco7" ID="46">              
+        <Attribute Type="Detect">Aruco7</Attribute>            
     </SimpleObject>
     
     <SimpleObject Name="SocialRobotsBook" ID="50">              
@@ -253,7 +263,6 @@
     
 </SimpleObjectBase>
 
-
 <RelationLib>    
     <RelationShip Type="3DRange" Name="0.09" distLow="0.075" distHigh="0.11"/>        
     <RelationShip Type="3DRange" Name="0.14" distLow="0.12" distHigh="0.18"/>   
@@ -268,18 +277,16 @@
     <RelationShip Type="LogicAnd" Name="up-left" A="up" B="left"/>
     <RelationShip Type="LogicAnd" Name="bottom-right" A="down" B="right"/>
     <RelationShip Type="LogicAnd" Name="bottom-left" A="down" B="left"/>
-    
-    
+        
 </RelationLib>
 
-
 <ComplexObjectBase>
-    <ComplexObject ID="1" Name="ArucoTriangle">
-        <SimpleObject Class="Aruco6" InnerName="A6"/>
+    <ComplexObject ID="1" Name="ArucoTriangle" Mode="soft" Probability="0.7">
+        <SimpleObject Class="Aruco6" InnerName="A6" Weight="2"/>
         <SimpleObject Class="Aruco4" InnerName="A4-1"/>
         <SimpleObject Class="Aruco4" InnerName="A4-2"/>
         
-        <Relation Obj1="A4-1" Obj2="A4-2" Relationship="0.09"/>
+        <Relation Obj1="A4-1" Obj2="A4-2" Relationship="0.09" Weight="1"/>
         <Relation Obj1="A4-1" Obj2="A6" Relationship="0.14"/>
         <Relation Obj1="A4-2" Obj2="A6" Relationship="0.14"/>
         
@@ -313,7 +320,7 @@
         <Relation Obj1="A4" Obj2="A6" Relationship="down"/>        
     </ComplexObject>
     
-    <ComplexObject ID="6" Name="ArucoUpRight">
+    <ComplexObject ID="6" Name="ArucoUpRight" Mode="soft" Probability="0.0">
         <SimpleObject Class="Aruco6" InnerName="A6"/>
         <SimpleObject Class="Aruco4" InnerName="A4"/>
         
@@ -349,4 +356,18 @@
         
     </ComplexObject>
     
+    <ComplexObject ID="20" Name="ArucoTriangle2">
+        <SimpleObject Class="Aruco4" InnerName="A4"/>
+        <SimpleObject Class="Aruco5" InnerName="A5"/>
+        <SimpleObject Class="Aruco6" InnerName="A6"/>
+        <SimpleObject Class="Aruco7" InnerName="A7"/>
+        
+        <Relation Obj1="A4" Obj2="A5" Relationship="right"/>
+        <Relation Obj1="A4" Obj2="A6" Relationship="up"/>
+        <Relation Obj1="A4" Obj2="A7" Relationship="up"/>
+        
+    </ComplexObject>
+            
 </ComplexObjectBase>
+
+    
