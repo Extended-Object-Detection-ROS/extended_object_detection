@@ -67,6 +67,7 @@ namespace eod{
         void drawAll(const cv::Mat& frameTD, cv::Scalar color, int tickness);
         
         std::vector<ExtendedObjectInfo> complex_objects;
+        std::vector<std::vector<ExtendedObjectInfo> > simple_objects;
                         
     private:
         std::map<std::string, int> ObjectsToGraphsVerticesIds;

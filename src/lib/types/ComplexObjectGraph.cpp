@@ -237,24 +237,29 @@ namespace eod{
         // j - vert id graph, maps[_][j] - vert id current_view_graph
         
         // RETRIEVE DATA
-        
+        simple_objects.clear();
         for( size_t i = 0 ; i < maps.size() ; i++ ){
             if( maps[i].second < Probability ){
                 continue;
             }            
+            std::vector<ExtendedObjectInfo> inner_simples;
             //printf("Merged\n");
             int obj_type, obj_num;
             std::string object_name = current_view_graph.get_vertice_params(maps[i].first[0], &obj_type, &obj_num);
             
             ExtendedObjectInfo merged = ObjectsToSimpleObjects[object_name]->objects[obj_num];
+            inner_simples.push_back(ObjectsToSimpleObjects[object_name]->objects[obj_num]);
+            
             //printf("\t%s %i\n", object_name.c_str(), obj_num);
             for( int j = 1 ; j < maps[i].first.size(); j++){
                 object_name = current_view_graph.get_vertice_params(maps[i].first[j], &obj_type, &obj_num);
                 merged = merged | ObjectsToSimpleObjects[object_name]->objects[obj_num];
                 //printf("\t%s %i\n", object_name.c_str(), obj_num);
+                inner_simples.push_back(ObjectsToSimpleObjects[object_name]->objects[obj_num]);
             }
             merged.total_score = maps[i].second;
             result.push_back(merged);
+            simple_objects.push_back(inner_simples);
         }
         
         complex_objects = result;
@@ -311,11 +316,13 @@ namespace eod{
         
         // RETRIEVE DATA
         //printf("DATA\n");
+        simple_objects.clear();
         for( size_t i = 0 ; i < maps.size() ; i++ ){
             
             if( maps[i].second < Probability ){
                 continue;
             }            
+            std::vector<ExtendedObjectInfo> inner_simples;
             
             int obj_type, obj_num;
             std::string object_name = current_view_graph.get_vertice_params(maps[i].first[0], &obj_type, &obj_num);
@@ -324,20 +331,23 @@ namespace eod{
                         
             if( obj_num == -1){
             }
-            else
+            else{
                 merged = ObjectsToSimpleObjects[object_name]->objects[obj_num];
+                inner_simples.push_back(ObjectsToSimpleObjects[object_name]->objects[obj_num]);
+            }
                         
             for( size_t j = 1 ; j < maps[i].first.size(); j++){
                 object_name = current_view_graph.get_vertice_params(maps[i].first[j], &obj_type, &obj_num);
                 if( obj_num == -1){
                 }
-                else
+                else{
                     merged = merged | ObjectsToSimpleObjects[object_name]->objects[obj_num];                
+                    inner_simples.push_back(ObjectsToSimpleObjects[object_name]->objects[obj_num]);
+                }
             }
             merged.total_score = maps[i].second;
-            result.push_back(merged);
-                                    
-            
+            result.push_back(merged);           
+            simple_objects.push_back(inner_simples);
         }
                         
         //TODO destroy graph
@@ -347,7 +357,7 @@ namespace eod{
     }
         
     void ComplexObjectGraph::drawOne(const cv::Mat& frameTd, int no, cv::Scalar color, int tickness){
-        if( no < complex_objects.size() ){
+        if( no < complex_objects.size() && no < simple_objects.size() ){
             // NOTE temp
             complex_objects[no].x -= plot_offset;
             complex_objects[no].y -= plot_offset;
@@ -357,7 +367,13 @@ namespace eod{
             complex_objects[no].draw(frameTd, color);
             
             std::string objectInfo = std::to_string(ID)+": "+name +" ["+ std::to_string(complex_objects[no].total_score).substr(0,4)+"]";
-            cv::Point prevBr = drawFilledRectangleWithText(frameTd, cv::Point(complex_objects[no].x,complex_objects[no].y /*-12*/)  , objectInfo, color);     
+            cv::Point prevBr = drawFilledRectangleWithText(frameTd, cv::Point(complex_objects[no].x,complex_objects[no].y -12)  , objectInfo, color);                 
+            
+            for( size_t i = 0 ; i < simple_objects[no].size() ; i++ ){
+                simple_objects[no][i].draw(frameTd, color);
+                //std::string simpleInfo = " @ "+simple_objects[no][i].name;
+                //TODO add extra info
+            }
         }
     }
     

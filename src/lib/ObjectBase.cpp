@@ -42,14 +42,16 @@ namespace eod{
         if( loaded ) printf("Simple objects have been readed sucsessfuly.\n");
         else printf("Error reading simple_objects.\n");
 
+#ifdef USE_IGRAPH                
         loaded &= loadFromXMLr(doc);
         if( loaded ) printf("Relationship list has been readed sucsessfuly.\n");
         else printf("Error reading relations.\n");
         
-        loaded &= loadFromXMLsNM(doc);
-        if( loaded ) printf("Complex objects SubDef have been loaded successfully!\n");
-        else printf("Error reading SubDef complex objects.\n");
-#ifdef USE_IGRAPH        
+        
+//         loaded &= loadFromXMLsNM(doc);
+//         if( loaded ) printf("Complex objects SubDef have been loaded successfully!\n");
+//         else printf("Error reading SubDef complex objects.\n");
+
         loaded &= loadFromXMLsG(doc);
         if( loaded ) printf("Complex objects Graph have been loaded successfully!\n");
         else printf("Error reading Graph complex objects.\n");

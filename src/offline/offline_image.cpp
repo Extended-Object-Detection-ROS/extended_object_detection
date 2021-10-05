@@ -21,8 +21,7 @@ int main(int argc, char **argv)
     }
     
     // Image load
-    string image_path = argv[1];
-    //VideoCapture cap(video_path);    
+    string image_path = argv[1];        
     Mat frame = imread(image_path);
     
     if( frame.empty() ){
@@ -39,10 +38,7 @@ int main(int argc, char **argv)
     }
     
     // image output
-    string image_out_path = argv[3];
-    //int frame_width = cap.get(CAP_PROP_FRAME_WIDTH); 
-    //int frame_height = cap.get(CAP_PROP_FRAME_HEIGHT);
-    //VideoWriter video(video_out_path.c_str(), VideoWriter::fourcc('M','J','P','G'), 10, Size(frame_width,frame_height));
+    string image_out_path = argv[3];    
     
     char * dir = getcwd(NULL, 0); // Platform-dependent, see reference link below    
     printf("Current dir: %s", dir);
@@ -50,18 +46,15 @@ int main(int argc, char **argv)
     // processing
     printf("Starting process...\n");
     int seq = 0;
-    //while(1){
-        //Mat frame;
-        //cap >> frame;
-        
-//         if( frame.empty() )
-//             break;
         
         Mat image2draw = frame.clone();
         for( size_t i = 0 ; i < objectBase->simple_objects.size() ; i++ ){
             objectBase->simple_objects[i]->Identify(frame, Mat(), seq);            
-            //objectBase->simple_objects[i]->draw(image2draw,Scalar(0,255,0));
+#ifndef IGRAPH            
+            objectBase->simple_objects[i]->draw(image2draw,Scalar(0,255,0));
+#endif
         }
+#ifdef IGRAPH
         vector<ExtendedObjectInfo> DetectedScenes;
         for( size_t i = 0 ; i <  objectBase->complex_objects_graph.size(); i++){
                         
@@ -73,25 +66,14 @@ int main(int argc, char **argv)
             for( size_t i = 0 ; i < objectBase->simple_objects.size() ; i++ )
                 objectBase->simple_objects[i]->draw(image2draw,Scalar(0,255,0));
         }
+#endif                        
         
-        //video.write(image2draw);
-        
-        imshow("Detection result", image2draw);
-        
-        
-                
-        
-        
+        imshow("Detection result", image2draw);        
     
     char c=(char)waitKey(200);
         
     
-    imwrite(image_out_path, image2draw);
-        //seq++;
-    //}
-    //cap.release();
-    //video.release();
-    
+    imwrite(image_out_path, image2draw);    
     
     destroyAllWindows();
     return 0;
