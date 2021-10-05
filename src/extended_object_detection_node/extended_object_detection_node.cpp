@@ -48,7 +48,7 @@ ros::Publisher marker_array_simple_pub_;
 
 vector<SimpleObject*> selected_to_detect_simple_objects;
 vector<int> selected_on_start_simple;
-#ifdef IGRAPH
+#ifdef USE_IGRAPH
 vector<ComplexObjectGraph*> selected_to_detect_complex_objects;
 vector<int> selected_on_start_complex;
 ros::Publisher scenes_pub_;
@@ -163,7 +163,7 @@ bool setSimpleObjects(extended_object_detection::SetSimpleObjects::Request &req,
     return return_value;
 }
     
-#ifdef IGRAPH    
+#ifdef USE_IGRAPH    
 int findIdComplexObjects(int id){
     for( size_t i = 0 ; i < selected_to_detect_complex_objects.size() ; i++ ){
         if( id == selected_to_detect_complex_objects[i]->ID )
@@ -907,7 +907,7 @@ int main(int argc, char **argv)
   
   nh_p.getParam("selectedOnStartSimple",selected_on_start_simple);
   
-#ifdef IGRAPH
+#ifdef USE_IGRAPH
   nh_p.getParam("selectedOnStartComplex",selected_on_start_complex);
 #endif
   
@@ -933,7 +933,7 @@ int main(int argc, char **argv)
   }
   ros::ServiceServer setSimpleObjectsSrv = nh_p.advertiseService("set_simple_objects", setSimpleObjects);
 
-#ifdef IGRAPH
+#ifdef USE_IGRAPH
   if( selected_on_start_complex.size() == 0 )
     for( size_t i = 0 ; i < objectBase->complex_objects_graph.size() ; i++ ){
         selected_to_detect_complex_objects.push_back(objectBase->complex_objects_graph[i]);
@@ -951,7 +951,7 @@ int main(int argc, char **argv)
   ROS_INFO("Starting process...");
     
   objects_pub_ = nh_p.advertise<extended_object_detection::SimpleObjectArray>("simple_objects",1);
-#ifdef IGRAPH
+#ifdef USE_IGRAPH
   scenes_pub_ = nh_p.advertise<extended_object_detection::ComplexObjectArray>("complex_objects",1); 
 #endif
   // mono
@@ -964,7 +964,7 @@ int main(int argc, char **argv)
   }
   if( publishMarkers ){
       marker_array_simple_pub_ = nh_p.advertise<visualization_msgs::MarkerArray>("simple_objects_markers",1);
-#ifdef IGRAPH
+#ifdef USE_IGRAPH
       marker_array_complex_pub_ = nh_p.advertise<visualization_msgs::MarkerArray>("complex_objects_markers",1);
 #endif
   }

@@ -50,11 +50,11 @@ int main(int argc, char **argv)
         Mat image2draw = frame.clone();
         for( size_t i = 0 ; i < objectBase->simple_objects.size() ; i++ ){
             objectBase->simple_objects[i]->Identify(frame, Mat(), seq);            
-#ifndef IGRAPH            
+#ifndef USE_IGRAPH            
             objectBase->simple_objects[i]->draw(image2draw,Scalar(0,255,0));
 #endif
         }
-#ifdef IGRAPH
+#ifdef USE_IGRAPH
         vector<ExtendedObjectInfo> DetectedScenes;
         for( size_t i = 0 ; i <  objectBase->complex_objects_graph.size(); i++){
                         
