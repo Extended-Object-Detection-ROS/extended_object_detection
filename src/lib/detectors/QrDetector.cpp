@@ -38,7 +38,8 @@ namespace eod{
             
             string data = qrDecoder->decode(image, bbox);
             //printf("Decoded data is %s\n",data.c_str());            
-            tmp.extracted_info[0] = data;
+            //tmp.extracted_info[0] = data;
+            set_extracted_info(tmp, "info", data);
             
             rects.push_back(tmp);
         }        

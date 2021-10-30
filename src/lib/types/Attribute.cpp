@@ -54,8 +54,8 @@ namespace eod{
                 it = rects->erase(it);
             }
             else {
-                it->sub_id.push_back(-1);
-                it->extracted_info.push_back("");
+                //it->sub_id.push_back(-1);
+                //it->extracted_info.push_back("");
                 ++it;                
             }
         }                        
@@ -63,8 +63,8 @@ namespace eod{
     
     void Attribute::Extract(const Mat& image, vector<ExtendedObjectInfo>* rects){
         for( size_t i = 0 ; i < rects->size() ; i++ ){
-            rects->at(i).sub_id.push_back(-1);
-            rects->at(i).extracted_info.push_back("");
+            //rects->at(i).sub_id.push_back(-1);
+            //rects->at(i).extracted_info.push_back("");
             Extract2(image, rects->at(i));
         }
     }
@@ -72,6 +72,7 @@ namespace eod{
     AttributeTypes getAttributeTypeFromName(string name){
         transform(name.begin(), name.end(), name.begin(),[](unsigned char c){ return tolower(c); });
         
+        // TODO convert to std::map
         if( name == "hsvcolor" )
             return HSV_COLOR_A;
         if( name == "haarcascade" )
@@ -121,6 +122,18 @@ namespace eod{
         
         printf("Unknown attribute type %s!",name.c_str());
         return UNK_A;
+    }
+    
+    void Attribute::set_extracted_info(ExtendedObjectInfo &eoi, std::string key, std::string value){
+        eoi.extracted_info[Name+":"+key] = value;
+    }
+    
+    void Attribute::set_extracted_info(ExtendedObjectInfo &eoi, std::string key, int value){
+        set_extracted_info(eoi, key, std::to_string(value));
+    }
+    
+    void Attribute::set_extracted_info(ExtendedObjectInfo &eoi, std::string key, double value){
+        set_extracted_info(eoi, key, std::to_string(value));
     }
         
 }

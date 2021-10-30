@@ -60,7 +60,7 @@ namespace eod{
         hsv.release();
         mask.release();
         kernel.release();
-        rect.cnt++;
+        //rect.cnt++;
                 
         rect.setScoreWeight(percent, Weight);            
         if( percent >= Probability ){                    

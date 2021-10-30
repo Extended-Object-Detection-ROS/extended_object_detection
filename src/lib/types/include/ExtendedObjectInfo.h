@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <utility>
+#include <map>
 
 namespace eod{
     
@@ -33,7 +34,7 @@ namespace eod{
         std::string getInfo();        
         void draw(const cv::Mat& image, cv::Scalar col = cv::Scalar(0, 255, 0) );
         
-        void normalize(int im_width, int im_height);
+        void normalize(int im_width, int im_height);                
         
         // operators
         friend const ExtendedObjectInfo operator& ( ExtendedObjectInfo& a,  ExtendedObjectInfo& b);
@@ -55,17 +56,17 @@ namespace eod{
         void calcTotalScore();        
         
         // weak detection stuff
-        double dcnt; // TODO remove in future
-        int cnt; // TODO remove in future
-        std::vector<int> pattern; // TODO remove in future
+        //double dcnt; // TODO remove in future
+        //int cnt; // TODO remove in future
+        //std::vector<int> pattern; // TODO remove in future
         
         //std::vector<cv::Point>* track_history_image;        
         
         //
         // Variables behind is those, which could be individual for each attribute
         //        
-        std::vector<int> sub_id;        
-        std::vector<std::string> extracted_info;
+        //std::vector<int> sub_id;        
+        std::map<std::string, std::string> extracted_info;
         
         // for every one attribute
         std::vector<std::pair<double, double> > scores_with_weights;         

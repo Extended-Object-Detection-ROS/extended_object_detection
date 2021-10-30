@@ -167,9 +167,14 @@ namespace eod{
                         
                         ExtendedObjectInfo tmp = ExtendedObjectInfo(Rect(left, top, width, height));
                         tmp.setScoreWeight(confidence, Weight);
-                        tmp.sub_id[0] = classIdPoint.x;
+                        //tmp.sub_id[0] = classIdPoint.x;
+                        //set_extracted_info(&tmp, 'id', classIdPoint.x);
+                        tmp.extracted_info["DNN:id"] = std::to_string(classIdPoint.x);
+                        
                         if(isLabelMap){
-                            tmp.extracted_info[0] = labelMap[tmp.sub_id[0]];
+                            //tmp.extracted_info[0] = labelMap[tmp.sub_id[0]];
+                            //set_extracted_info(&tmp, 'label', labelMap[classIdPoint.x]);
+                            tmp.extracted_info["DNN:label"] = labelMap[classIdPoint.x];
                         }
                         
                         saved_answer.push_back(tmp);                        
@@ -199,9 +204,15 @@ namespace eod{
                         }
                         ExtendedObjectInfo tmp = ExtendedObjectInfo(Rect(left, top, width, height));
                         tmp.setScoreWeight(confidence, Weight);
-                        tmp.sub_id[0] = (int)(data[k + 1]);
+                        //tmp.sub_id[0] = (int)(data[k + 1]);
+                        int pos = (int)(data[k + 1]);
+                        //set_extracted_info(&tmp, 'id', (int)(data[k + 1]));
+                        tmp.extracted_info["DNN:id"] = std::to_string(pos);
+                        
                         if(isLabelMap){
-                            tmp.extracted_info[0] = labelMap[tmp.sub_id[0]];
+                            //tmp.extracted_info[0] = labelMap[tmp.sub_id[0]];
+                            //set_extracted_info(&tmp, 'label', labelMap[(int)(data[k + 1])]);
+                            tmp.extracted_info["DNN:label"] = labelMap[pos];
                         }
                         
                         saved_answer.push_back(tmp);
@@ -264,7 +275,7 @@ namespace eod{
             }
                         
             for( size_t i = 0 ; i < full_answer.size() ; i++ ){
-                if( full_answer[i].sub_id[0] == object_id && full_answer[i].scores_with_weights[0].first >= Probability)
+                if( std::stoi(full_answer[i].extracted_info["DNN:id"]) == object_id && full_answer[i].scores_with_weights[0].first >= Probability)
                     obj_answer.push_back(full_answer[i]);
             }
             return obj_answer;

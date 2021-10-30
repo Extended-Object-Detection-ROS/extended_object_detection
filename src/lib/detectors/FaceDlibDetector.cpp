@@ -100,7 +100,9 @@ namespace eod{
             }
             //printf("%s - %f\n",base_face_d.first.c_str(), l);
         }
-        rect.extracted_info.back() = result;
+        //rect.extracted_info.back() = result;
+        set_extracted_info(&rect, 'label', result);
+        
         if( result == "Unknown")
             rect.setScoreWeight(0, Weight);
         else

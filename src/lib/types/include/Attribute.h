@@ -100,6 +100,10 @@ namespace eod{
             ObjectBase* parent_base;
             
             void setProbability(double prob);
+            
+            void set_extracted_info(ExtendedObjectInfo &eoi, std::string key, std::string value);
+            void set_extracted_info(ExtendedObjectInfo &eoi, std::string key, int value);
+            void set_extracted_info(ExtendedObjectInfo &eoi, std::string key, double value);
                                 
         protected:    
             int prev_seq;

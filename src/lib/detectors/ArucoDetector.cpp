@@ -81,8 +81,10 @@ namespace eod{
         for( size_t i = 0 ; i < markerIds.size(); i++ ){
             if( IDmarker == -1 || IDmarker == markerIds[i] ){
                 ExtendedObjectInfo tmp = boundingRect( markerCorners[i] );                                                
-                tmp.sub_id[0] = markerIds[i];
-                tmp.extracted_info[0] = to_string(markerIds[i]);       
+                //tmp.sub_id[0] = markerIds[i];
+                //tmp.extracted_info[0] = to_string(markerIds[i]);       
+                //set_extracted_info(&tmp, 'marker_id', markerIds[i]);
+                tmp.extracted_info["Aruco:marker_id"] = std::to_string(markerIds[i]);
                 if( returnContours )
                     tmp.contour.push_back(float2intPointVector(markerCorners[i]));
                 if( hasCamParams() && markerLen > 0){

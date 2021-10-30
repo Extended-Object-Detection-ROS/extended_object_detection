@@ -252,7 +252,7 @@ namespace eod{
                     if( mode_attributes[j].first.first == EXTRACT ){
                         continue;
                     }
-                    string attributeName = (mode_attributes[j].first.first == DETECT ? " + " : " - ") + mode_attributes[j].second->Name + " ["+(real_indx < objects[i].scores_with_weights.size() ? to_string(roundf(objects[i].scores_with_weights[real_indx].first * 100) / 100).substr(0,4) : "-1" )+"]" + (objects[i].sub_id[real_indx] == -1 ? "" : "{"+to_string(objects[i].sub_id[real_indx])+"}") + (objects[i].extracted_info[real_indx] == "" ? "" : "("+objects[i].extracted_info[real_indx]+")");
+                    string attributeName = (mode_attributes[j].first.first == DETECT ? " + " : " - ") + mode_attributes[j].second->Name + " ["+(real_indx < objects[i].scores_with_weights.size() ? to_string(roundf(objects[i].scores_with_weights[real_indx].first * 100) / 100).substr(0,4) : "-1" )+"]" /*+ (objects[i].sub_id[real_indx] == -1 ? "" : "{"+to_string(objects[i].sub_id[real_indx])+"}") /*+ (objects[i].extracted_info[real_indx] == "" ? "" : "("+objects[i].extracted_info[real_indx]+")")*/;
                     
                     prevBr = drawFilledRectangleWithText(image, Point(objects[i].tl().x, prevBr.y), attributeName, col);
                     real_indx++;
