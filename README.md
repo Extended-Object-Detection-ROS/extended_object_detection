@@ -26,3 +26,6 @@ This package is a solution in the field of computer vision, which contains a set
  year = {2020}
 }
 ```
+
+## Contests
+ - [ROS Russia Open-Source Contest](https://habr.com/ru/post/541876/) - 1st Place
