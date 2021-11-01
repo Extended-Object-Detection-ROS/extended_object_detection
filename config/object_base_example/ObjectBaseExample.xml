@@ -38,9 +38,7 @@
     
     <Attribute Name="BasicMotion" Type="BasicMotion">
         <Clusterization Type="FOREL" R="50" eps="15"/>
-    </Attribute>    
-    
-    <Attribute Name="Aruco4-13" Type="Aruco" Dict="0" IDmarker="13" Lenght="0.082"/>
+    </Attribute>            
   
     <Attribute Name="Aruco4" Type="Aruco" Dict="0" IDmarker="-1" Lenght="0.082"/>
     
@@ -88,7 +86,7 @@
     
     <Attribute Name="DlibFace" Type="FaceDlib" Probability="0.4" base_file_path="face_recognition/base_faces.db" base_dir_path="face_recognition/base_faces/" sp_path="face_recognition/shape_predictor_5_face_landmarks.dat" net_path="face_recognition/dlib_face_recognition_resnet_model_v1.dat"/>
     
-    <Attribute Name="ID13" Type="ExtractedInfoID" field="Aruco:marker_id" allowed="" forbidden="13"/>
+    <Attribute Name="ID13" Type="ExtractedInfoID" field="Aruco:marker_id" allowed="13" forbidden=""/>
     
 </AttributeLib>
 
