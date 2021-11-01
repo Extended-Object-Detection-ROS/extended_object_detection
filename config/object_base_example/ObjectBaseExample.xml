@@ -88,6 +88,8 @@
     
     <Attribute Name="DlibFace" Type="FaceDlib" Probability="0.4" base_file_path="face_recognition/base_faces.db" base_dir_path="face_recognition/base_faces/" sp_path="face_recognition/shape_predictor_5_face_landmarks.dat" net_path="face_recognition/dlib_face_recognition_resnet_model_v1.dat"/>
     
+    <Attribute Name="ID13" Type="ExtractedInfoID" field="Aruco:marker_id" allowed="" forbidden="13"/>
+    
 </AttributeLib>
 
 <SimpleObjectBase>  
@@ -171,7 +173,8 @@
     </SimpleObject>aruco_space
     
     <SimpleObject Name="Aruco4-13" ID="40">              
-        <Attribute Type="Detect">Aruco4-13</Attribute>            
+        <Attribute Type="Detect">Aruco4</Attribute>
+        <Attribute Type="Check">ID13</Attribute>            
     </SimpleObject>
     
     <SimpleObject Name="Aruco6" ID="41">              

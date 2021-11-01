@@ -117,6 +117,7 @@ add_executable(
     src/lib/detectors/RoughDistanceDetector.cpp
     src/lib/detectors/DistanceDetector.cpp 
     src/lib/detectors/FaceDlibDetector.cpp 
+    src/lib/detectors/ExtractedInfoIdChecker.cpp
 
     # lib relations        
     src/lib/relations/ImageRangeRelation.cpp
@@ -303,6 +304,7 @@ add_executable(
     src/lib/detectors/RoughDistanceDetector.cpp
     src/lib/detectors/DistanceDetector.cpp    
     src/lib/detectors/FaceDlibDetector.cpp 
+    src/lib/detectors/ExtractedInfoIdChecker.cpp
 
     # lib relations
     src/lib/relations/ImageRangeRelation.cpp
@@ -352,6 +354,7 @@ add_executable(
     src/lib/detectors/RoughDistanceDetector.cpp
     src/lib/detectors/DistanceDetector.cpp    
     src/lib/detectors/FaceDlibDetector.cpp 
+    src/lib/detectors/ExtractedInfoIdChecker.cpp
 
     # lib relations
     src/lib/relations/ImageRangeRelation.cpp
