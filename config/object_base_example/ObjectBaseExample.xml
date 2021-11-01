@@ -52,7 +52,7 @@
     
     <Attribute Name="Lower" Type="Pose" x_min="0" x_max="1" y_min="0.5" y_max="1"/>    
     
-    <Attribute Name="COCO_Dnn" Type="Dnn" framework="tensorflow" weights="ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb" config="ssd_mobilenet_v1_coco_2017_11_17/config.pbtxt" labels="ssd_mobilenet_v1_coco_2017_11_17/mscoco_label_map.pbtxt" inputWidth="300" inputHeight="300" Probability="0.75" obj_id="-1" forceCuda="1"/>
+    <Attribute Name="COCO_Dnn" Type="Dnn" framework="tensorflow" weights="ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb" config="ssd_mobilenet_v1_coco_2017_11_17/config.pbtxt" labels="ssd_mobilenet_v1_coco_2017_11_17/mscoco_label_map.pbtxt" inputWidth="300" inputHeight="300" Probability="0.5" forceCuda="1"/>
     
     <Attribute Name="CupDnn" Type="Dnn" framework="tensorflow" weights="ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb" config="ssd_mobilenet_v1_coco_2017_11_17/config.pbtxt" labels="ssd_mobilenet_v1_coco_2017_11_17/mscoco_label_map.pbtxt" inputWidth="300" inputHeight="300" Probability="0.75" obj_id="47"/>    
     
@@ -87,6 +87,8 @@
     <Attribute Name="DlibFace" Type="FaceDlib" Probability="0.4" base_file_path="face_recognition/base_faces.db" base_dir_path="face_recognition/base_faces/" sp_path="face_recognition/shape_predictor_5_face_landmarks.dat" net_path="face_recognition/dlib_face_recognition_resnet_model_v1.dat"/>
     
     <Attribute Name="ID13" Type="ExtractedInfoID" field="Aruco4:marker_id" allowed="13" forbidden=""/>
+    
+    <Attribute Name="COCO_cup" Type="ExtractedInfoID" field="COCO_Dnn:class_id" allowed="47" forbidden=""/>
     
 </AttributeLib>
 
@@ -205,15 +207,17 @@
         <Attribute Type="Detect">SocialRobotsCover</Attribute>            
         <Attribute Type="Check">NotFractal</Attribute>
     </SimpleObject>
-    
+      
     <SimpleObject Name="COCO_dnn_object" ID="60">              
         <Attribute Type="Detect">COCO_Dnn</Attribute>                    
     </SimpleObject>
     
     <SimpleObject Name="RedCup" ID="61" Mode="Hard" MergingPolicy="Union">           
+        <Attribute Type="Detect">COCO_Dnn</Attribute>        
+        <Attribute Type="Check">COCO_cup</Attribute>
         <Attribute Type="Detect">HistDarkRed</Attribute>                    
         <Attribute Type="Check">NotFractal</Attribute>
-        <Attribute Type="Detect">CupDnn</Attribute>        
+        
     </SimpleObject>
     
     <SimpleObject Name="RedCup2" ID="62" Probability="0.5">                   
