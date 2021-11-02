@@ -90,6 +90,16 @@
     
     <Attribute Name="COCO_cup" Type="ExtractedInfoID" field="COCO_Dnn:class_id" allowed="47" forbidden=""/>
     
+    <Attribute Name="COCO_person" Type="ExtractedInfoString" field="COCO_Dnn:class_label" allowed="pers" partially="1"/>
+    
+    <Attribute Name="COCO_lifeforms" Type="ExtractedInfoString" field="COCO_Dnn:class_label" allowed="person bird cat dog horse sheep cow elephant bear zebra giraffe" partially="0"/>
+    
+    <Attribute Name="COCO_transport" Type="ExtractedInfoString" field="COCO_Dnn:class_label" allowed="bicycle car motorcycle airplane bus train truck boat" partially="0"/>
+    
+    <Attribute Name="COCO_dynamic" Type="LogicOr" A="COCO_lifeforms" B="COCO_transport"/>
+    
+    <Attribute Name="COCO_static" Type="LogicNot" A="COCO_dynamic"/>
+    
 </AttributeLib>
 
 <SimpleObjectBase>  
@@ -243,7 +253,9 @@
     </SimpleObject>
     
     <SimpleObject Name="CnnPerson" ID="67">              
-        <Attribute Type="Detect">CnnPerson</Attribute>        
+        <Attribute Type="Detect">COCO_Dnn</Attribute>
+        <Attribute Type="Check">COCO_person</Attribute>                
+        
     </SimpleObject>    
     
     <SimpleObject Name="RedCupFull" ID="68" Mode="Hard" MergingPolicy="Union">           
@@ -252,7 +264,8 @@
         <Attribute Type="Detect" Weight="2">CupDnn</Attribute>
         <Attribute Type="Extract" Channel="DEPTH">DepthKinect</Attribute>
         <Tracker IOU="0.25" decay="0.01">MOSSE</Tracker>
-    </SimpleObject>
+    </SimpleObject>            
+        
     
     <SimpleObject Name="QRcode" ID="70">                   
         <Attribute Type="Detect">QrcodeCV</Attribute>        
@@ -260,6 +273,16 @@
     
     <SimpleObject Name="QRcodeZbar" ID="71">                   
         <Attribute Type="Detect">QrcodeZbar</Attribute>        
+    </SimpleObject>
+    
+    <SimpleObject Name="COCO_dynamic" ID="72">              
+        <Attribute Type="Detect">COCO_Dnn</Attribute>   
+        <Attribute Type="Check">COCO_dynamic</Attribute>   
+    </SimpleObject>
+    
+    <SimpleObject Name="COCO_static" ID="73">              
+        <Attribute Type="Detect">COCO_Dnn</Attribute>      
+        <Attribute Type="Check">COCO_static</Attribute>   
     </SimpleObject>
     
     <SimpleObject Name="BlobPingui" ID="80">                   
