@@ -314,11 +314,15 @@ extended_object_detection::SimpleObject ros_msg_from_extended(ExtendedObjectInfo
     current_object.track.id = ext_obj->track_id;
 
     
-    for( size_t i = 0 ; i < ext_obj->sub_id.size(); i++ ){
-        extended_object_detection::ExtractedInfo ei;
-        ei.sub_id = ext_obj->sub_id[i];
-        ei.text = ext_obj->extracted_info[i];
-        current_object.extracted_info.push_back(ei);
+//     for( size_t i = 0 ; i < ext_obj->sub_id.size(); i++ ){
+//         extended_object_detection::ExtractedInfo ei;
+//         ei.sub_id = ext_obj->sub_id[i];
+//         ei.text = ext_obj->extracted_info[i];
+//         current_object.extracted_info.push_back(ei);
+//     }
+    for( auto const& exi : ext_obj->extracted_info){
+        current_object.extracted_info.keys.push_back(exi.first);
+        current_object.extracted_info.values.push_back(exi.second);        
     }
     
 #if (CV_MAJOR_VERSION > 3)
@@ -599,7 +603,7 @@ visualization_msgs::MarkerArray marker_array_simple(vector<extended_object_detec
                 
             }
             // extracted_info
-            else if( visualizationTypes[i] == "extracted_info" ){
+            /*else if( visualizationTypes[i] == "extracted_info" ){
                 if( objects[j].extracted_info.size() > 0){
                     marker.ns = "extracted_info";
                     
@@ -622,7 +626,7 @@ visualization_msgs::MarkerArray marker_array_simple(vector<extended_object_detec
                 else
                     continue;
                 
-            }       
+            }   */    
             // contour
             else if( visualizationTypes[i] == "contour" ){
                 if( objects[j].contour.contourTranslates.size() > 0){

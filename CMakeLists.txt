@@ -117,6 +117,8 @@ add_executable(
     src/lib/detectors/RoughDistanceDetector.cpp
     src/lib/detectors/DistanceDetector.cpp 
     src/lib/detectors/FaceDlibDetector.cpp 
+    src/lib/detectors/ExtractedInfoIdChecker.cpp
+    src/lib/detectors/ExtractedInfoStringChecker.cpp
 
     # lib relations        
     src/lib/relations/ImageRangeRelation.cpp
@@ -236,8 +238,7 @@ add_executable(
     src/lib/utils/drawing_utils.cpp
     src/lib/utils/contour_utils.cpp
     # detectors
-    src/lib/detectors/BlobDetector.cpp
-    #src/lib/detectors/SizeDetector.cpp
+    src/lib/detectors/BlobDetector.cpp    
 )
     
 # dlib face descriptors saver
@@ -303,6 +304,8 @@ add_executable(
     src/lib/detectors/RoughDistanceDetector.cpp
     src/lib/detectors/DistanceDetector.cpp    
     src/lib/detectors/FaceDlibDetector.cpp 
+    src/lib/detectors/ExtractedInfoIdChecker.cpp
+    src/lib/detectors/ExtractedInfoStringChecker.cpp
 
     # lib relations
     src/lib/relations/ImageRangeRelation.cpp
@@ -352,6 +355,8 @@ add_executable(
     src/lib/detectors/RoughDistanceDetector.cpp
     src/lib/detectors/DistanceDetector.cpp    
     src/lib/detectors/FaceDlibDetector.cpp 
+    src/lib/detectors/ExtractedInfoIdChecker.cpp
+    src/lib/detectors/ExtractedInfoStringChecker.cpp
 
     # lib relations
     src/lib/relations/ImageRangeRelation.cpp

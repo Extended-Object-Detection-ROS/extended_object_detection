@@ -38,9 +38,7 @@
     
     <Attribute Name="BasicMotion" Type="BasicMotion">
         <Clusterization Type="FOREL" R="50" eps="15"/>
-    </Attribute>    
-    
-    <Attribute Name="Aruco4-13" Type="Aruco" Dict="0" IDmarker="13" Lenght="0.082"/>
+    </Attribute>            
   
     <Attribute Name="Aruco4" Type="Aruco" Dict="0" IDmarker="-1" Lenght="0.082"/>
     
@@ -54,7 +52,7 @@
     
     <Attribute Name="Lower" Type="Pose" x_min="0" x_max="1" y_min="0.5" y_max="1"/>    
     
-    <Attribute Name="COCO_Dnn" Type="Dnn" framework="tensorflow" weights="ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb" config="ssd_mobilenet_v1_coco_2017_11_17/config.pbtxt" labels="ssd_mobilenet_v1_coco_2017_11_17/mscoco_label_map.pbtxt" inputWidth="300" inputHeight="300" Probability="0.75" obj_id="-1" forceCuda="1"/>
+    <Attribute Name="COCO_Dnn" Type="Dnn" framework="tensorflow" weights="ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb" config="ssd_mobilenet_v1_coco_2017_11_17/config.pbtxt" labels="ssd_mobilenet_v1_coco_2017_11_17/mscoco_label_map.pbtxt" inputWidth="300" inputHeight="300" Probability="0.5" forceCuda="1"/>
     
     <Attribute Name="CupDnn" Type="Dnn" framework="tensorflow" weights="ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb" config="ssd_mobilenet_v1_coco_2017_11_17/config.pbtxt" labels="ssd_mobilenet_v1_coco_2017_11_17/mscoco_label_map.pbtxt" inputWidth="300" inputHeight="300" Probability="0.75" obj_id="47"/>    
     
@@ -87,6 +85,20 @@
     <!--<Attribute Name="DepthKinect" Type="Depth" depthScale="0.001"/>-->
     
     <Attribute Name="DlibFace" Type="FaceDlib" Probability="0.4" base_file_path="face_recognition/base_faces.db" base_dir_path="face_recognition/base_faces/" sp_path="face_recognition/shape_predictor_5_face_landmarks.dat" net_path="face_recognition/dlib_face_recognition_resnet_model_v1.dat"/>
+    
+    <Attribute Name="ID13" Type="ExtractedInfoID" field="Aruco4:marker_id" allowed="13" forbidden=""/>
+    
+    <Attribute Name="COCO_cup" Type="ExtractedInfoID" field="COCO_Dnn:class_id" allowed="47" forbidden=""/>
+    
+    <Attribute Name="COCO_person" Type="ExtractedInfoString" field="COCO_Dnn:class_label" allowed="pers" partially="1"/>
+    
+    <Attribute Name="COCO_lifeforms" Type="ExtractedInfoString" field="COCO_Dnn:class_label" allowed="person bird cat dog horse sheep cow elephant bear zebra giraffe" partially="0"/>
+    
+    <Attribute Name="COCO_transport" Type="ExtractedInfoString" field="COCO_Dnn:class_label" allowed="bicycle car motorcycle airplane bus train truck boat" partially="0"/>
+    
+    <Attribute Name="COCO_dynamic" Type="LogicOr" A="COCO_lifeforms" B="COCO_transport"/>
+    
+    <Attribute Name="COCO_static" Type="LogicNot" A="COCO_dynamic"/>
     
 </AttributeLib>
 
@@ -171,7 +183,8 @@
     </SimpleObject>aruco_space
     
     <SimpleObject Name="Aruco4-13" ID="40">              
-        <Attribute Type="Detect">Aruco4-13</Attribute>            
+        <Attribute Type="Detect">Aruco4</Attribute>
+        <Attribute Type="Check">ID13</Attribute>            
     </SimpleObject>
     
     <SimpleObject Name="Aruco6" ID="41">              
@@ -204,15 +217,17 @@
         <Attribute Type="Detect">SocialRobotsCover</Attribute>            
         <Attribute Type="Check">NotFractal</Attribute>
     </SimpleObject>
-    
+      
     <SimpleObject Name="COCO_dnn_object" ID="60">              
         <Attribute Type="Detect">COCO_Dnn</Attribute>                    
     </SimpleObject>
     
     <SimpleObject Name="RedCup" ID="61" Mode="Hard" MergingPolicy="Union">           
+        <Attribute Type="Detect">COCO_Dnn</Attribute>        
+        <Attribute Type="Check">COCO_cup</Attribute>
         <Attribute Type="Detect">HistDarkRed</Attribute>                    
         <Attribute Type="Check">NotFractal</Attribute>
-        <Attribute Type="Detect">CupDnn</Attribute>        
+        
     </SimpleObject>
     
     <SimpleObject Name="RedCup2" ID="62" Probability="0.5">                   
@@ -238,7 +253,9 @@
     </SimpleObject>
     
     <SimpleObject Name="CnnPerson" ID="67">              
-        <Attribute Type="Detect">CnnPerson</Attribute>        
+        <Attribute Type="Detect">COCO_Dnn</Attribute>
+        <Attribute Type="Check">COCO_person</Attribute>                
+        
     </SimpleObject>    
     
     <SimpleObject Name="RedCupFull" ID="68" Mode="Hard" MergingPolicy="Union">           
@@ -247,7 +264,8 @@
         <Attribute Type="Detect" Weight="2">CupDnn</Attribute>
         <Attribute Type="Extract" Channel="DEPTH">DepthKinect</Attribute>
         <Tracker IOU="0.25" decay="0.01">MOSSE</Tracker>
-    </SimpleObject>
+    </SimpleObject>            
+        
     
     <SimpleObject Name="QRcode" ID="70">                   
         <Attribute Type="Detect">QrcodeCV</Attribute>        
@@ -255,6 +273,16 @@
     
     <SimpleObject Name="QRcodeZbar" ID="71">                   
         <Attribute Type="Detect">QrcodeZbar</Attribute>        
+    </SimpleObject>
+    
+    <SimpleObject Name="COCO_dynamic" ID="72">              
+        <Attribute Type="Detect">COCO_Dnn</Attribute>   
+        <Attribute Type="Check">COCO_dynamic</Attribute>   
+    </SimpleObject>
+    
+    <SimpleObject Name="COCO_static" ID="73">              
+        <Attribute Type="Detect">COCO_Dnn</Attribute>      
+        <Attribute Type="Check">COCO_static</Attribute>   
     </SimpleObject>
     
     <SimpleObject Name="BlobPingui" ID="80">                   
