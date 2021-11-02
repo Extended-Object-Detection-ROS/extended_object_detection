@@ -40,13 +40,13 @@
         <Clusterization Type="FOREL" R="50" eps="15"/>
     </Attribute>            
   
-    <Attribute Name="Aruco4" Type="Aruco" Dict="0" IDmarker="-1" Lenght="0.082"/>
+    <Attribute Name="Aruco4" Type="Aruco" Dict="0" Lenght="0.082"/>
     
-    <Attribute Name="Aruco5" Type="Aruco" Dict="4" IDmarker="-1" Lenght="0.082"/>
+    <Attribute Name="Aruco5" Type="Aruco" Dict="4" Lenght="0.082"/>
     
-    <Attribute Name="Aruco6" Type="Aruco" Contour="true" Dict="8" IDmarker="-1" Lenght="0.125"/>    
+    <Attribute Name="Aruco6" Type="Aruco" Contour="true" Dict="8" Lenght="0.125"/>    
     
-    <Attribute Name="Aruco7" Type="Aruco" Dict="12" IDmarker="-1" Lenght="0.082"/>
+    <Attribute Name="Aruco7" Type="Aruco" Dict="12" Lenght="0.082"/>
     
     <Attribute Name="SocialRobotsCover" Type="Feature" featureExtractorType="SIFT" min_matches="100" height="0.215" sample_image="feature_samples/social_robots.jpg"/>
     
