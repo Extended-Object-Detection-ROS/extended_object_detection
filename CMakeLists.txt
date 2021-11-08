@@ -8,8 +8,8 @@ add_compile_options(-std=c++11)
 set(opencv_contrib OFF)
 set(zbar_lib OFF)
 set(TensorFlow OFF)
-set(DLib OFF)
-set(igraph OFF)
+set(DLib ON)
+set(igraph ON)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -125,6 +125,7 @@ add_executable(
     src/lib/relations/LogicRelations.cpp
     src/lib/relations/ThreeDimRangeRelation.cpp
     src/lib/relations/SpaceRelations.cpp
+    src/lib/relations/SizeRelations.cpp
 )
 
 if(TensorFlow)
@@ -312,6 +313,7 @@ add_executable(
     src/lib/relations/LogicRelations.cpp
     src/lib/relations/ThreeDimRangeRelation.cpp
     src/lib/relations/SpaceRelations.cpp
+    src/lib/relations/SizeRelations.cpp
 )
 
 #offline image processor
@@ -363,6 +365,7 @@ add_executable(
     src/lib/relations/LogicRelations.cpp
     src/lib/relations/ThreeDimRangeRelation.cpp
     src/lib/relations/SpaceRelations.cpp
+    src/lib/relations/SizeRelations.cpp
 )
 
 if(TensorFlow)
