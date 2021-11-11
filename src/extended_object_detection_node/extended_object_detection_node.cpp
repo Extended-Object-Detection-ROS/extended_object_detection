@@ -432,6 +432,18 @@ extended_object_detection::ComplexObject ros_msg_from_complex(ExtendedObjectInfo
     else
         current_object.transform.translation = getUnitTranslation(complex->getCenter());                        
     
+//     if (complex->rvec.size() > 0 ){
+//         double quaternion[4];
+//         Mat rotMat;
+//         Rodrigues(complex->rvec, rotMat);
+//         getQuaternion( rotMat, quaternion);
+//         current_object.transform.rotation.x = quaternion[0];
+//         current_object.transform.rotation.y = quaternion[1];
+//         current_object.transform.rotation.z = quaternion[2];
+//         current_object.transform.rotation.w = quaternion[3];
+//     }
+    current_object.transform.rotation.w = 1;
+    
     if( inner_simples.size() > 0 ){
         for( size_t i = 0; i < inner_simples.size(); i++ ){
             current_object.objects.push_back(ros_msg_from_extended(&(inner_simples.at(i))));
