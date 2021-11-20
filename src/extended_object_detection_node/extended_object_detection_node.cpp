@@ -432,6 +432,18 @@ extended_object_detection::ComplexObject ros_msg_from_complex(ExtendedObjectInfo
     else
         current_object.transform.translation = getUnitTranslation(complex->getCenter());                        
     
+//     if (complex->rvec.size() > 0 ){
+//         double quaternion[4];
+//         Mat rotMat;
+//         Rodrigues(complex->rvec, rotMat);
+//         getQuaternion( rotMat, quaternion);
+//         current_object.transform.rotation.x = quaternion[0];
+//         current_object.transform.rotation.y = quaternion[1];
+//         current_object.transform.rotation.z = quaternion[2];
+//         current_object.transform.rotation.w = quaternion[3];
+//     }
+    current_object.transform.rotation.w = 1;
+    
     if( inner_simples.size() > 0 ){
         for( size_t i = 0; i < inner_simples.size(); i++ ){
             current_object.objects.push_back(ros_msg_from_extended(&(inner_simples.at(i))));
@@ -767,7 +779,7 @@ void video_process_cb(const ros::TimerEvent&){
                 array_objects.objects.push_back(current_object);
             }                                
         }        
-#ifdef IGRAPH
+#ifdef USE_IGRAPH
         // COMPLEX OBJECTS
         extended_object_detection::ComplexObjectArray array_co_msg;        
         for( size_t i = 0 ; i < selected_to_detect_complex_objects.size(); i++){   
@@ -798,9 +810,23 @@ void video_process_cb(const ros::TimerEvent&){
             vector<ExtendedObjectInfo> DetectedComplexObjects;
             
             DetectedComplexObjects = selected_to_detect_complex_objects.at(i)->Identify(last_image, last_depth, seq);     
+            vector<ExtendedObjectInfo> DetectedObjects;
+            
+            for(size_t j = 0; j < DetectedComplexObjects.size(); j++){
+                extended_object_detection::ComplexObject co_msg;
+                                
+                co_msg = ros_msg_from_complex(&DetectedComplexObjects[j], DetectedObjects);                      
+                                
+                co_msg.type_id = selected_to_detect_complex_objects[i]->ID;
+                co_msg.type_name = selected_to_detect_complex_objects[i]->name;
+                    
+                array_co_msg.complex_objects.push_back(co_msg);
+            } 
             
             if( screenOutputFlag || publishImage)
                 selected_to_detect_complex_objects.at(i)->drawAll(image2draw, Scalar(255, 255, 0), 2);
+            
+            
         }
 #endif
         seq++;
@@ -821,7 +847,7 @@ void video_process_cb(const ros::TimerEvent&){
             }
             array_objects.objects.clear();
         }
-#ifdef IGRAPH        
+#ifdef USE_IGRAPH        
         if( array_co_msg.complex_objects.size() > 0){
             array_co_msg.header.stamp = ros::Time::now();
             array_co_msg.header.frame_id = image_frame_id;
