@@ -1,4 +1,11 @@
 # Change Log
+## [[1.0.2](https://github.com/Extended-Object-Detection-ROS/extended_object_detection/tree/r1.0.2)] - 2021-11-21
+Now core of solution is stand-alone module.
+Changed to new way to store extracted info data.
+Added two attributes of extracted data checking.
+Added size relations.
+Fix minor bugs.
+
 ## [[1.0.1](https://github.com/Extended-Object-Detection-ROS/extended_object_detection/tree/r1.0.1)] - 2021-10-5
 Fully changed logic of complex object detection.
 Now this part is optional and need igraph library installed (see [wiki](https://github.com/Extended-Object-Detection-ROS/extended_object_detection/wiki/igraph_install)).
