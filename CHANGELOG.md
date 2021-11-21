@@ -1,7 +1,7 @@
 # Change Log
-## [[1.0.2](https://github.com/Extended-Object-Detection-ROS/extended_object_detection/tree/r1.0.2)] - 2021-11-21
+## [[1.1.0](https://github.com/Extended-Object-Detection-ROS/extended_object_detection/tree/r1.1.0] - 2021-11-21
 Now core of solution is stand-alone module.
-Changed to new way to store extracted info data.
+Changed to new way to store extracted info data, so output topics format are changed.
 Added two attributes of extracted data checking.
 Added size relations.
 Fix minor bugs.
