@@ -123,6 +123,7 @@ set( EOD_SRC
     src/lib/relations/ThreeDimRangeRelation.cpp
     src/lib/relations/SpaceRelations.cpp
     src/lib/relations/SizeRelations.cpp
+    src/lib/relations/SameExtractedInfoRelation.cpp
     )
 
 set ( EOD_INCLUDE
