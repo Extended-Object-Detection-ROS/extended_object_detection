@@ -421,6 +421,11 @@ extended_object_detection::ComplexObject ros_msg_from_complex(ExtendedObjectInfo
     current_object.rect.right_up.x = complex->x + complex->width;
     current_object.rect.right_up.y = complex->y + complex->height;      
     
+    for( auto const& exi : complex->extracted_info){
+        current_object.extracted_info.keys.push_back(exi.first);
+        current_object.extracted_info.values.push_back(exi.second);        
+    }
+    
     // if we have solved translation then use it
     if( complex->tvec.size() > 0 ){                            
         // TODO: invite some algorithm for merging tvecs
@@ -442,7 +447,9 @@ extended_object_detection::ComplexObject ros_msg_from_complex(ExtendedObjectInfo
 //         current_object.transform.rotation.z = quaternion[2];
 //         current_object.transform.rotation.w = quaternion[3];
 //     }
-    current_object.transform.rotation.w = 1;
+//     else
+        current_object.transform.rotation.w = 1;
+    
     
     if( inner_simples.size() > 0 ){
         for( size_t i = 0; i < inner_simples.size(); i++ ){
