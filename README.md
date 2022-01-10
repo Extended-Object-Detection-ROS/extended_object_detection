@@ -29,3 +29,4 @@ This package is a solution in the field of computer vision, which contains a set
 
 ## Contests
  - [ROS Russia Open-Source Contest](https://habr.com/ru/post/541876/) - 1st Place
+ - [OpenCV Blog Olympics Contest](https://learnopencv.com/blog-olympics/) - 1st Place
