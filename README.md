@@ -16,6 +16,7 @@ Extended Object Detection is an ROS package and has ample opportunities for desc
 This package is a solution in the field of computer vision, which contains a set of various methods for detecting objects, united by one interface. To use the package, you do not need to dive into the API, all detection settings are available through a single configuration file. The package is developed within the "recognition by parts" paradigm, which allows you to specify various attributes of an object, such as image, color, shape, size, etc. These attributes are recognized separately and then aggregated into integral objects. In addition to recognizing simple objects, the package allows you to specify their combinations, detecting a complex object, which is a set of simple objects and relationships between them. The package provides a full-fledged ROS interface, allowing it to be used in robotics tasks.
 
 ## Cite
+Repository
 ```bibtex
 @misc{extended_object_detection,
  author = {Moscowsky, Anton},
@@ -25,6 +26,24 @@ This package is a solution in the field of computer vision, which contains a set
  url = {https://github.com/Extended-Object-Detection-ROS/extended_object_detection},
  year = {2020}
 }
+```
+Article
+```bibtex
+@incollection{moscowsky_eod,
+abstract = {The paper describes a software package (Extended Object Detection) that implements the procedure for detecting objects on a video camera stream for usage in robotic tasks. An object in the system is described by a list of its attributes (form, shape, color, size, etc.). Each attribute in the description of an object corresponds to a software detector that determines areas in the image that correspond to the attribute. Objects are determined based on the relative positions of the detected areas to each detector. Such a system can significantly expand the number of recognizable objects by, for example, adding color information to an object detected by a CNN. The solution allows configuring filtering and clustering parameters for attributes. In addition, a tracking algorithm is implemented that tracks objects between frames and starts searching for an object using previous information in cases where the detector failed. Objects that are called simple in the terminology of the proposed solution can be combined into complex objects by specifying the relationship between them. This allows to describe objects that consist of several parts and have attributes that are different in meaning. Object detection (both simple and complex) can be performed in a soft mode, which is able to put forward hypotheses, indicating the coefficient of confidence about objects that partially satisfy the given description. The software solution is designed for robotics tasks and is made as a package for ROS1 framework and can be used in central nervous system of SEMS. The package has visualization tools, utilities for configuring software detectors, and is able to work with depth cameras to localize objects in space.},
+author = {Moscowsky, A. D.},
+booktitle = {Smart Electromechanical Systems: Recognition, Identification and Modeling},
+doi = {10.1007/978-3-030-97004-8_3},
+file = {:C\:/Users/Moskovsky_AD/Dropbox/Статьи/SES_RIaM/EOD_ENG.pdf:pdf},
+keywords = {Computer vision,Object detection,ROS,Robotic,scopus,templan},
+mendeley-tags = {scopus,templan},
+pages = {27--43},
+title = {{Extended Object Detection: Flexible Object Description System for Detection in Robotic Tasks}},
+url = {https://link.springer.com/10.1007/978-3-030-97004-8_3},
+volume = {419},
+year = {2022}
+}
+
 ```
 
 ## Contests
