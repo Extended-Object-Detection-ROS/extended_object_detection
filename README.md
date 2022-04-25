@@ -33,7 +33,7 @@ Article
 author = {Moscowsky, A. D.},
 booktitle = {Smart Electromechanical Systems: Recognition, Identification and Modeling},
 doi = {10.1007/978-3-030-97004-8_3},
-keywords = {Computer vision,Object detection,ROS,Robotic,scopus,templan},
+keywords = {Computer vision,Object detection,ROS,Robotic},
 pages = {27--43},
 title = {{Extended Object Detection: Flexible Object Description System for Detection in Robotic Tasks}},
 url = {https://link.springer.com/10.1007/978-3-030-97004-8_3},
