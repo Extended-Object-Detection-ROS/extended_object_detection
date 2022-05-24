@@ -4,6 +4,8 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
 
 #include "extended_object_detection/SimpleObject.h"
 #include "extended_object_detection/SimpleObjectArray.h"
@@ -45,7 +47,6 @@ ros::Publisher objects_pub_;
 image_transport::Publisher detected_image_pub_;
 ros::Publisher marker_array_simple_pub_;
 
-
 vector<SimpleObject*> selected_to_detect_simple_objects;
 vector<int> selected_on_start_simple;
 #ifdef USE_IGRAPH
@@ -61,6 +62,7 @@ std::mutex mutex_image;
 bool screenOutputFlag = true;  
 bool publishImage = true;
 bool publishMarkers = false;
+bool publishTf = false;
 vector<string> visualizationTypes;
 double updateRateMs = 0;
 bool subscribeDepth = false;
@@ -751,6 +753,8 @@ void video_process_cb(const ros::TimerEvent&){
             
     mutex_image.lock();        
     
+    static tf2_ros::TransformBroadcaster transform_broadcaster_;
+    
     if(!last_image.empty()){              
         if(image_frame_id == ""){
             ROS_ERROR("No camera intrinsic are provided, or camera frame_id is not set.");
@@ -784,6 +788,18 @@ void video_process_cb(const ros::TimerEvent&){
                 current_object.type_id = selected_to_detect_simple_objects[i]->ID;
                 current_object.type_name = selected_to_detect_simple_objects[i]->name;                             
                 array_objects.objects.push_back(current_object);
+                
+                if( publishTf ){
+                    geometry_msgs::TransformStamped transformStamped;
+                    
+                    transformStamped.header.stamp = ros::Time::now();
+                    transformStamped.header.frame_id = image_frame_id;
+                    transformStamped.child_frame_id = current_object.type_name + "_"+std::to_string(j);
+                    
+                    transformStamped.transform = current_object.transform;
+                    
+                    transform_broadcaster_.sendTransform(transformStamped);
+                }
             }                                
         }        
 #ifdef USE_IGRAPH
@@ -871,7 +887,7 @@ void video_process_cb(const ros::TimerEvent&){
 #else
             cvWaitKey(1);
 #endif
-        }
+        }        
         if( publishImage ){
             sensor_msgs::ImagePtr detected_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image2draw).toImageMsg();
             detected_image_pub_.publish(detected_msg);
@@ -926,6 +942,9 @@ int main(int argc, char **argv)
   
   if( !nh_p.getParam("publishMarkers",publishMarkers) ){
       publishMarkers = false;  
+  }
+  if( !nh_p.getParam("publishTf",publishTf) ){
+      publishTf = false;  
   }
   
   nh_p.getParam("rotate_image_180", rotate_image_180);

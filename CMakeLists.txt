@@ -8,8 +8,8 @@ add_compile_options(-std=c++11)
 set(opencv_contrib OFF)
 set(zbar_lib OFF)
 set(TensorFlow OFF)
-set(DLib OFF)
-set(igraph OFF)
+set(DLib ON)
+set(igraph ON)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -23,6 +23,8 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   cv_bridge
   cmake_modules
+  tf2
+  tf2_ros
 )
 
 find_package(OpenCV REQUIRED)  
@@ -34,7 +36,7 @@ if(zbar_lib)
 endif(zbar_lib)
 
 if(DLib)
-    add_subdirectory(/home/anton/Libs/dlib dlib_build)
+    add_subdirectory(/home/anton/Lib/dlib dlib_build)
 endif(DLib)
 
 
