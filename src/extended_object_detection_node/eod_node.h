@@ -12,7 +12,7 @@
 
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
-#include <sensor_msgs/image_encodings.h>
+//#include <sensor_msgs/image_encodings.h>
 
 //#include "ObjectBase.h"
 
@@ -45,12 +45,22 @@ private:
     boost::shared_ptr<RGBDSynchronizer> rgbd_sync_;
     
     // params
-    bool subscribe_depth;        
+    bool subscribe_depth;
+    double rate_limit_sec;
     
-    //  callbacks
+    // vars
+    int frame_sequence;     
+    ros::Time prev_detected_time;
+    
+    // callbacks
     void rgb_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info);
     
     void rgbd_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info, const sensor_msgs::ImageConstPtr& depth_image, const sensor_msgs::CameraInfoConstPtr& depth_info);
+    
+    // functions
+    void detect(const cv::Mat& rgb, const cv::Mat& depth);
+    bool check_time(ros::Time stamp);
+    
     
     
     

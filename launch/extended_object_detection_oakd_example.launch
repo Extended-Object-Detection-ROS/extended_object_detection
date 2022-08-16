@@ -11,6 +11,7 @@
         <param name="objectBasePath" value="$(arg objectBasePath)"/>
         
         <param name="subscribe_depth" value="true"/>
+        <param name="rate_limit_sec" value="0.1"/>
         
         
         <remap from="camera/image_raw" to="/rgb_stereo_publisher/color/image"/>
