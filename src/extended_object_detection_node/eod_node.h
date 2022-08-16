@@ -19,14 +19,17 @@
 
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo> RGBInfoSyncPolicy;
         
-typedef message_filters::Synchronizer<RGBInfoSyncPolicy> Synchronizer;
+typedef message_filters::Synchronizer<RGBInfoSyncPolicy> RGBSynchronizer;
+
+typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image, sensor_msgs::CameraInfo> RGBDInfoSyncPolicy;
+
+typedef message_filters::Synchronizer<RGBDInfoSyncPolicy> RGBDSynchronizer;
 
 
 class EOD_ROS{
 public:
-    EOD_ROS(ros::NodeHandle nh);
-    
-    void rgb_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info);
+    EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p);
+        
     
 private:
     // ros stuff
@@ -34,9 +37,21 @@ private:
     image_transport::ImageTransport *rgb_it_;
     image_transport::SubscriberFilter sub_rgb_;    
     message_filters::Subscriber<sensor_msgs::CameraInfo> sub_info_;
-    boost::shared_ptr<Synchronizer> sync_;
+    boost::shared_ptr<RGBSynchronizer> rgb_sync_;
+    
+    image_transport::ImageTransport *depth_it_;
+    image_transport::SubscriberFilter sub_depth_;    
+    message_filters::Subscriber<sensor_msgs::CameraInfo> sub_depth_info_;
+    boost::shared_ptr<RGBDSynchronizer> rgbd_sync_;
     
     // params
     bool subscribe_depth;        
+    
+    //  callbacks
+    void rgb_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info);
+    
+    void rgbd_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info, const sensor_msgs::ImageConstPtr& depth_image, const sensor_msgs::CameraInfoConstPtr& depth_info);
+    
+    
     
 };

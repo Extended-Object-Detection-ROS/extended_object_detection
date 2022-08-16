@@ -1,0 +1,33 @@
+<launch>
+    <arg name="output" default="screen"/>
+    <arg name="objectBasePath" default="$(find extended_object_detection)/config/object_base_example/ObjectBaseExample.xml"/>
+    
+    <include file="$(find depthai_examples)/launch/rgb_stereo_node.launch">                
+        <!--<arg name="depth_registration" value="true"/>-->
+    </include>
+    
+    <node name="extended_object_detection" pkg="extended_object_detection" type="extended_object_detection_node" output="screen"  >
+        
+        <param name="objectBasePath" value="$(arg objectBasePath)"/>
+        
+        <param name="subscribe_depth" value="true"/>
+        
+        
+        <remap from="camera/image_raw" to="/rgb_stereo_publisher/color/image"/>
+        <remap from="camera/info" to="/rgb_stereo_publisher/color/camera_info"/>
+        <remap from="depth/image_raw" to="/rgb_stereo_publisher/stereo/depth"/>
+        <remap from="depth/info" to="/rgb_stereo_publisher/stereo/camera_info"/>
+        
+        <rosparam param="selectedOnStartSimple">[]</rosparam>
+        <rosparam param="selectedOnStartComplex">[-1]</rosparam>
+        
+    </node>
+              
+    <!-- visualization -->
+    <node pkg="rviz" type="rviz" name="rviz"
+    args="-d $(find extended_object_detection)/config/eod_example.rviz --opengl 300" />
+    
+    <node pkg="tf" type="static_transform_publisher" name="static_cam_pub"
+        args="0 0 0 0 0 0 map camera_link 100"/>  
+    
+</launch>
