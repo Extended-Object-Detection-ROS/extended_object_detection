@@ -1,6 +1,16 @@
 #include "eod_node.h"
 #include <cstdint>
 #include <sensor_msgs/image_encodings.h>
+#include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/Point.h>
+
+geometry_msgs::Vector3 getUnitTranslation(geometry_msgs::Point point){
+    geometry_msgs::Vector3 unit_translate;
+    unit_translate.x = (point.x - cx) / fx;
+    unit_translate.y = (point.y - cy) / fy;
+    unit_translate.z = 1;
+    return unit_translate;
+}
 
 EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     nh_ = nh;
@@ -18,6 +28,7 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     nh_p_.param("subscribe_depth", subscribe_depth, false);
     nh_p_.param("rate_limit_sec", rate_limit_sec, 0.1);
     nh_p_.param("publish_output", publish_output, false);
+    nh_p_.param("use_actual_time", use_actual_time, false);
     
     
     std::string object_base_path;
@@ -98,7 +109,7 @@ void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sen
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.", rgb_image->encoding.c_str());
     }
     
-    detect(rgb, cv::Mat());
+    detect(rgb, cv::Mat(), rgb_image->header);
 }
 
 void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sensor_msgs::CameraInfoConstPtr& rgb_info, const sensor_msgs::ImageConstPtr& depth_image, const sensor_msgs::CameraInfoConstPtr& depth_info){
@@ -130,15 +141,16 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
         ROS_ERROR_THROTTLE(5, "Depth image has unsupported encoding [%s]", depth_image->encoding.c_str());
     }
     
-    detect(rgb, depth);
+    detect(rgb, depth, rgb_image->header);
 }
 
-void EOD_ROS::detect(const cv::Mat& rgb, const cv::Mat& depth){
+void EOD_ROS::detect(const cv::Mat& rgb, const cv::Mat& depth, std_msgs::Header header){
     prev_detected_time = ros::Time::now();
     
     cv::Mat image_to_draw;
     
     extended_object_detection::SimpleObjectArray simples_msg;
+    
     
     if(publish_output)
         image_to_draw = rgb.clone();
@@ -151,24 +163,53 @@ void EOD_ROS::detect(const cv::Mat& rgb, const cv::Mat& depth){
         
     }
     
+    simples_msg.header = header;
+    if( use_actual_time )
+        simples_msg.header.stamp = ros::Time::now();
+        
     simple_objects_pub_.publish(simples_msg);
     
     frame_sequence++;    
 }
 
-void EOD_ROS::add_data_to_simple_msg(const eod::SimpleObject* so, extended_object_detection::SimpleObjectArray& msg){
-    
+void EOD_ROS::add_data_to_simple_msg(const eod::SimpleObject* so, extended_object_detection::SimpleObjectArray& msg){    
     for(auto& eoi : so->objects){
         msg.objects.push_back(eoi_to_base_object(so, &eoi));
-    }    
-        
+    }            
 }
 
 extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object(const eod::SimpleObject* so, const eod::ExtendedObjectInfo* eoi){
-    extended_object_detection::BaseObject base_object;
+    extended_object_detection::BaseObject bo;
+    // common
+    bo.type_id = so->ID;
+    bo.type_name = so->name;
+    bo.score = eoi->total_score;
+    
+    for( auto const& exi : eoi->extracted_info){
+        bo.extracted_info.keys.push_back(exi.first);
+        bo.extracted_info.values.push_back(exi.second);        
+    }
+    
+    // rect
+    bo.rect.left_bottom.x = eoi->x;
+    bo.rect.left_bottom.y = eoi->y;
+    bo.rect.right_bottom.x = eoi->x + eoi->width;
+    bo.rect.right_bottom.y = eoi->y + eoi->height;
+    
+    // transform
+    if( eoi->tvec.size() > 0 ){
+        bo.transform.translation.x = eoi->tvec[0][0];
+        bo.transform.translation.y = eoi->tvec[0][1];
+        bo.transform.translation.z = eoi->tvec[0][2];
+    }
+    else{
+        bo.transform.translation = getUnitTranslation(ext_obj->getCenter());      
+    }
     
     
-    return base_object;
+    //TODO tracks
+    
+    return bo;
 }
 
 int main(int argc, char **argv)

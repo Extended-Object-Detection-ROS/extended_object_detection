@@ -10,6 +10,7 @@
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 
+#include <std_msgs/Header.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
 
@@ -53,6 +54,7 @@ private:
     bool subscribe_depth;
     double rate_limit_sec;
     bool publish_output;
+    bool use_actual_time;
     
     // vars
     int frame_sequence;     
@@ -64,7 +66,7 @@ private:
     void rgbd_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info, const sensor_msgs::ImageConstPtr& depth_image, const sensor_msgs::CameraInfoConstPtr& depth_info);
     
     // functions
-    void detect(const cv::Mat& rgb, const cv::Mat& depth);
+    void detect(const cv::Mat& rgb, const cv::Mat& depth, std_msgs::Header header);
     bool check_time(ros::Time stamp);
     void add_data_to_simple_msg(const eod::SimpleObject*, extended_object_detection::SimpleObjectArray& msg);
     extended_object_detection::BaseObject eoi_to_base_object(const eod::SimpleObject* so, const eod::ExtendedObjectInfo* eoi);
