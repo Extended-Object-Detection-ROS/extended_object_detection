@@ -13,9 +13,47 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     sub_rgb_.subscribe(*rgb_it_, "camera/image_raw", 10);
     sub_info_.subscribe(nh_, "camera/info", 10);    
     
+    
     // get params
-    nh_p_.param("subscribe_depth", subscribe_depth, false);                    
-    nh_p_.param("rate_limit_sec", rate_limit_sec, 0.1);                    
+    nh_p_.param("subscribe_depth", subscribe_depth, false);
+    nh_p_.param("rate_limit_sec", rate_limit_sec, 0.1);
+    nh_p_.param("publish_output", publish_output, false);
+    
+    
+    std::string object_base_path;
+    nh_p_.getParam("object_base",object_base_path);
+    
+    // load base
+    object_base = new eod::ObjectBase();
+    if( !object_base->loadFromXML(object_base_path) ){
+        ROS_ERROR("Error during loading object base in path '%s'!", object_base_path.c_str());
+        std::exit(-1);
+    }
+    
+    // // object selection
+    std::vector<int>selected_on_start_simple_objects;
+    nh_p_.getParam("selected_on_start_simple_objects",selected_on_start_simple_objects);
+    
+    if( selected_on_start_simple_objects.size() == 0 ){
+        ROS_INFO("All objects selected.");
+        for( size_t i = 0 ; i < object_base->simple_objects.size() ; i++ ){
+            selected_simple_objects.push_back(object_base->simple_objects[i]);
+        }
+    }
+    else{
+        if(selected_on_start_simple_objects[0] != -1){
+            for( size_t i = 0 ; i < object_base->simple_objects.size() ; i++ ){
+                if( find(selected_on_start_simple_objects.begin(), selected_on_start_simple_objects.end(), object_base->simple_objects[i]->ID) != selected_on_start_simple_objects.end() )
+                    selected_simple_objects.push_back(object_base->simple_objects[i]);
+            }        
+        }        
+    }
+    ROS_INFO("Selected to detect on start %i objects", selected_simple_objects.size());
+    
+    
+    
+    // set up publishers
+    simple_objects_pub_ = nh_p.advertise<extended_object_detection::SimpleObjectArray>("simple_objects",1);
         
     // set up message filters
     if( !subscribe_depth){
@@ -98,9 +136,39 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
 void EOD_ROS::detect(const cv::Mat& rgb, const cv::Mat& depth){
     prev_detected_time = ros::Time::now();
     
+    cv::Mat image_to_draw;
     
-    frame_sequence++;
+    extended_object_detection::SimpleObjectArray simples_msg;
     
+    if(publish_output)
+        image_to_draw = rgb.clone();
+    
+    // detect simple objects
+    for (auto& s_it : selected_simple_objects){
+        s_it->Identify(rgb, depth, frame_sequence);
+        
+        add_data_to_simple_msg(s_it, simples_msg);
+        
+    }
+    
+    simple_objects_pub_.publish(simples_msg);
+    
+    frame_sequence++;    
+}
+
+void EOD_ROS::add_data_to_simple_msg(const eod::SimpleObject* so, extended_object_detection::SimpleObjectArray& msg){
+    
+    for(auto& eoi : so->objects){
+        msg.objects.push_back(eoi_to_base_object(so, &eoi));
+    }    
+        
+}
+
+extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object(const eod::SimpleObject* so, const eod::ExtendedObjectInfo* eoi){
+    extended_object_detection::BaseObject base_object;
+    
+    
+    return base_object;
 }
 
 int main(int argc, char **argv)

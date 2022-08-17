@@ -8,8 +8,8 @@ add_compile_options(-std=c++11)
 set(opencv_contrib OFF)
 set(zbar_lib OFF)
 set(TensorFlow OFF)
-set(DLib OFF)
-set(igraph OFF)
+set(DLib ON)
+set(igraph ON)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -51,7 +51,7 @@ add_message_files(
   Track.msg
   ExtractedInfo.msg
   Contour.msg
-  SimpleObject.msg
+  BaseObject.msg
   SimpleObjectArray.msg
   ComplexObject.msg
   ComplexObjectArray.msg  
@@ -139,7 +139,7 @@ set ( EOD_INCLUDE
 # main node
 add_executable(
     extended_object_detection_node
-    src/extended_object_detection_node/extended_object_detection_node.cpp
+    src/extended_object_detection_node/eod_node.cpp
     ${EOD_SRC}
 )
 

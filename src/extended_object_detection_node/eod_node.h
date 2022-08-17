@@ -12,9 +12,12 @@
 
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
-//#include <sensor_msgs/image_encodings.h>
 
-//#include "ObjectBase.h"
+#include "extended_object_detection/BaseObject.h"
+#include "extended_object_detection/SimpleObjectArray.h"
+#include "extended_object_detection/ComplexObjectArray.h"
+
+#include "ObjectBase.h"
 
 
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo> RGBInfoSyncPolicy;
@@ -44,9 +47,12 @@ private:
     message_filters::Subscriber<sensor_msgs::CameraInfo> sub_depth_info_;
     boost::shared_ptr<RGBDSynchronizer> rgbd_sync_;
     
+    ros::Publisher simple_objects_pub_;
+    
     // params
     bool subscribe_depth;
     double rate_limit_sec;
+    bool publish_output;
     
     // vars
     int frame_sequence;     
@@ -60,8 +66,15 @@ private:
     // functions
     void detect(const cv::Mat& rgb, const cv::Mat& depth);
     bool check_time(ros::Time stamp);
+    void add_data_to_simple_msg(const eod::SimpleObject*, extended_object_detection::SimpleObjectArray& msg);
+    extended_object_detection::BaseObject eoi_to_base_object(const eod::SimpleObject* so, const eod::ExtendedObjectInfo* eoi);
     
-    
+    // EOD
+    eod::ObjectBase * object_base;
+    std::vector<eod::SimpleObject*> selected_simple_objects;
+#ifdef USE_IGRAPH
+    std::vector<eod::ComplexObjectGraph*> selected_complex_objects;
+#endif
     
     
 };

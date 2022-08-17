@@ -8,7 +8,7 @@
     
     <node name="extended_object_detection" pkg="extended_object_detection" type="extended_object_detection_node" output="screen"  >
         
-        <param name="objectBasePath" value="$(arg objectBasePath)"/>
+        <param name="object_base" value="$(arg objectBasePath)"/>
         
         <param name="subscribe_depth" value="true"/>
         <param name="rate_limit_sec" value="0.1"/>
