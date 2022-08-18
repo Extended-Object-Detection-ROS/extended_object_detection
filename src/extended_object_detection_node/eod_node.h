@@ -13,6 +13,7 @@
 #include <std_msgs/Header.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
+#include <visualization_msgs/Marker.h>
 
 #include "extended_object_detection/BaseObject.h"
 #include "extended_object_detection/SimpleObjectArray.h"
@@ -50,6 +51,7 @@ private:
     boost::shared_ptr<RGBDSynchronizer> rgbd_sync_;
     
     ros::Publisher simple_objects_pub_;
+    ros::Publisher simple_objects_markers_pub_;
     image_transport::ImageTransport *private_it_;
     image_transport::Publisher output_image_pub_;
     
@@ -60,6 +62,7 @@ private:
     double rate_limit_sec;
     bool publish_output;
     bool use_actual_time;
+    bool publish_markers;
     
     // vars
     int frame_sequence;     
@@ -77,9 +80,13 @@ private:
     void detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header);
     bool check_time(ros::Time stamp);
     void add_data_to_simple_msg( eod::SimpleObject*, extended_object_detection::SimpleObjectArray& msg, const cv::Mat& K);
-    extended_object_detection::BaseObject eoi_to_base_object( eod::SimpleObject* so, eod::ExtendedObjectInfo* eoi, const cv::Mat& K);
+    extended_object_detection::BaseObject eoi_to_base_object(eod::SimpleObject* so, eod::ExtendedObjectInfo* eoi, const cv::Mat& K);
     cv::Mat getK(const sensor_msgs::CameraInfoConstPtr& info_msg);
     cv::Mat getD(const sensor_msgs::CameraInfoConstPtr& info_msg);
+    void publish_simple_as_markers(const cv::Mat& K, std_msgs::Header header);
+    
+    visualization_msgs::Marker eoi_to_marker(eod::SimpleObject* so, eod::ExtendedObjectInfo* eoi, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id);
+    
     
     int find_simple_obj_index_by_id(int id);
     

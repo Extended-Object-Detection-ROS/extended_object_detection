@@ -4,6 +4,7 @@
 #include <geometry_msgs/Vector3.h>
 //#include <geometry_msgs/Point.h>
 #include <math.h>
+#include <visualization_msgs/MarkerArray.h>
 
 geometry_msgs::Vector3 getUnitTranslation(cv::Point point, const cv::Mat& K){
     geometry_msgs::Vector3 unit_translate;
@@ -30,6 +31,7 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     nh_p_.param("rate_limit_sec", rate_limit_sec, 0.1);
     nh_p_.param("publish_output", publish_output, false);
     nh_p_.param("use_actual_time", use_actual_time, false);
+    nh_p_.param("publish_markers", publish_markers, false);
     
     
     std::string object_base_path;
@@ -65,7 +67,9 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     set_simple_objects_srv_ = nh_p_.advertiseService("set_simple_objects", &EOD_ROS::set_simple_objects_cb, this);
             
     // set up publishers
-    simple_objects_pub_ = nh_p.advertise<extended_object_detection::SimpleObjectArray>("simple_objects",1);
+    simple_objects_pub_ = nh_p_.advertise<extended_object_detection::SimpleObjectArray>("simple_objects",1);
+    if( publish_markers)
+        simple_objects_markers_pub_ = nh_p_.advertise<visualization_msgs::MarkerArray>("simple_objects_markers",1);
     
     private_it_ = new image_transport::ImageTransport(nh_p_);
     output_image_pub_ = private_it_->advertise("detected_image", 1);
@@ -202,6 +206,9 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         
     simple_objects_pub_.publish(simples_msg);
     
+    if(publish_markers){
+        publish_simple_as_markers(rgb.K, header);
+    }
     if(publish_output){
         sensor_msgs::ImagePtr detected_image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_to_draw).toImageMsg();
         output_image_pub_.publish(detected_image_msg);
@@ -250,6 +257,31 @@ extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( eod::SimpleOb
     return bo;
 }
 
+void EOD_ROS::publish_simple_as_markers(const cv::Mat& K, std_msgs::Header header){
+    visualization_msgs::MarkerArray mrk_array_msg();
+    //mrk_array_msg.header = header;
+    for(auto& so : selected_simple_objects){
+        int id_cnt = 0;
+        for(auto& eoi : so->objects){
+            mrk_array_msg.markers.append(eoi_to_marker(so, &eoi, K, header, cv::Scalar(0, 255, 0)),id_cnt++);
+            
+            
+        }
+    }
+    simple_objects_markers_pub_.publish(mrk_array_msg);
+}
+
+visualization_msgs::Marker EOD_ROS::eoi_to_marker(eod::SimpleObject* so, eod::ExtendedObjectInfo* eoi, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id){
+    visualization_msgs::Marker mrk;
+    mrk.header = header;
+    
+    mrk.ns = so->name;
+    mrk.id = id;
+    
+    
+    return mrk;
+}
+
 int EOD_ROS::find_simple_obj_index_by_id(int id){
     for( int i = 0 ; i < selected_simple_objects.size() ; i++ ){
         if( selected_simple_objects[i]->ID == id )
@@ -260,9 +292,7 @@ int EOD_ROS::find_simple_obj_index_by_id(int id){
 
 bool EOD_ROS::set_simple_objects_cb(extended_object_detection::SetObjects::Request &req, extended_object_detection::SetObjects::Response &res){
     
-    if( req.remove_all && req.add_all ){
-        // do literally nothing
-    }
+    if( req.remove_all && req.add_all ){/*do literally nothing*/}
     else{
         if( req.remove_all ){
             selected_simple_objects.clear();    
