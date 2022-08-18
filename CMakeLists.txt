@@ -90,7 +90,8 @@ set( EOD_SRC
     src/lib/types/Tracker.cpp
     src/lib/types/Relationship.cpp    
     src/lib/types/Filtering.cpp    
-    src/lib/types/Clusterization.cpp    
+    src/lib/types/Clusterization.cpp   
+    src/lib/types/InfoImage.cpp
     # lib utils
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp

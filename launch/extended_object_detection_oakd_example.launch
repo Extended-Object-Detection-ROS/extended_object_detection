@@ -19,7 +19,7 @@
         <remap from="depth/image_raw" to="/rgb_stereo_publisher/stereo/depth"/>
         <remap from="depth/info" to="/rgb_stereo_publisher/stereo/camera_info"/>
         
-        <rosparam param="selectedOnStartSimple">[]</rosparam>
+        <rosparam param="selectedOnStartSimple">[40]</rosparam>
         <rosparam param="selectedOnStartComplex">[-1]</rosparam>
         
     </node>
