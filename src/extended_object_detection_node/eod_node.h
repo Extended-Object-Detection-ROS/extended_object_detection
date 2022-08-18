@@ -74,6 +74,7 @@ private:
     void add_data_to_simple_msg( eod::SimpleObject*, extended_object_detection::SimpleObjectArray& msg, const cv::Mat& K);
     extended_object_detection::BaseObject eoi_to_base_object( eod::SimpleObject* so, eod::ExtendedObjectInfo* eoi, const cv::Mat& K);
     cv::Mat getK(const sensor_msgs::CameraInfoConstPtr& info_msg);
+    cv::Mat getD(const sensor_msgs::CameraInfoConstPtr& info_msg);
     
     // EOD
     eod::ObjectBase * object_base;

@@ -103,6 +103,14 @@ cv::Mat EOD_ROS::getK(const sensor_msgs::CameraInfoConstPtr& info_msg){
     return K;
 }
 
+cv::Mat EOD_ROS::getD(const sensor_msgs::CameraInfoConstPtr& info_msg){
+    cv::Mat D = cv::Mat::zeros(1, 5, CV_64F);
+    for (size_t i=0; i<5; i++) {        
+        D.at<double>(0,i) = info_msg->D[i];        
+    }
+    return D;
+}
+
 void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sensor_msgs::CameraInfoConstPtr& rgb_info){
     ROS_INFO("Get Image!");
     
@@ -122,7 +130,7 @@ void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sen
         return;
     }
     
-    eod::InfoImage ii = eod::InfoImage(rgb, getK(rgb_info), cv::Mat() );    
+    eod::InfoImage ii = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info) );    
     detect(ii, eod::InfoImage(), rgb_image->header);
     //detect(rgb, cv::Mat(), rgb_image->header);
 }
@@ -157,7 +165,7 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
         ROS_ERROR_THROTTLE(5, "Depth image has unsupported encoding [%s]", depth_image->encoding.c_str());
     }
     
-    eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), cv::Mat() );
+    eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info) );
     eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), cv::Mat() );        
     
     detect(ii_rgb, ii_depth, rgb_image->header);
