@@ -49,6 +49,8 @@ private:
     boost::shared_ptr<RGBDSynchronizer> rgbd_sync_;
     
     ros::Publisher simple_objects_pub_;
+    image_transport::ImageTransport *private_it_;
+    image_transport::Publisher output_image_pub_;
     
     // params
     bool subscribe_depth;

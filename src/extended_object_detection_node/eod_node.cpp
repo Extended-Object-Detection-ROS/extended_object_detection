@@ -64,6 +64,9 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
             
     // set up publishers
     simple_objects_pub_ = nh_p.advertise<extended_object_detection::SimpleObjectArray>("simple_objects",1);
+    
+    private_it_ = new image_transport::ImageTransport(nh_p_);
+    output_image_pub_ = private_it_->advertise("detected_image", 1);
         
     // set up message filters
     if( !subscribe_depth){
@@ -179,6 +182,8 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         s_it->Identify(rgb, depth, frame_sequence);        
         //ROS_INFO("Adding...");
         add_data_to_simple_msg(&(*s_it), simples_msg, rgb.K);
+        if(publish_output)
+            s_it->draw(image_to_draw, cv::Scalar(0, 255, 0));
     }
     
     simples_msg.header = header;
@@ -186,6 +191,12 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         simples_msg.header.stamp = ros::Time::now();
         
     simple_objects_pub_.publish(simples_msg);
+    
+    if(publish_output){
+        sensor_msgs::ImagePtr detected_image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_to_draw).toImageMsg();
+        output_image_pub_.publish(detected_image_msg);
+    }
+    
     
     frame_sequence++;    
 }
