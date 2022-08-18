@@ -3,7 +3,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <geometry_msgs/Vector3.h>
 //#include <geometry_msgs/Point.h>
-
+#include <math.h>
 
 geometry_msgs::Vector3 getUnitTranslation(cv::Point point, const cv::Mat& K){
     geometry_msgs::Vector3 unit_translate;
@@ -61,6 +61,8 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
         }        
     }
     ROS_INFO("Selected to detect on start %li objects", selected_simple_objects.size());
+    
+    set_simple_objects_srv_ = nh_p_.advertiseService("set_simple_objects", &EOD_ROS::set_simple_objects_cb, this);
             
     // set up publishers
     simple_objects_pub_ = nh_p.advertise<extended_object_detection::SimpleObjectArray>("simple_objects",1);
@@ -243,11 +245,68 @@ extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( eod::SimpleOb
     else{
         bo.transform.translation = getUnitTranslation(eoi->getCenter(), K);      
     }
-    
-    
-    //TODO tracks
-    
+        
+    //TODO tracks    
     return bo;
+}
+
+int EOD_ROS::find_simple_obj_index_by_id(int id){
+    for( int i = 0 ; i < selected_simple_objects.size() ; i++ ){
+        if( selected_simple_objects[i]->ID == id )
+            return i;            
+    }
+    return -1;
+}
+
+bool EOD_ROS::set_simple_objects_cb(extended_object_detection::SetObjects::Request &req, extended_object_detection::SetObjects::Response &res){
+    
+    if( req.remove_all && req.add_all ){
+        // do literally nothing
+    }
+    else{
+        if( req.remove_all ){
+            selected_simple_objects.clear();    
+        }
+        else if( req.add_all ){
+            selected_simple_objects.clear();
+            selected_simple_objects.assign(object_base->simple_objects.begin(), object_base->simple_objects.end());            
+        }
+        else{
+            for( auto& change : req.changes ){
+                int object_id = abs(change);
+                eod::SimpleObject* so = object_base->getSimpleObjectByID(object_id);
+                if(so){
+                    // add
+                    if( change > 0 ){
+                        if( find_simple_obj_index_by_id(object_id) != -1 ){
+                            // already selected
+                            ROS_WARN("[set_simple_objects srv] object with id %i is already selected", object_id);
+                        }
+                        else{
+                            selected_simple_objects.push_back(so);
+                        }
+                    }
+                    // remove
+                    else{
+                        int no_in_list = find_simple_obj_index_by_id(object_id);
+                        if( no_in_list != -1 ){
+                            selected_simple_objects.erase(selected_simple_objects.begin()+no_in_list);
+                        }
+                        else{
+                            // already removed
+                            ROS_WARN("[set_simple_objects srv] object with id %i is already removed", object_id);
+                        }
+                    }
+                }
+                else{
+                    ROS_ERROR("[set_simple_objects srv] no object in base with id %i",object_id);
+                }
+            }
+        }
+    }
+    for(auto& so : selected_simple_objects )
+        res.result.push_back(so->ID);
+    return true;
 }
 
 int main(int argc, char **argv)

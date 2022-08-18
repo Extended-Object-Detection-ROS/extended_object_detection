@@ -17,6 +17,7 @@
 #include "extended_object_detection/BaseObject.h"
 #include "extended_object_detection/SimpleObjectArray.h"
 #include "extended_object_detection/ComplexObjectArray.h"
+#include "extended_object_detection/SetObjects.h"
 
 #include "ObjectBase.h"
 
@@ -52,6 +53,8 @@ private:
     image_transport::ImageTransport *private_it_;
     image_transport::Publisher output_image_pub_;
     
+    ros::ServiceServer set_simple_objects_srv_;
+    
     // params
     bool subscribe_depth;
     double rate_limit_sec;
@@ -65,6 +68,8 @@ private:
     // callbacks
     void rgb_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info);
     
+    bool set_simple_objects_cb(extended_object_detection::SetObjects::Request &req, extended_object_detection::SetObjects::Response &res);
+    
     void rgbd_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info, const sensor_msgs::ImageConstPtr& depth_image, const sensor_msgs::CameraInfoConstPtr& depth_info);
     
     // functions
@@ -75,6 +80,8 @@ private:
     extended_object_detection::BaseObject eoi_to_base_object( eod::SimpleObject* so, eod::ExtendedObjectInfo* eoi, const cv::Mat& K);
     cv::Mat getK(const sensor_msgs::CameraInfoConstPtr& info_msg);
     cv::Mat getD(const sensor_msgs::CameraInfoConstPtr& info_msg);
+    
+    int find_simple_obj_index_by_id(int id);
     
     // EOD
     eod::ObjectBase * object_base;
