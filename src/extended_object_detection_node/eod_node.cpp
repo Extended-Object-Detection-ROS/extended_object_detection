@@ -2,9 +2,10 @@
 #include <cstdint>
 #include <sensor_msgs/image_encodings.h>
 #include <geometry_msgs/Vector3.h>
-//#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Point.h>
 #include <math.h>
 #include <visualization_msgs/MarkerArray.h>
+#include "geometry_utils.h"
 
 geometry_msgs::Vector3 getUnitTranslation(cv::Point point, const cv::Mat& K){
     geometry_msgs::Vector3 unit_translate;
@@ -12,6 +13,14 @@ geometry_msgs::Vector3 getUnitTranslation(cv::Point point, const cv::Mat& K){
     unit_translate.y = (point.y - K.at<double>(1,2)) / K.at<double>(1,1);
     unit_translate.z = 1;
     return unit_translate;
+}
+
+geometry_msgs::Vector3 multiplyVectorScalar(geometry_msgs::Vector3 vector, double scalar){
+    geometry_msgs::Vector3 new_vector;
+    new_vector.x = vector.x * scalar;
+    new_vector.y = vector.y * scalar;
+    new_vector.z = vector.z * scalar;
+    return new_vector;
 }
 
 EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
@@ -29,7 +38,7 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     // get params
     nh_p_.param("subscribe_depth", subscribe_depth, false);
     nh_p_.param("rate_limit_sec", rate_limit_sec, 0.1);
-    nh_p_.param("publish_output", publish_output, false);
+    nh_p_.param("publish_image_output", publish_image_output, false);
     nh_p_.param("use_actual_time", use_actual_time, false);
     nh_p_.param("publish_markers", publish_markers, false);
     
@@ -177,7 +186,7 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     detect(ii_rgb, ii_depth, rgb_image->header);
 }
 
-//void EOD_ROS::detect(const cv::Mat& rgb, const cv::Mat& depth, std_msgs::Header header){
+
 void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header){
     ROS_INFO("Detecting...");
     prev_detected_time = ros::Time::now();
@@ -187,7 +196,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     extended_object_detection::SimpleObjectArray simples_msg;
     
     
-    if(publish_output)
+    if(publish_image_output)
         image_to_draw = rgb.clone();
     
     // detect simple objects
@@ -196,7 +205,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         s_it->Identify(rgb, depth, frame_sequence);        
         //ROS_INFO("Adding...");
         add_data_to_simple_msg(&(*s_it), simples_msg, rgb.K);
-        if(publish_output)
+        if(publish_image_output)
             s_it->draw(image_to_draw, cv::Scalar(0, 255, 0));
     }
     
@@ -207,16 +216,21 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     simple_objects_pub_.publish(simples_msg);
     
     if(publish_markers){
-        publish_simple_as_markers(rgb.K, header);
-    }
-    if(publish_output){
+        visualization_msgs::MarkerArray mrk_array_msg;    
+        for(auto& bo : simples_msg.objects){
+            int id_cnt = 0;        
+            mrk_array_msg.markers.push_back(base_object_to_marker_arrow(bo, rgb.K, header, cv::Scalar(0, 255, 0),id_cnt++));
+        }
+        simple_objects_markers_pub_.publish(mrk_array_msg);
+    }    
+    
+    if(publish_image_output){
         sensor_msgs::ImagePtr detected_image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_to_draw).toImageMsg();
         output_image_pub_.publish(detected_image_msg);
-    }
-    
-    
+    }        
     frame_sequence++;    
 }
+
 
 void EOD_ROS::add_data_to_simple_msg( eod::SimpleObject* so, extended_object_detection::SimpleObjectArray& msg, const cv::Mat& K){    
     for(auto& eoi : so->objects){
@@ -235,15 +249,25 @@ extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( eod::SimpleOb
     for( auto& exi : eoi->extracted_info){
         bo.extracted_info.keys.push_back(exi.first);
         bo.extracted_info.values.push_back(exi.second);        
-    }
-    
+    }    
     // rect
     bo.rect.left_bottom.x = eoi->x;
     bo.rect.left_bottom.y = eoi->y;
     bo.rect.right_up.x = eoi->x + eoi->width;
     bo.rect.right_up.y = eoi->y + eoi->height;
     
-    // transform
+    // translation to rect's corners
+    geometry_msgs::Vector3 temp_translation;
+    temp_translation = getUnitTranslation(cv::Point(eoi->x, eoi->y), K);
+    bo.rect.cornerTranslates.push_back(temp_translation);
+    temp_translation = getUnitTranslation(cv::Point(eoi->x, eoi->y + eoi->width), K);
+    bo.rect.cornerTranslates.push_back(temp_translation);
+    temp_translation = getUnitTranslation(cv::Point(eoi->x + eoi->height, eoi->y + eoi->width), K);
+    bo.rect.cornerTranslates.push_back(temp_translation);
+    temp_translation = getUnitTranslation(cv::Point(eoi->x + eoi->height, eoi->y), K);
+    bo.rect.cornerTranslates.push_back(temp_translation);
+        
+    // translation
     if( eoi->tvec.size() > 0 ){
         bo.transform.translation.x = eoi->tvec[0][0];
         bo.transform.translation.y = eoi->tvec[0][1];
@@ -252,33 +276,44 @@ extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( eod::SimpleOb
     else{
         bo.transform.translation = getUnitTranslation(eoi->getCenter(), K);      
     }
+    // rotation
+    if (eoi->rvec.size() > 0 ){
+        double quaternion[4];
+        cv::Mat rotMat;
+        cv::Rodrigues(eoi->rvec, rotMat);
+        eod::getQuaternion( rotMat, quaternion);
+        bo.transform.rotation.x = quaternion[0];
+        bo.transform.rotation.y = quaternion[1];
+        bo.transform.rotation.z = quaternion[2];
+        bo.transform.rotation.w = quaternion[3];
+    }    
+    else // use zero quaternion
+        bo.transform.rotation.w = 1;
         
     //TODO tracks    
     return bo;
 }
 
-void EOD_ROS::publish_simple_as_markers(const cv::Mat& K, std_msgs::Header header){
-    visualization_msgs::MarkerArray mrk_array_msg();
-    //mrk_array_msg.header = header;
-    for(auto& so : selected_simple_objects){
-        int id_cnt = 0;
-        for(auto& eoi : so->objects){
-            mrk_array_msg.markers.append(eoi_to_marker(so, &eoi, K, header, cv::Scalar(0, 255, 0)),id_cnt++);
-            
-            
-        }
-    }
-    simple_objects_markers_pub_.publish(mrk_array_msg);
-}
-
-visualization_msgs::Marker EOD_ROS::eoi_to_marker(eod::SimpleObject* so, eod::ExtendedObjectInfo* eoi, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id){
+visualization_msgs::Marker EOD_ROS::base_object_to_marker_arrow(extended_object_detection::BaseObject base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id){
     visualization_msgs::Marker mrk;
-    mrk.header = header;
-    
-    mrk.ns = so->name;
+    mrk.header = header;    
+    mrk.ns = base_object.type_name +"_arrow";
     mrk.id = id;
-    
-    
+    mrk.type = visualization_msgs::Marker::ARROW;    
+    mrk.points.push_back(geometry_msgs::Point());
+    geometry_msgs::Point end;
+    end.x = base_object.transform.translation.x;
+    end.y = base_object.transform.translation.y;
+    end.z = base_object.transform.translation.z;
+    mrk.points.push_back(end);
+    mrk.scale.x = 0.01;
+    mrk.scale.y = 0.02;
+    mrk.scale.z = 0.1; 
+    mrk.pose.orientation.w = 1;
+    mrk.color.r = color[0]/255;
+    mrk.color.g = color[1]/255;
+    mrk.color.b = color[2]/255;
+    mrk.color.a = 1;
     return mrk;
 }
 

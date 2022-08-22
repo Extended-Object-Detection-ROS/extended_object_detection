@@ -60,7 +60,7 @@ private:
     // params
     bool subscribe_depth;
     double rate_limit_sec;
-    bool publish_output;
+    bool publish_image_output;
     bool use_actual_time;
     bool publish_markers;
     
@@ -82,10 +82,9 @@ private:
     void add_data_to_simple_msg( eod::SimpleObject*, extended_object_detection::SimpleObjectArray& msg, const cv::Mat& K);
     extended_object_detection::BaseObject eoi_to_base_object(eod::SimpleObject* so, eod::ExtendedObjectInfo* eoi, const cv::Mat& K);
     cv::Mat getK(const sensor_msgs::CameraInfoConstPtr& info_msg);
-    cv::Mat getD(const sensor_msgs::CameraInfoConstPtr& info_msg);
-    void publish_simple_as_markers(const cv::Mat& K, std_msgs::Header header);
+    cv::Mat getD(const sensor_msgs::CameraInfoConstPtr& info_msg);    
     
-    visualization_msgs::Marker eoi_to_marker(eod::SimpleObject* so, eod::ExtendedObjectInfo* eoi, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id);
+    visualization_msgs::Marker base_object_to_marker_arrow(extended_object_detection::BaseObject base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id);
     
     
     int find_simple_obj_index_by_id(int id);
