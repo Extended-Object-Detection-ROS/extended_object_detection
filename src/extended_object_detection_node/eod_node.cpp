@@ -217,8 +217,8 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     
     if(publish_markers){
         visualization_msgs::MarkerArray mrk_array_msg;    
-        for(auto& bo : simples_msg.objects){
-            int id_cnt = 0;        
+        int id_cnt = 0;        
+        for(auto& bo : simples_msg.objects){            
             mrk_array_msg.markers.push_back(base_object_to_marker_arrow(bo, rgb.K, header, cv::Scalar(0, 255, 0),id_cnt++));
         }
         simple_objects_markers_pub_.publish(mrk_array_msg);

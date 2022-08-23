@@ -3,7 +3,7 @@
     <arg name="objectBasePath" default="$(find extended_object_detection)/config/object_base_example/ObjectBaseExample.xml"/>
     
     <include file="$(find depthai_examples)/launch/rgb_stereo_node.launch">                
-        <!--<arg name="depth_registration" value="true"/>-->
+        
     </include>
     
     <node name="extended_object_detection" pkg="extended_object_detection" type="extended_object_detection_node" output="screen"  >
@@ -12,7 +12,8 @@
         
         <param name="subscribe_depth" value="true"/>
         <param name="rate_limit_sec" value="0.1"/>
-        <param name="publish_output" value="true"/>
+        <param name="publish_image_output" value="true"/>
+        <param name="publish_markers" value="true"/>        
         
         
         <remap from="camera/image_raw" to="/rgb_stereo_publisher/color/image"/>
@@ -20,7 +21,7 @@
         <remap from="depth/image_raw" to="/rgb_stereo_publisher/stereo/depth"/>
         <remap from="depth/info" to="/rgb_stereo_publisher/stereo/camera_info"/>
         
-        <rosparam param="selected_on_start_simple_objects">[40]</rosparam>
+        <rosparam param="selected_on_start_simple_objects">[10]</rosparam>
         <rosparam param="selected_on_start_complex_objects">[-1]</rosparam>
         
     </node>
@@ -30,6 +31,6 @@
     args="-d $(find extended_object_detection)/config/eod_example.rviz --opengl 300" />
     
     <node pkg="tf" type="static_transform_publisher" name="static_cam_pub"
-        args="0 0 0 0 0 0 map camera_link 100"/>  
+        args="0 0 0 -1.57 0 -1.57 map dai_rgb_camera_optical_frame 100"/>  
     
 </launch>
