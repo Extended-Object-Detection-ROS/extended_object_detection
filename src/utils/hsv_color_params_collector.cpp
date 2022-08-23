@@ -23,7 +23,7 @@ int v_slider_max = v_slider_max_val;
 int size = 0;
 int seq;
 
-Mat last_image;
+eod::InfoImage last_image;
 static const std::string OUTPUT_WINDOW = "HSV color params collector";
 
 eod::SimpleObject coloredObject;

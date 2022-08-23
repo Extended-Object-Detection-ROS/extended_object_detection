@@ -32,7 +32,7 @@ int Mr = 0;
 int size = 0;
 int seq;
 
-Mat last_image;
+eod::InfoImage last_image;
 static const std::string OUTPUT_WINDOW = "Hough circle params collector";
 
 eod::SimpleObject houghObject;

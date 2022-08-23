@@ -204,7 +204,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         //ROS_INFO("Identifiyng...");
         s_it->Identify(rgb, depth, frame_sequence);        
         //ROS_INFO("Adding...");
-        add_data_to_simple_msg(&(*s_it), simples_msg, rgb.K);
+        add_data_to_simple_msg(&(*s_it), simples_msg, rgb.K());
         if(publish_image_output)
             s_it->draw(image_to_draw, cv::Scalar(0, 255, 0));
     }
@@ -219,7 +219,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         visualization_msgs::MarkerArray mrk_array_msg;    
         int id_cnt = 0;        
         for(auto& bo : simples_msg.objects){            
-            mrk_array_msg.markers.push_back(base_object_to_marker_arrow(bo, rgb.K, header, cv::Scalar(0, 255, 0),id_cnt++));
+            mrk_array_msg.markers.push_back(base_object_to_marker_arrow(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt++));
         }
         simple_objects_markers_pub_.publish(mrk_array_msg);
     }    

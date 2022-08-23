@@ -22,7 +22,7 @@ int main(int argc, char **argv)
     
     // Image load
     string image_path = argv[1];        
-    Mat frame = imread(image_path);
+    InfoImage frame = imread(image_path);
     
     if( frame.empty() ){
         printf("Error! Couldn't load image \'%s\'!\n", image_path.c_str());

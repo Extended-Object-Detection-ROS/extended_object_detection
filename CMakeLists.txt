@@ -174,6 +174,7 @@ add_executable(
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
     src/lib/types/Clusterization.cpp    
+    src/lib/types/InfoImage.cpp
     # utils    
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
@@ -193,6 +194,7 @@ add_executable(
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
     src/lib/types/Clusterization.cpp    
+    src/lib/types/InfoImage.cpp
     # utils
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
@@ -211,7 +213,8 @@ add_executable(
     src/lib/types/Attribute.cpp
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
-    src/lib/types/Clusterization.cpp    
+    src/lib/types/Clusterization.cpp   
+    src/lib/types/InfoImage.cpp
     # utils   
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
@@ -231,6 +234,7 @@ add_executable(
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
     src/lib/types/Clusterization.cpp    
+    src/lib/types/InfoImage.cpp
     # utils   
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
@@ -249,7 +253,8 @@ add_executable(
     src/lib/types/Attribute.cpp
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
-    src/lib/types/Clusterization.cpp    
+    src/lib/types/Clusterization.cpp   
+    src/lib/types/InfoImage.cpp
     # utils    
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
@@ -269,6 +274,7 @@ if(DLib)
         src/lib/types/SimpleObject.cpp
         src/lib/types/Filtering.cpp
         src/lib/types/Clusterization.cpp    
+        src/lib/types/InfoImage.cpp
         # utils    
         src/lib/utils/geometry_utils.cpp
         src/lib/utils/drawing_utils.cpp
