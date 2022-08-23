@@ -126,8 +126,7 @@ cv::Mat EOD_ROS::getD(const sensor_msgs::CameraInfoConstPtr& info_msg){
 }
 
 void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sensor_msgs::CameraInfoConstPtr& rgb_info){
-    ROS_INFO("Get Image!");
-    
+    //ROS_INFO("Got Image!");    
     // CHECK RATE    
     if( !check_time(ros::Time::now()) ) {
         ROS_WARN("Skipped frame");
@@ -149,8 +148,7 @@ void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sen
 }
 
 void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sensor_msgs::CameraInfoConstPtr& rgb_info, const sensor_msgs::ImageConstPtr& depth_image, const sensor_msgs::CameraInfoConstPtr& depth_info){
-    ROS_INFO("Got RGBD!");
-    
+    //ROS_INFO("Got RGBD!");    
     // CHECK RATE       
     if( !check_time(ros::Time::now()) ) {
         ROS_WARN("Skipped frame");
@@ -169,9 +167,11 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     
     cv::Mat depth;    
     if (depth_image->encoding == sensor_msgs::image_encodings::TYPE_16UC1){        
-        depth = cv_bridge::toCvCopy(depth_image, sensor_msgs::image_encodings::TYPE_16UC1)->image;
+        ROS_INFO("Depth encoding is 16uc1");
+        depth = cv_bridge::toCvCopy(depth_image, sensor_msgs::image_encodings::TYPE_16UC1)->image * 0.001f;
     }
     else if(depth_image->encoding == sensor_msgs::image_encodings::TYPE_32FC1){        
+        ROS_INFO("Depth encoding is 32fc1");
         depth = cv_bridge::toCvCopy(depth_image, sensor_msgs::image_encodings::TYPE_32FC1)->image;
     }
     else{
