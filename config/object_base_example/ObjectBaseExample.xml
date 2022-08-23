@@ -82,7 +82,7 @@
     
     <Attribute Name="StickerRoughDist" Type="RoughDist" realWidth="0.075"/>
     
-    <!--<Attribute Name="DepthKinect" Type="Depth" depthScale="0.001"/>-->
+    <Attribute Name="DepthKinect" Type="Depth" depthScale="0.001"/>
     
     <Attribute Name="DlibFace" Type="FaceDlib" Probability="0.4" base_file_path="face_recognition/base_faces.db" base_dir_path="face_recognition/base_faces/" sp_path="face_recognition/shape_predictor_5_face_landmarks.dat" net_path="face_recognition/dlib_face_recognition_resnet_model_v1.dat"/>
     
@@ -255,6 +255,7 @@
     <SimpleObject Name="CnnPerson" ID="67">              
         <Attribute Type="Detect">COCO_Dnn</Attribute>
         <Attribute Type="Check">COCO_person</Attribute>                
+        <Attribute Type="Extract" Channel="DEPTH">DepthKinect</Attribute>
         
     </SimpleObject>    
     

@@ -23,6 +23,14 @@ geometry_msgs::Vector3 multiplyVectorScalar(geometry_msgs::Vector3 vector, doubl
     return new_vector;
 }
 
+geometry_msgs::Point fromVector(const geometry_msgs::Vector3& vector){
+    geometry_msgs::Point point;
+    point.x = vector.x;
+    point.y = vector.y;
+    point.z = vector.z;
+    return point;
+}
+
 EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     nh_ = nh;
     nh_p_ = nh_p;
@@ -181,7 +189,7 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     }
     
     eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info) );
-    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), cv::Mat() );        
+    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info) );        
     
     detect(ii_rgb, ii_depth, rgb_image->header);
 }
@@ -219,7 +227,9 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         visualization_msgs::MarkerArray mrk_array_msg;    
         int id_cnt = 0;        
         for(auto& bo : simples_msg.objects){            
-            mrk_array_msg.markers.push_back(base_object_to_marker_arrow(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt++));
+            mrk_array_msg.markers.push_back(base_object_to_marker_arrow(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
+            mrk_array_msg.markers.push_back(base_object_to_marker_frame(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
+            id_cnt++;
         }
         simple_objects_markers_pub_.publish(mrk_array_msg);
     }    
@@ -245,28 +255,11 @@ extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( eod::SimpleOb
     bo.type_id = so->ID;
     bo.type_name = so->name;
     bo.score = eoi->total_score;
-    
+    // extracted info
     for( auto& exi : eoi->extracted_info){
         bo.extracted_info.keys.push_back(exi.first);
         bo.extracted_info.values.push_back(exi.second);        
-    }    
-    // rect
-    bo.rect.left_bottom.x = eoi->x;
-    bo.rect.left_bottom.y = eoi->y;
-    bo.rect.right_up.x = eoi->x + eoi->width;
-    bo.rect.right_up.y = eoi->y + eoi->height;
-    
-    // translation to rect's corners
-    geometry_msgs::Vector3 temp_translation;
-    temp_translation = getUnitTranslation(cv::Point(eoi->x, eoi->y), K);
-    bo.rect.cornerTranslates.push_back(temp_translation);
-    temp_translation = getUnitTranslation(cv::Point(eoi->x, eoi->y + eoi->width), K);
-    bo.rect.cornerTranslates.push_back(temp_translation);
-    temp_translation = getUnitTranslation(cv::Point(eoi->x + eoi->height, eoi->y + eoi->width), K);
-    bo.rect.cornerTranslates.push_back(temp_translation);
-    temp_translation = getUnitTranslation(cv::Point(eoi->x + eoi->height, eoi->y), K);
-    bo.rect.cornerTranslates.push_back(temp_translation);
-        
+    }        
     // translation
     if( eoi->tvec.size() > 0 ){
         bo.transform.translation.x = eoi->tvec[0][0];
@@ -286,27 +279,62 @@ extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( eod::SimpleOb
         bo.transform.rotation.y = quaternion[1];
         bo.transform.rotation.z = quaternion[2];
         bo.transform.rotation.w = quaternion[3];
-    }    
+    }   
     else // use zero quaternion
         bo.transform.rotation.w = 1;
+    
+    // rect
+    bo.rect.left_bottom.x = eoi->x;
+    bo.rect.left_bottom.y = eoi->y;
+    bo.rect.right_up.x = eoi->x + eoi->width;
+    bo.rect.right_up.y = eoi->y + eoi->height;
+    
+    // translation to rect's corners
+    geometry_msgs::Vector3 temp_translation;
+    temp_translation = multiplyVectorScalar(getUnitTranslation(cv::Point(eoi->x, eoi->y), K),bo.transform.translation.z);
+    bo.rect.cornerTranslates.push_back(temp_translation);
+    temp_translation = multiplyVectorScalar(getUnitTranslation(cv::Point(eoi->x, eoi->y + eoi->height), K),bo.transform.translation.z);
+    bo.rect.cornerTranslates.push_back(temp_translation);
+    temp_translation = multiplyVectorScalar(getUnitTranslation(cv::Point(eoi->x + eoi->width, eoi->y + eoi->height), K),bo.transform.translation.z);
+    bo.rect.cornerTranslates.push_back(temp_translation);
+    temp_translation = multiplyVectorScalar(getUnitTranslation(cv::Point(eoi->x + eoi->width, eoi->y), K),bo.transform.translation.z);
+    bo.rect.cornerTranslates.push_back(temp_translation);
+             
         
     //TODO tracks    
     return bo;
 }
 
-visualization_msgs::Marker EOD_ROS::base_object_to_marker_arrow(extended_object_detection::BaseObject base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id){
+visualization_msgs::Marker EOD_ROS::base_object_to_marker_arrow(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id){
     visualization_msgs::Marker mrk;
     mrk.header = header;    
     mrk.ns = base_object.type_name +"_arrow";
     mrk.id = id;
     mrk.type = visualization_msgs::Marker::ARROW;    
     mrk.points.push_back(geometry_msgs::Point());
-    geometry_msgs::Point end;
-    end.x = base_object.transform.translation.x;
-    end.y = base_object.transform.translation.y;
-    end.z = base_object.transform.translation.z;
+    geometry_msgs::Point end = fromVector(base_object.transform.translation);
     mrk.points.push_back(end);
     mrk.scale.x = 0.01;
+    mrk.scale.y = 0.02;
+    mrk.scale.z = 0.1; 
+    mrk.pose.orientation.w = 1;
+    mrk.color.r = color[0]/255;
+    mrk.color.g = color[1]/255;
+    mrk.color.b = color[2]/255;
+    mrk.color.a = 1;
+    return mrk;
+}
+
+visualization_msgs::Marker EOD_ROS::base_object_to_marker_frame(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id){
+    visualization_msgs::Marker mrk;
+    mrk.header = header;    
+    mrk.ns = base_object.type_name +"_frame";
+    mrk.id = id;
+    mrk.type = visualization_msgs::Marker::LINE_STRIP;    
+    for( auto& corner : base_object.rect.cornerTranslates )
+        mrk.points.push_back(fromVector(corner));
+    mrk.points.push_back(mrk.points[0]);    
+    mrk.scale.x = 0.02;
     mrk.scale.y = 0.02;
     mrk.scale.z = 0.1; 
     mrk.pose.orientation.w = 1;

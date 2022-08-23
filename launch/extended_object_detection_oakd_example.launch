@@ -21,7 +21,7 @@
         <remap from="depth/image_raw" to="/rgb_stereo_publisher/stereo/depth"/>
         <remap from="depth/info" to="/rgb_stereo_publisher/stereo/camera_info"/>
         
-        <rosparam param="selected_on_start_simple_objects">[]</rosparam>
+        <rosparam param="selected_on_start_simple_objects">[67]</rosparam>
         <rosparam param="selected_on_start_complex_objects">[-1]</rosparam>
         
     </node>
