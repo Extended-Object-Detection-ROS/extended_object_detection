@@ -7,20 +7,13 @@
 #include <visualization_msgs/MarkerArray.h>
 #include "geometry_utils.h"
 
-geometry_msgs::Vector3 getUnitTranslation(cv::Point point, const cv::Mat& K){
-    geometry_msgs::Vector3 unit_translate;
-    unit_translate.x = (point.x - K.at<double>(0,2)) / K.at<double>(0,0);
-    unit_translate.y = (point.y - K.at<double>(1,2)) / K.at<double>(1,1);
-    unit_translate.z = 1;
-    return unit_translate;
-}
 
-geometry_msgs::Vector3 multiplyVectorScalar(geometry_msgs::Vector3 vector, double scalar){
-    geometry_msgs::Vector3 new_vector;
-    new_vector.x = vector.x * scalar;
-    new_vector.y = vector.y * scalar;
-    new_vector.z = vector.z * scalar;
-    return new_vector;
+geometry_msgs::Vector3 fromCvVector(cv::Vec3d cv_vector){
+    geometry_msgs::Vector3 ros_vector;
+    ros_vector.x = cv_vector[0];
+    ros_vector.y = cv_vector[1];
+    ros_vector.z = cv_vector[2];
+    return ros_vector;
 }
 
 geometry_msgs::Point fromVector(const geometry_msgs::Vector3& vector){
@@ -41,16 +34,14 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
             
     sub_rgb_.subscribe(*rgb_it_, "camera/image_raw", 10);
     sub_info_.subscribe(nh_, "camera/info", 10);    
-    
-    
+        
     // get params
     nh_p_.param("subscribe_depth", subscribe_depth, false);
     nh_p_.param("rate_limit_sec", rate_limit_sec, 0.1);
     nh_p_.param("publish_image_output", publish_image_output, false);
     nh_p_.param("use_actual_time", use_actual_time, false);
     nh_p_.param("publish_markers", publish_markers, false);
-    
-    
+        
     std::string object_base_path;
     nh_p_.getParam("object_base",object_base_path);
     
@@ -137,12 +128,12 @@ cv::Mat EOD_ROS::getD(const sensor_msgs::CameraInfoConstPtr& info_msg){
 void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sensor_msgs::CameraInfoConstPtr& rgb_info){
     ROS_INFO("Get Image!");
     
-    // CHECK RATE
-    //if( !check_time(rgb_image->header.stamp) ) {
+    // CHECK RATE    
     if( !check_time(ros::Time::now()) ) {
         ROS_WARN("Skipped frame");
         return;
     }
+    // TODO add possibility to exclude old stamp images (if detection goes to slow)
     
     cv::Mat rgb;
     try{
@@ -154,19 +145,18 @@ void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sen
     }
     
     eod::InfoImage ii = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info) );    
-    detect(ii, eod::InfoImage(), rgb_image->header);
-    //detect(rgb, cv::Mat(), rgb_image->header);
+    detect(ii, eod::InfoImage(), rgb_image->header);    
 }
 
 void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sensor_msgs::CameraInfoConstPtr& rgb_info, const sensor_msgs::ImageConstPtr& depth_image, const sensor_msgs::CameraInfoConstPtr& depth_info){
     ROS_INFO("Got RGBD!");
     
-    // CHECK RATE   
-    //if( !check_time(rgb_image->header.stamp) ) {
+    // CHECK RATE       
     if( !check_time(ros::Time::now()) ) {
         ROS_WARN("Skipped frame");
         return;
     }
+    // TODO add possibility to exclude old stamp images (if detection goes to slow)
     
     cv::Mat rgb;
     try{
@@ -186,11 +176,9 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     }
     else{
         ROS_ERROR_THROTTLE(5, "Depth image has unsupported encoding [%s]", depth_image->encoding.c_str());
-    }
-    
+    }    
     eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info) );
-    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info) );        
-    
+    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info) );            
     detect(ii_rgb, ii_depth, rgb_image->header);
 }
 
@@ -267,7 +255,7 @@ extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( eod::SimpleOb
         bo.transform.translation.z = eoi->tvec[0][2];
     }
     else{
-        bo.transform.translation = getUnitTranslation(eoi->getCenter(), K);      
+        bo.transform.translation = fromCvVector(eod::get_translation(eoi->getCenter(), K, 1));
     }
     // rotation
     if (eoi->rvec.size() > 0 ){
@@ -291,15 +279,9 @@ extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( eod::SimpleOb
     
     // translation to rect's corners
     geometry_msgs::Vector3 temp_translation;
-    temp_translation = multiplyVectorScalar(getUnitTranslation(cv::Point(eoi->x, eoi->y), K),bo.transform.translation.z);
-    bo.rect.cornerTranslates.push_back(temp_translation);
-    temp_translation = multiplyVectorScalar(getUnitTranslation(cv::Point(eoi->x, eoi->y + eoi->height), K),bo.transform.translation.z);
-    bo.rect.cornerTranslates.push_back(temp_translation);
-    temp_translation = multiplyVectorScalar(getUnitTranslation(cv::Point(eoi->x + eoi->width, eoi->y + eoi->height), K),bo.transform.translation.z);
-    bo.rect.cornerTranslates.push_back(temp_translation);
-    temp_translation = multiplyVectorScalar(getUnitTranslation(cv::Point(eoi->x + eoi->width, eoi->y), K),bo.transform.translation.z);
-    bo.rect.cornerTranslates.push_back(temp_translation);
-             
+    for( auto& corner_p : eoi->getCorners() ){
+        bo.rect.cornerTranslates.push_back(fromCvVector(eod::get_translation(eod::float2intPoint(corner_p), K, bo.transform.translation.z)));
+    }             
         
     //TODO tracks    
     return bo;
