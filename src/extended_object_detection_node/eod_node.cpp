@@ -9,7 +9,7 @@
 #include <geometry_msgs/TransformStamped.h>
 
 
-geometry_msgs::Vector3 fromCvVector(cv::Vec3d cv_vector){
+geometry_msgs::Vector3 fromCvVector(const cv::Vec3d& cv_vector){
     geometry_msgs::Vector3 ros_vector;
     ros_vector.x = cv_vector[0];
     ros_vector.y = cv_vector[1];
@@ -132,14 +132,14 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
 }
 
 
-bool EOD_ROS::check_time(ros::Time stamp){
+bool EOD_ROS::check_time(const ros::Time& stamp){
     if( frame_sequence == 0)
         return true;        
     return (stamp - prev_detected_time).toSec() > rate_limit_sec;
 }
 
 
-bool EOD_ROS::check_lag(ros::Time stamp, double& lag){     
+bool EOD_ROS::check_lag(const ros::Time& stamp, double& lag){     
     if( allowed_lag_sec == 0)
         return true;
     lag = (ros::Time::now() - stamp).toSec();
@@ -214,14 +214,12 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
         return;
     }    
     cv::Mat depth;    
-    if (depth_image->encoding == sensor_msgs::image_encodings::TYPE_16UC1){
-        //ROS_INFO("Depth encoding is 16uc1");
+    if (depth_image->encoding == sensor_msgs::image_encodings::TYPE_16UC1){    
         depth = cv_bridge::toCvCopy(depth_image, sensor_msgs::image_encodings::TYPE_16UC1)->image;
         depth.convertTo(depth, CV_32F);
         depth *= 0.001f;
     }
-    else if(depth_image->encoding == sensor_msgs::image_encodings::TYPE_32FC1){
-        //ROS_INFO("Depth encoding is 32fc1");
+    else if(depth_image->encoding == sensor_msgs::image_encodings::TYPE_32FC1){        
         depth = cv_bridge::toCvCopy(depth_image, sensor_msgs::image_encodings::TYPE_32FC1)->image;
     }
     else{
