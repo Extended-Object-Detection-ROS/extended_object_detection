@@ -47,7 +47,7 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     nh_p_.param("use_actual_time", use_actual_time, false);
     nh_p_.param("publish_markers", publish_markers, false);
     nh_p_.param("broadcast_tf", broadcast_tf, false);
-    nh_p_.param("allowed_lag_sec", allowed_lag_sec, 0.1);
+    nh_p_.param("allowed_lag_sec", allowed_lag_sec, 0.0);
             
     std::string object_base_path;
     nh_p_.getParam("object_base",object_base_path);
