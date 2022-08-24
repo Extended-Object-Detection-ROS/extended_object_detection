@@ -73,6 +73,7 @@ private:
     bool use_actual_time;
     bool publish_markers;
     bool broadcast_tf;
+    double allowed_lag_sec;
     
     // vars
     int frame_sequence;     
@@ -92,6 +93,7 @@ private:
     //void detect(const cv::Mat& rgb, const cv::Mat& depth, std_msgs::Header header);
     void detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header);
     bool check_time(ros::Time stamp);
+    bool check_lag(ros::Time stamp, double &lag);
     //void add_data_to_simple_msg( eod::SimpleObject*, extended_object_detection::SimpleObjectArray& msg, const cv::Mat& K);
     extended_object_detection::BaseObject eoi_to_base_object(std::string name, int id, eod::ExtendedObjectInfo* eoi, const cv::Mat& K);
     cv::Mat getK(const sensor_msgs::CameraInfoConstPtr& info_msg);

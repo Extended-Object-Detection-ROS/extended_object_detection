@@ -45,6 +45,7 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     nh_p_.param("use_actual_time", use_actual_time, false);
     nh_p_.param("publish_markers", publish_markers, false);
     nh_p_.param("broadcast_tf", broadcast_tf, false);
+    nh_p_.param("allowed_lag_sec", allowed_lag_sec, 0.1);
             
     std::string object_base_path;
     nh_p_.getParam("object_base",object_base_path);
@@ -136,6 +137,14 @@ bool EOD_ROS::check_time(ros::Time stamp){
 }
 
 
+bool EOD_ROS::check_lag(ros::Time stamp, double& lag){     
+    if( allowed_lag_sec == 0)
+        return true;
+    lag = (ros::Time::now() - stamp).toSec();
+    return lag <= allowed_lag_sec;
+}
+
+
 cv::Mat EOD_ROS::getK(const sensor_msgs::CameraInfoConstPtr& info_msg){
     cv::Mat K = cv::Mat::zeros(3, 3, CV_64F);
     for (size_t i=0; i<3; i++) {
@@ -162,8 +171,12 @@ void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sen
     if( !check_time(ros::Time::now()) ) {
         ROS_WARN("Skipped frame");
         return;
-    }
-    // TODO add possibility to exclude old stamp images (if detection goes to slow)
+    }    
+    double lag;
+    if( !check_lag(rgb_image->header.stamp, lag) ) {
+        ROS_WARN("Dropped frame, lag = %f", lag);
+        return;
+    }    
     cv::Mat rgb;
     try{
         rgb = cv_bridge::toCvCopy(rgb_image, "bgr8")->image;
@@ -182,6 +195,11 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     // CHECK RATE       
     if( !check_time(ros::Time::now()) ) {
         ROS_WARN("Skipped frame");
+        return;
+    }
+    double lag;
+    if( !check_lag(rgb_image->header.stamp, lag) ) {
+        ROS_WARN("Dropped frame, lag = %f", lag);
         return;
     }
     // TODO add possibility to exclude old stamp images (if detection goes to slow)    
