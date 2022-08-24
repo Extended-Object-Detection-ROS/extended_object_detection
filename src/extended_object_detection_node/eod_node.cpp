@@ -96,8 +96,15 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
 #endif
     // set up publishers
     simple_objects_pub_ = nh_p_.advertise<extended_object_detection::SimpleObjectArray>("simple_objects",1);
-    if( publish_markers)
+#ifdef USE_IGRAPH
+    complex_objects_pub_ = nh_p_.advertise<extended_object_detection::ComplexObjectArray>("complex_objects",1);
+#endif
+    if( publish_markers){
         simple_objects_markers_pub_ = nh_p_.advertise<visualization_msgs::MarkerArray>("simple_objects_markers",1);
+#ifdef USE_IGRAPH
+        complex_objects_markers_pub_ = nh_p_.advertise<visualization_msgs::MarkerArray>("complex_objects_markers",1);
+#endif
+    }
     
     private_it_ = new image_transport::ImageTransport(nh_p_);
     output_image_pub_ = private_it_->advertise("detected_image", 1);
@@ -228,9 +235,15 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     for(auto& c_it : selected_complex_objects){
         //ROS_INFO("Identifying complex...");
         c_it->Identify(rgb, depth, frame_sequence);
-        for(auto& eoi : c_it->complex_objects){
+        //for(auto& eoi : c_it->complex_objects){
+        for( size_t i = 0 ; i < c_it->complex_objects.size() ; i++ ){            
             extended_object_detection::ComplexObject cmplx_msg;
-            cmplx_msg.complex_object = eoi_to_base_object(c_it->name, c_it->ID, &eoi, rgb.K());
+            
+            cmplx_msg.complex_object = eoi_to_base_object(c_it->name, c_it->ID, &(c_it->complex_objects[i]), rgb.K());
+            
+            for( auto& name_eoi : c_it->simple_objects[i] ){// DANGER: I belive size complex_objects == size simple_objects
+                cmplx_msg.simple_objects.push_back(eoi_to_base_object(name_eoi.first, -1, name_eoi.second, rgb.K()));
+            }                        
             complex_msg.objects.push_back(cmplx_msg);
         }
         if(publish_image_output)
@@ -242,6 +255,9 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         simples_msg.header.stamp = ros::Time::now();
         
     simple_objects_pub_.publish(simples_msg);
+#ifdef USE_IGRAPH
+    complex_objects_pub_.publish(complex_msg);
+#endif
     
     if(publish_markers){
         visualization_msgs::MarkerArray mrk_array_msg;    

@@ -52,6 +52,10 @@ private:
     
     ros::Publisher simple_objects_pub_;
     ros::Publisher simple_objects_markers_pub_;
+#ifdef USE_IGRAPH
+    ros::Publisher complex_objects_pub_;
+    ros::Publisher complex_objects_markers_pub_;
+#endif
     image_transport::ImageTransport *private_it_;
     image_transport::Publisher output_image_pub_;
     
