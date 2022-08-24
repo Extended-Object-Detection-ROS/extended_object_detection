@@ -9,6 +9,7 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+#include <tf2_ros/transform_broadcaster.h>
 
 #include <std_msgs/Header.h>
 #include <sensor_msgs/Image.h>
@@ -63,6 +64,7 @@ private:
 #ifdef USE_IGRAPH
     ros::ServiceServer set_complex_objects_srv_;
 #endif
+    tf2_ros::TransformBroadcaster transform_broadcaster_;
     
     // params
     bool subscribe_depth;
@@ -70,6 +72,7 @@ private:
     bool publish_image_output;
     bool use_actual_time;
     bool publish_markers;
+    bool broadcast_tf;
     
     // vars
     int frame_sequence;     
@@ -96,12 +99,11 @@ private:
     
     visualization_msgs::Marker base_object_to_marker_arrow(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id);
     visualization_msgs::Marker base_object_to_marker_frame(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id);
-    visualization_msgs::Marker base_object_to_marker_text(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id);
-    
+    visualization_msgs::Marker base_object_to_marker_text(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id);        
     int find_simple_obj_index_by_id(int id);
 #ifdef USE_IGRAPH
     int find_complex_obj_index_by_id(int id);
-#endif
+#endif    
     
     // EOD
     eod::ObjectBase * object_base;

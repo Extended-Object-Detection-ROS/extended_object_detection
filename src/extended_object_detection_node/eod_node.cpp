@@ -6,6 +6,7 @@
 #include <math.h>
 #include <visualization_msgs/MarkerArray.h>
 #include "geometry_utils.h"
+#include <geometry_msgs/TransformStamped.h>
 
 
 geometry_msgs::Vector3 fromCvVector(cv::Vec3d cv_vector){
@@ -43,7 +44,8 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     nh_p_.param("publish_image_output", publish_image_output, false);
     nh_p_.param("use_actual_time", use_actual_time, false);
     nh_p_.param("publish_markers", publish_markers, false);
-        
+    nh_p_.param("broadcast_tf", broadcast_tf, false);
+            
     std::string object_base_path;
     nh_p_.getParam("object_base",object_base_path);
     
@@ -259,6 +261,33 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     complex_objects_pub_.publish(complex_msg);
 #endif
     
+    if(broadcast_tf){
+        geometry_msgs::TransformStamped trsfrm;
+        trsfrm.header = header;
+        int id = 0;
+        std::string prev_name = "";
+        for( auto& bo : simples_msg.objects){            
+            if( prev_name != bo.type_name)
+                id = 0;
+            trsfrm.child_frame_id = bo.type_name + "_" + std::to_string(id);
+            trsfrm.transform = bo.transform;
+            transform_broadcaster_.sendTransform(trsfrm);
+            id++;
+            prev_name = bo.type_name;
+        }
+#ifdef USE_IGRAPH
+        for( auto& cbo : complex_msg.objects){
+            if( prev_name != cbo.complex_object.type_name)
+                id = 0;
+            trsfrm.child_frame_id = cbo.complex_object.type_name + "_" + std::to_string(id);
+            trsfrm.transform = cbo.complex_object.transform;
+            transform_broadcaster_.sendTransform(trsfrm);
+            id++;
+            prev_name = cbo.complex_object.type_name;    
+        }
+#endif                        
+    }
+    
     if(publish_markers){
         visualization_msgs::MarkerArray mrk_array_msg;    
         int id_cnt = 0;        
@@ -292,7 +321,6 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     }        
     frame_sequence++;    
 }
-
 
 extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( std::string name, int id,  eod::ExtendedObjectInfo* eoi, const cv::Mat& K){
     //ROS_INFO("Forming...");
