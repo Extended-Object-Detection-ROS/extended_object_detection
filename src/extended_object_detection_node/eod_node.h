@@ -56,6 +56,9 @@ private:
     image_transport::Publisher output_image_pub_;
     
     ros::ServiceServer set_simple_objects_srv_;
+#ifdef USE_IGRAPH
+    ros::ServiceServer set_complex_objects_srv_;
+#endif
     
     // params
     bool subscribe_depth;
@@ -72,6 +75,9 @@ private:
     void rgb_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info);
     
     bool set_simple_objects_cb(extended_object_detection::SetObjects::Request &req, extended_object_detection::SetObjects::Response &res);
+#ifdef USE_IGRAPH
+    bool set_complex_objects_cb(extended_object_detection::SetObjects::Request &req, extended_object_detection::SetObjects::Response &res);
+#endif
     
     void rgbd_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info, const sensor_msgs::ImageConstPtr& depth_image, const sensor_msgs::CameraInfoConstPtr& depth_info);
     
@@ -79,8 +85,8 @@ private:
     //void detect(const cv::Mat& rgb, const cv::Mat& depth, std_msgs::Header header);
     void detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header);
     bool check_time(ros::Time stamp);
-    void add_data_to_simple_msg( eod::SimpleObject*, extended_object_detection::SimpleObjectArray& msg, const cv::Mat& K);
-    extended_object_detection::BaseObject eoi_to_base_object(eod::SimpleObject* so, eod::ExtendedObjectInfo* eoi, const cv::Mat& K);
+    //void add_data_to_simple_msg( eod::SimpleObject*, extended_object_detection::SimpleObjectArray& msg, const cv::Mat& K);
+    extended_object_detection::BaseObject eoi_to_base_object(std::string name, int id, eod::ExtendedObjectInfo* eoi, const cv::Mat& K);
     cv::Mat getK(const sensor_msgs::CameraInfoConstPtr& info_msg);
     cv::Mat getD(const sensor_msgs::CameraInfoConstPtr& info_msg);    
     
@@ -88,6 +94,9 @@ private:
     visualization_msgs::Marker base_object_to_marker_frame(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id);
     
     int find_simple_obj_index_by_id(int id);
+#ifdef USE_IGRAPH
+    int find_complex_obj_index_by_id(int id);
+#endif
     
     // EOD
     eod::ObjectBase * object_base;

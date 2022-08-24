@@ -26,8 +26,8 @@
         <remap from="depth/image_raw" to="/oak/stereo/depth"/>
         <remap from="depth/info" to="/oak/stereo/camera_info"/>
         
-        <rosparam param="selected_on_start_simple_objects">[67]</rosparam>
-        <rosparam param="selected_on_start_complex_objects">[-1]</rosparam>
+        <rosparam param="selected_on_start_simple_objects">[-1]</rosparam>
+        <rosparam param="selected_on_start_complex_objects">[10]</rosparam>
         
     </node>
               
