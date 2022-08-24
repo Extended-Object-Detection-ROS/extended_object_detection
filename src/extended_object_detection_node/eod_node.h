@@ -92,12 +92,10 @@ private:
     
     void rgbd_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info, const sensor_msgs::ImageConstPtr& depth_image, const sensor_msgs::CameraInfoConstPtr& depth_info);
     
-    // functions
-    //void detect(const cv::Mat& rgb, const cv::Mat& depth, std_msgs::Header header);
+    // functions    
     void detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header);
     bool check_time(const ros::Time& stamp);
-    bool check_lag(const ros::Time& stamp, double &lag);
-    //void add_data_to_simple_msg( eod::SimpleObject*, extended_object_detection::SimpleObjectArray& msg, const cv::Mat& K);
+    bool check_lag(const ros::Time& stamp, double &lag);    
     extended_object_detection::BaseObject eoi_to_base_object(std::string name, int id, eod::ExtendedObjectInfo* eoi, const cv::Mat& K);
     cv::Mat getK(const sensor_msgs::CameraInfoConstPtr& info_msg);
     cv::Mat getD(const sensor_msgs::CameraInfoConstPtr& info_msg);    
