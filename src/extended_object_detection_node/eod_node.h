@@ -21,6 +21,8 @@
 #include "extended_object_detection/ComplexObjectArray.h"
 #include "extended_object_detection/SetObjects.h"
 
+#include <boost/circular_buffer.hpp>
+
 #include "ObjectBase.h"
 
 
@@ -78,6 +80,7 @@ private:
     // vars
     int frame_sequence;     
     ros::Time prev_detected_time;
+    boost::circular_buffer<double>* detect_rate_values;
     
     // callbacks
     void rgb_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info);
@@ -106,6 +109,7 @@ private:
 #ifdef USE_IGRAPH
     int find_complex_obj_index_by_id(int id);
 #endif    
+    double get_detect_rate();
     
     // EOD
     eod::ObjectBase * object_base;

@@ -38,6 +38,8 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     sub_rgb_.subscribe(*rgb_it_, "camera/image_raw", 10);
     sub_info_.subscribe(nh_, "camera/info", 10);    
         
+    detect_rate_values = new boost::circular_buffer<double>(10);
+    
     // get params
     nh_p_.param("subscribe_depth", subscribe_depth, false);
     nh_p_.param("rate_limit_sec", rate_limit_sec, 0.1);
@@ -234,6 +236,9 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
 
 void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header){
     ROS_INFO("Detecting...");
+    if( frame_sequence != 0 ){
+        detect_rate_values->push_back((ros::Time::now() - prev_detected_time).toSec());
+    }
     prev_detected_time = ros::Time::now();
     
     cv::Mat image_to_draw;                
@@ -397,7 +402,8 @@ visualization_msgs::Marker EOD_ROS::base_object_to_marker_arrow(extended_object_
     mrk.header = header;    
     mrk.ns = base_object.type_name +"_arrow";
     mrk.id = id;
-    mrk.type = visualization_msgs::Marker::ARROW;    
+    mrk.type = visualization_msgs::Marker::ARROW; 
+    mrk.lifetime = ros::Duration(get_detect_rate());
     mrk.points.push_back(geometry_msgs::Point());
     geometry_msgs::Point end = fromVector(base_object.transform.translation);
     mrk.points.push_back(end);
@@ -419,6 +425,7 @@ visualization_msgs::Marker EOD_ROS::base_object_to_marker_frame(extended_object_
     mrk.ns = base_object.type_name +"_frame";
     mrk.id = id;
     mrk.type = visualization_msgs::Marker::LINE_STRIP;    
+    mrk.lifetime = ros::Duration(get_detect_rate());
     for( auto& corner : base_object.rect.cornerTranslates )
         mrk.points.push_back(fromVector(corner));
     mrk.points.push_back(mrk.points[0]);    
@@ -439,7 +446,8 @@ visualization_msgs::Marker EOD_ROS::base_object_to_marker_text(extended_object_d
     mrk.header = header;    
     mrk.ns = base_object.type_name +"_text";
     mrk.id = id;
-    mrk.type = visualization_msgs::Marker::TEXT_VIEW_FACING;    
+    mrk.type = visualization_msgs::Marker::TEXT_VIEW_FACING; 
+    mrk.lifetime = ros::Duration(get_detect_rate());
     mrk.pose.position = fromVector(base_object.transform.translation);    
     mrk.pose.position.y = base_object.rect.cornerTranslates[0].y - 0.14; // place text upper top frame part
     mrk.text = std::to_string(base_object.type_id)+":"+base_object.type_name+"["+std::to_string(base_object.score).substr(0,4)+"]";
@@ -573,6 +581,17 @@ bool EOD_ROS::set_complex_objects_cb(extended_object_detection::SetObjects::Requ
     return true;
 }
 #endif
+
+
+double EOD_ROS::get_detect_rate(){
+    if( detect_rate_values->empty() )
+        return 0;
+    double sum_rate = 0;
+    for(auto& rate : *detect_rate_values)
+        sum_rate += rate;
+    return sum_rate / detect_rate_values->size();
+}
+
 
 int main(int argc, char **argv)
 {
