@@ -265,11 +265,27 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         for(auto& bo : simples_msg.objects){            
             mrk_array_msg.markers.push_back(base_object_to_marker_arrow(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
             mrk_array_msg.markers.push_back(base_object_to_marker_frame(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
+            mrk_array_msg.markers.push_back(base_object_to_marker_text(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
             id_cnt++;
         }
         simple_objects_markers_pub_.publish(mrk_array_msg);
-    }    
-    
+#ifdef USE_IGRAPH
+        visualization_msgs::MarkerArray cmplx_mrk_array_msg;
+        id_cnt = 0;        
+        for(auto& co : complex_msg.objects){            
+            cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_arrow(co.complex_object, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
+            cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_frame(co.complex_object, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
+            cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_text(co.complex_object, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
+            id_cnt++;
+            for( auto& so : co.simple_objects){
+                cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_frame(so, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
+                id_cnt++;
+            }
+        }
+        
+        complex_objects_markers_pub_.publish(cmplx_mrk_array_msg);
+#endif
+    }        
     if(publish_image_output){
         sensor_msgs::ImagePtr detected_image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_to_draw).toImageMsg();
         output_image_pub_.publish(detected_image_msg);
@@ -360,6 +376,27 @@ visualization_msgs::Marker EOD_ROS::base_object_to_marker_frame(extended_object_
     for( auto& corner : base_object.rect.cornerTranslates )
         mrk.points.push_back(fromVector(corner));
     mrk.points.push_back(mrk.points[0]);    
+    mrk.scale.x = 0.02;
+    mrk.scale.y = 0.02;
+    mrk.scale.z = 0.1; 
+    mrk.pose.orientation.w = 1;
+    mrk.color.r = color[0]/255;
+    mrk.color.g = color[1]/255;
+    mrk.color.b = color[2]/255;
+    mrk.color.a = 1;
+    return mrk;
+}
+
+
+visualization_msgs::Marker EOD_ROS::base_object_to_marker_text(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id){
+    visualization_msgs::Marker mrk;
+    mrk.header = header;    
+    mrk.ns = base_object.type_name +"_text";
+    mrk.id = id;
+    mrk.type = visualization_msgs::Marker::TEXT_VIEW_FACING;    
+    mrk.pose.position = fromVector(base_object.transform.translation);    
+    mrk.pose.position.y = base_object.rect.cornerTranslates[0].y - 0.14; // place text upper top frame part
+    mrk.text = std::to_string(base_object.type_id)+":"+base_object.type_name+"["+std::to_string(base_object.score).substr(0,4)+"]";
     mrk.scale.x = 0.02;
     mrk.scale.y = 0.02;
     mrk.scale.z = 0.1; 

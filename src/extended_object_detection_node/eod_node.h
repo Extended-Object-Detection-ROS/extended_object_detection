@@ -96,6 +96,7 @@ private:
     
     visualization_msgs::Marker base_object_to_marker_arrow(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id);
     visualization_msgs::Marker base_object_to_marker_frame(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id);
+    visualization_msgs::Marker base_object_to_marker_text(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id);
     
     int find_simple_obj_index_by_id(int id);
 #ifdef USE_IGRAPH
