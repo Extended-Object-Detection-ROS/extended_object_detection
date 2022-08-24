@@ -154,8 +154,7 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
         ROS_WARN("Skipped frame");
         return;
     }
-    // TODO add possibility to exclude old stamp images (if detection goes to slow)
-    
+    // TODO add possibility to exclude old stamp images (if detection goes to slow)    
     cv::Mat rgb;
     try{
         rgb = cv_bridge::toCvCopy(rgb_image, "bgr8")->image;          
@@ -163,20 +162,22 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     catch (cv_bridge::Exception& e){
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.", rgb_image->encoding.c_str());
         return;
-    }
-    
+    }    
     cv::Mat depth;    
-    if (depth_image->encoding == sensor_msgs::image_encodings::TYPE_16UC1){        
-        ROS_INFO("Depth encoding is 16uc1");
-        depth = cv_bridge::toCvCopy(depth_image, sensor_msgs::image_encodings::TYPE_16UC1)->image * 0.001f;
+    if (depth_image->encoding == sensor_msgs::image_encodings::TYPE_16UC1){
+        //ROS_INFO("Depth encoding is 16uc1");
+        depth = cv_bridge::toCvCopy(depth_image, sensor_msgs::image_encodings::TYPE_16UC1)->image;
+        depth.convertTo(depth, CV_32F);
+        depth *= 0.001f;
     }
-    else if(depth_image->encoding == sensor_msgs::image_encodings::TYPE_32FC1){        
-        ROS_INFO("Depth encoding is 32fc1");
+    else if(depth_image->encoding == sensor_msgs::image_encodings::TYPE_32FC1){
+        //ROS_INFO("Depth encoding is 32fc1");
         depth = cv_bridge::toCvCopy(depth_image, sensor_msgs::image_encodings::TYPE_32FC1)->image;
     }
     else{
         ROS_ERROR_THROTTLE(5, "Depth image has unsupported encoding [%s]", depth_image->encoding.c_str());
     }    
+    //ROS_INFO("Depth type is %i", depth.type());
     eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info) );
     eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info) );            
     detect(ii_rgb, ii_depth, rgb_image->header);
