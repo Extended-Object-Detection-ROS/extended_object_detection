@@ -19,7 +19,7 @@ eod::SizeAttribute* sd;
 int seq;
 
 Mat mask;
-Mat last_image;
+eod::InfoImage last_image;
 Mat saved_image;
 int lo = 20; 
 int up = 20;

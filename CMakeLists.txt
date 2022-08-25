@@ -51,7 +51,7 @@ add_message_files(
   Track.msg
   ExtractedInfo.msg
   Contour.msg
-  SimpleObject.msg
+  BaseObject.msg
   SimpleObjectArray.msg
   ComplexObject.msg
   ComplexObjectArray.msg  
@@ -60,7 +60,7 @@ add_message_files(
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  SetSimpleObjects.srv
+  SetObjects.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -90,7 +90,8 @@ set( EOD_SRC
     src/lib/types/Tracker.cpp
     src/lib/types/Relationship.cpp    
     src/lib/types/Filtering.cpp    
-    src/lib/types/Clusterization.cpp    
+    src/lib/types/Clusterization.cpp   
+    src/lib/types/InfoImage.cpp
     # lib utils
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
@@ -118,6 +119,7 @@ set( EOD_SRC
     src/lib/detectors/FaceDlibDetector.cpp 
     src/lib/detectors/ExtractedInfoIdChecker.cpp
     src/lib/detectors/ExtractedInfoStringChecker.cpp
+    src/lib/detectors/UnitTranslationExtracter.cpp
 
     # lib relations        
     src/lib/relations/ImageRangeRelation.cpp
@@ -139,7 +141,7 @@ set ( EOD_INCLUDE
 # main node
 add_executable(
     extended_object_detection_node
-    src/extended_object_detection_node/extended_object_detection_node.cpp
+    src/extended_object_detection_node/eod_node.cpp
     ${EOD_SRC}
 )
 
@@ -173,6 +175,7 @@ add_executable(
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
     src/lib/types/Clusterization.cpp    
+    src/lib/types/InfoImage.cpp
     # utils    
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
@@ -192,6 +195,7 @@ add_executable(
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
     src/lib/types/Clusterization.cpp    
+    src/lib/types/InfoImage.cpp
     # utils
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
@@ -210,7 +214,8 @@ add_executable(
     src/lib/types/Attribute.cpp
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
-    src/lib/types/Clusterization.cpp    
+    src/lib/types/Clusterization.cpp   
+    src/lib/types/InfoImage.cpp
     # utils   
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
@@ -230,6 +235,7 @@ add_executable(
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
     src/lib/types/Clusterization.cpp    
+    src/lib/types/InfoImage.cpp
     # utils   
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
@@ -248,7 +254,8 @@ add_executable(
     src/lib/types/Attribute.cpp
     src/lib/types/SimpleObject.cpp
     src/lib/types/Filtering.cpp
-    src/lib/types/Clusterization.cpp    
+    src/lib/types/Clusterization.cpp   
+    src/lib/types/InfoImage.cpp
     # utils    
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
@@ -268,6 +275,7 @@ if(DLib)
         src/lib/types/SimpleObject.cpp
         src/lib/types/Filtering.cpp
         src/lib/types/Clusterization.cpp    
+        src/lib/types/InfoImage.cpp
         # utils    
         src/lib/utils/geometry_utils.cpp
         src/lib/utils/drawing_utils.cpp

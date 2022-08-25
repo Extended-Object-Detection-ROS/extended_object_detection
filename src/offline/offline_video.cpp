@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     printf("Starting process...\n");
     int seq = 0;
     while(1){
-        Mat frame;
+        InfoImage frame;
         cap >> frame;
         
         if( frame.empty() )

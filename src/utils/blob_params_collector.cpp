@@ -31,7 +31,7 @@ int mir = 1;
 
 int seq;
 
-Mat last_image;
+eod::InfoImage last_image;
 static const std::string OUTPUT_WINDOW = "Blob params collector";
 
 eod::SimpleObject blobObject;
@@ -55,7 +55,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
   try
   {
-      last_image = cv_bridge::toCvShare(msg, "bgr8")->image;  
+      last_image = cv_bridge::toCvShare(msg, "bgr8")->image;
       
       blobObject.Identify(last_image, cv::Mat(), seq);
       seq++;
