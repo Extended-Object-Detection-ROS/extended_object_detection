@@ -368,7 +368,7 @@ extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( std::string n
     if (eoi->rvec.size() > 0 ){
         double quaternion[4];
         cv::Mat rotMat;
-        cv::Rodrigues(eoi->rvec, rotMat);
+        cv::Rodrigues(eoi->rvec[0], rotMat);
         eod::getQuaternion( rotMat, quaternion);
         bo.transform.rotation.x = quaternion[0];
         bo.transform.rotation.y = quaternion[1];
