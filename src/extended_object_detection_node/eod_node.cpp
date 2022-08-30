@@ -272,6 +272,10 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         if(publish_image_output)
             c_it->drawAll(image_to_draw, cv::Scalar(255, 255, 0), 2);
     }
+    
+    for(auto& scene_it : object_base->scenes){
+        scene_it->Identify(rgb, depth, frame_sequence);
+    }
 #endif    
     simples_msg.header = header;
     if( use_actual_time )

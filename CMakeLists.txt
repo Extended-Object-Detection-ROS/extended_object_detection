@@ -9,7 +9,7 @@ set(opencv_contrib OFF)
 set(zbar_lib OFF)
 set(TensorFlow OFF)
 set(DLib OFF)
-set(igraph OFF)
+set(igraph ON)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -92,10 +92,12 @@ set( EOD_SRC
     src/lib/types/Filtering.cpp    
     src/lib/types/Clusterization.cpp   
     src/lib/types/InfoImage.cpp
+    src/lib/types/Scene.cpp
     # lib utils
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
     src/lib/utils/contour_utils.cpp
+    src/lib/utils/math_utils.cpp
     # lib detectors
     src/lib/detectors/HsvColorDetector.cpp
     src/lib/detectors/HaarCascadeDetector.cpp
