@@ -607,11 +607,11 @@ visualization_msgs::Marker EOD_ROS::scene_object_to_marker(eod::SceneObject* sce
     
     marker.lifetime = ros::Duration(get_detect_rate());
     
-    marker.pose.position.x = scene_obj->x*2;
-    marker.pose.position.y = scene_obj->y*2;
+    marker.pose.position.x = scene_obj->x;
+    marker.pose.position.y = scene_obj->y;
     marker.pose.position.z = scene_obj->z;
-    marker.scale.x = scene_obj->r;
-    marker.scale.y = scene_obj->r;
+    marker.scale.x = scene_obj->r*2;
+    marker.scale.y = scene_obj->r*2;
     marker.scale.z = scene_obj->h;
     marker.pose.orientation.w = 1;
     
