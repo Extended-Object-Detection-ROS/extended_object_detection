@@ -108,6 +108,7 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
         simple_objects_markers_pub_ = nh_p_.advertise<visualization_msgs::MarkerArray>("simple_objects_markers",1);
 #ifdef USE_IGRAPH
         complex_objects_markers_pub_ = nh_p_.advertise<visualization_msgs::MarkerArray>("complex_objects_markers",1);
+        scenes_markers_pub_ = nh_p_.advertise<visualization_msgs::MarkerArray>("scenes_markers",1);
 #endif
     }
     
@@ -273,9 +274,21 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
             c_it->drawAll(image_to_draw, cv::Scalar(255, 255, 0), 2);
     }
     
+    visualization_msgs::MarkerArray scene_marker_array_msg;
     for(auto& scene_it : object_base->scenes){
-        scene_it->Identify(rgb, depth, frame_sequence);
+        std::vector<std::pair<double, std::vector<std::pair<eod::SceneObject*, eod::ExtendedObjectInfo*>>>> scenes = scene_it->Identify(rgb, depth, frame_sequence);
+        
+        int ns = 0;
+        for( auto& scene : scenes ){            
+            int id = 0;
+            for( auto& obj : scene.second ){
+                scene_marker_array_msg.markers.push_back(scene_object_to_marker(obj.first, ns, id));
+                id++;
+            }
+            ns++;            
+        }
     }
+    scenes_markers_pub_.publish(scene_marker_array_msg);
 #endif    
     simples_msg.header = header;
     if( use_actual_time )
@@ -582,6 +595,33 @@ bool EOD_ROS::set_complex_objects_cb(extended_object_detection::SetObjects::Requ
         res.result.push_back(co->ID);
     return true;
 }
+
+visualization_msgs::Marker EOD_ROS::scene_object_to_marker(eod::SceneObject* scene_obj, int ns, int id){
+    visualization_msgs::Marker marker;
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = "map";
+    marker.type = visualization_msgs::Marker::CYLINDER;
+    
+    marker.ns = std::to_string(ns);
+    marker.id = id;
+    
+    marker.lifetime = ros::Duration(get_detect_rate());
+    
+    marker.pose.position.x = scene_obj->x*2;
+    marker.pose.position.y = scene_obj->y*2;
+    marker.pose.position.z = scene_obj->z;
+    marker.scale.x = scene_obj->r;
+    marker.scale.y = scene_obj->r;
+    marker.scale.z = scene_obj->h;
+    marker.pose.orientation.w = 1;
+    
+    marker.color.g = 1;
+    marker.color.a = 1;
+    
+    return marker;
+    
+}
+
 #endif
 
 

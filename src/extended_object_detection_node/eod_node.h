@@ -58,6 +58,7 @@ private:
 #ifdef USE_IGRAPH
     ros::Publisher complex_objects_pub_;
     ros::Publisher complex_objects_markers_pub_;
+    ros::Publisher scenes_markers_pub_;
 #endif
     image_transport::ImageTransport *private_it_;
     image_transport::Publisher output_image_pub_;
@@ -106,6 +107,7 @@ private:
     int find_simple_obj_index_by_id(int id);
 #ifdef USE_IGRAPH
     int find_complex_obj_index_by_id(int id);
+    visualization_msgs::Marker scene_object_to_marker(eod::SceneObject*, int ns, int id);
 #endif    
     double get_detect_rate();
     
@@ -113,7 +115,7 @@ private:
     eod::ObjectBase * object_base;
     std::vector<eod::SimpleObject*> selected_simple_objects;
 #ifdef USE_IGRAPH
-    std::vector<eod::ComplexObjectGraph*> selected_complex_objects;
+    std::vector<eod::ComplexObjectGraph*> selected_complex_objects;    
 #endif
     
     
