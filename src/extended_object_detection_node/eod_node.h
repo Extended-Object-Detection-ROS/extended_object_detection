@@ -15,6 +15,7 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 
 #include "extended_object_detection/BaseObject.h"
 #include "extended_object_detection/SimpleObjectArray.h"
@@ -107,7 +108,10 @@ private:
     int find_simple_obj_index_by_id(int id);
 #ifdef USE_IGRAPH
     int find_complex_obj_index_by_id(int id);
-    visualization_msgs::Marker scene_object_to_marker(eod::SceneObject*, int ns, int id);
+    void scene_to_markers(std::pair<double, std::vector<std::pair<eod::SceneObject*, eod::ExtendedObjectInfo*>>> scene, int ns, visualization_msgs::MarkerArray &scene_marker_array_msg);
+    visualization_msgs::Marker scene_object_to_cylinder_marker(eod::SceneObject*, int ns, int id);
+    visualization_msgs::Marker scene_object_to_text_marker(eod::SceneObject*, int ns, int id);
+    visualization_msgs::Marker scene_object_to_line_marker(eod::SceneObject*, int ns, int id, double x, double y, double z);
 #endif    
     double get_detect_rate();
     
