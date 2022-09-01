@@ -299,9 +299,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
             scenes_array_msg.scenes.push_back(scene_msg);
         }        
         
-    }    
-    scenes_pub_.publish(scenes_array_msg);
-    
+    }            
 #endif    
     // publishing and visualization
     simples_msg.header = header;
@@ -320,6 +318,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     simple_objects_pub_.publish(simples_msg);
 #ifdef USE_IGRAPH
     complex_objects_pub_.publish(complex_msg);
+    scenes_pub_.publish(scenes_array_msg);
 #endif
     
     if(broadcast_tf){
