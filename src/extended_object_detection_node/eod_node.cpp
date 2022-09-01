@@ -7,7 +7,11 @@
 #include <visualization_msgs/MarkerArray.h>
 #include "geometry_utils.h"
 #include <geometry_msgs/TransformStamped.h>
-
+#include "extended_object_detection/SimpleObjectArray.h"
+#include "extended_object_detection/ComplexObjectArray.h"
+#include "extended_object_detection/SceneArray.h"
+#include "extended_object_detection/Scene.h"
+#include "extended_object_detection/SceneObject.h"
 
 geometry_msgs::Vector3 fromCvVector(const cv::Vec3d& cv_vector){
     geometry_msgs::Vector3 ros_vector;
@@ -103,6 +107,7 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     simple_objects_pub_ = nh_p_.advertise<extended_object_detection::SimpleObjectArray>("simple_objects",1);
 #ifdef USE_IGRAPH
     complex_objects_pub_ = nh_p_.advertise<extended_object_detection::ComplexObjectArray>("complex_objects",1);
+    scenes_pub_ = nh_p_.advertise<extended_object_detection::SceneArray>("scenes",1);
 #endif
     if( publish_markers){
         simple_objects_markers_pub_ = nh_p_.advertise<visualization_msgs::MarkerArray>("simple_objects_markers",1);
@@ -273,23 +278,44 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         if(publish_image_output)
             c_it->drawAll(image_to_draw, cv::Scalar(255, 255, 0), 2);
     }
-    
-    visualization_msgs::MarkerArray scene_marker_array_msg;
-    for(auto& scene_it : object_base->scenes){
-        std::vector<std::pair<double, std::vector<std::pair<eod::SceneObject*, eod::ExtendedObjectInfo*>>>> scenes = scene_it->Identify(rgb, depth, frame_sequence);
+    // detect scenes        
+    extended_object_detection::SceneArray scenes_array_msg;
+    for(auto& scene_it : object_base->scenes){        
+        scene_it->Identify(rgb, depth, frame_sequence);   
         
-        int ns = 0;
-        for( auto& scene : scenes ){            
-            scene_to_markers(scene, ns, scene_marker_array_msg);
-            //scene_marker_array_msg.markers.insert();            
-            ns++;            
-        }
-    }
-    scenes_markers_pub_.publish(scene_marker_array_msg);
+        for( auto& scene : scene_it->results ){
+            extended_object_detection::Scene scene_msg;
+            scene_msg.name = scene_it->name;
+            scene_msg.score = scene.first;
+            for( auto& obj_eoi_pair : scene.second ){
+                extended_object_detection::SceneObject scene_obj_msg;
+                scene_obj_msg.name = obj_eoi_pair.first->name;
+                scene_obj_msg.map_pose.x = obj_eoi_pair.first->x;
+                scene_obj_msg.map_pose.y = obj_eoi_pair.first->y;
+                scene_obj_msg.map_pose.z = obj_eoi_pair.first->z;
+                scene_obj_msg.detected_object = eoi_to_base_object(obj_eoi_pair.first->class_name(),obj_eoi_pair.first->ID(), obj_eoi_pair.second, rgb.K());  
+                scene_msg.objects.push_back(scene_obj_msg);
+            }
+            scenes_array_msg.scenes.push_back(scene_msg);
+        }        
+        
+    }    
+    scenes_pub_.publish(scenes_array_msg);
+    
 #endif    
+    // publishing and visualization
     simples_msg.header = header;
     if( use_actual_time )
         simples_msg.header.stamp = ros::Time::now();
+#ifdef USE_IGRAPH
+    complex_msg.header = header;
+    scenes_array_msg.header = header;
+    if( use_actual_time ){
+        complex_msg.header.stamp = ros::Time::now();
+        scenes_array_msg.header.stamp = ros::Time::now();
+    }
+#endif  
+    
         
     simple_objects_pub_.publish(simples_msg);
 #ifdef USE_IGRAPH
@@ -319,7 +345,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
             transform_broadcaster_.sendTransform(trsfrm);
             id++;
             prev_name = cbo.complex_object.type_name;    
-        }
+        }                
 #endif                        
     }
     
@@ -345,9 +371,18 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
                 cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_frame(so, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
                 id_cnt++;
             }
-        }
-        
+        }        
         complex_objects_markers_pub_.publish(cmplx_mrk_array_msg);
+        // scenes
+        visualization_msgs::MarkerArray scene_marker_array_msg;       
+        for(auto& scene_it : object_base->scenes){
+            int ns = 0;
+            for( auto& scene : scene_it->results ){            
+                scene_to_markers(scene, ns, scene_marker_array_msg, scene_it->name);            
+                ns++;            
+            }
+        }
+        scenes_markers_pub_.publish(scene_marker_array_msg);
 #endif
     }        
     if(publish_image_output){
@@ -593,7 +628,7 @@ bool EOD_ROS::set_complex_objects_cb(extended_object_detection::SetObjects::Requ
     return true;
 }
 
-void EOD_ROS::scene_to_markers(std::pair<double, std::vector<std::pair<eod::SceneObject*, eod::ExtendedObjectInfo*>>> scene, int ns, visualization_msgs::MarkerArray &scene_marker_array_msg){
+void EOD_ROS::scene_to_markers(std::pair<double, std::vector<std::pair<eod::SceneObject*, eod::ExtendedObjectInfo*>>> scene, int ns, visualization_msgs::MarkerArray &scene_marker_array_msg, std::string scene_name){
     // calc center
     double cx = 0, cy = 0, cz = 0;
     for( auto& obj : scene.second ){
@@ -621,7 +656,7 @@ void EOD_ROS::scene_to_markers(std::pair<double, std::vector<std::pair<eod::Scen
     marker.pose.orientation.w = 1;
     marker.color.g = 1;
     marker.color.a = 1;
-    marker.text = std::to_string(ns) + ":" +std::to_string(scene.first);
+    marker.text = scene_name+" "+std::to_string(ns) + ":" +std::to_string(scene.first);
     scene_marker_array_msg.markers.push_back(marker);
     
     // add objects

@@ -1,0 +1,3 @@
+string name
+geometry_msgs/Point map_pose
+extended_object_detection/BaseObject detected_object

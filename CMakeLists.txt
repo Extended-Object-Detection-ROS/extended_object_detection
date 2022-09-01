@@ -55,6 +55,9 @@ add_message_files(
   SimpleObjectArray.msg
   ComplexObject.msg
   ComplexObjectArray.msg  
+  SceneObject.msg
+  Scene.msg
+  SceneArray.msg
 )
 
 ## Generate services in the 'srv' folder
