@@ -107,13 +107,14 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     simple_objects_pub_ = nh_p_.advertise<extended_object_detection::SimpleObjectArray>("simple_objects",1);
 #ifdef USE_IGRAPH
     complex_objects_pub_ = nh_p_.advertise<extended_object_detection::ComplexObjectArray>("complex_objects",1);
-    scenes_pub_ = nh_p_.advertise<extended_object_detection::SceneArray>("scenes",1);
+    scenes_pub_ = nh_p_.advertise<extended_object_detection::SceneArray>("scenes",1);    
 #endif
     if( publish_markers){
         simple_objects_markers_pub_ = nh_p_.advertise<visualization_msgs::MarkerArray>("simple_objects_markers",1);
 #ifdef USE_IGRAPH
         complex_objects_markers_pub_ = nh_p_.advertise<visualization_msgs::MarkerArray>("complex_objects_markers",1);
         scenes_markers_pub_ = nh_p_.advertise<visualization_msgs::MarkerArray>("scenes_markers",1);
+        map_markers_pub_ = nh_p_.advertise<visualization_msgs::MarkerArray>("map_markers",10);
 #endif
     }
     
@@ -380,8 +381,10 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
                 scene_to_markers(scene, ns, scene_marker_array_msg, scene_it->name);            
                 ns++;            
             }
+            publish_map_markers(scene_it);
         }
         scenes_markers_pub_.publish(scene_marker_array_msg);
+        
 #endif
     }        
     if(publish_image_output){
@@ -734,6 +737,20 @@ visualization_msgs::Marker EOD_ROS::scene_object_to_text_marker(eod::SceneObject
     marker.color.a = 1;
     marker.text = scene_obj->name;
     return marker;
+}
+
+void EOD_ROS::publish_map_markers(eod::Scene* scene){
+    visualization_msgs::MarkerArray mrk_arr;    
+    int id=0;
+    for( auto& obj : scene->scene_objects ){
+        mrk_arr.markers.push_back(scene_object_to_cylinder_marker(obj, 0, id));
+        mrk_arr.markers.push_back(scene_object_to_text_marker(obj, 0, id));
+        id++;        
+    }
+    for( auto& marker : mrk_arr.markers ){
+        marker.color.b = 1;
+    }
+    map_markers_pub_.publish(mrk_arr);
 }
 #endif
 

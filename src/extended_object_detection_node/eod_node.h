@@ -59,6 +59,7 @@ private:
     ros::Publisher complex_objects_markers_pub_;
     ros::Publisher scenes_pub_;
     ros::Publisher scenes_markers_pub_;
+    ros::Publisher map_markers_pub_;
 #endif
     image_transport::ImageTransport *private_it_;
     image_transport::Publisher output_image_pub_;
@@ -111,6 +112,7 @@ private:
     visualization_msgs::Marker scene_object_to_cylinder_marker(eod::SceneObject*, int ns, int id);
     visualization_msgs::Marker scene_object_to_text_marker(eod::SceneObject*, int ns, int id);
     visualization_msgs::Marker scene_object_to_line_marker(eod::SceneObject*, int ns, int id, double x, double y, double z);
+    void publish_map_markers(eod::Scene* scene);
 #endif    
     double get_detect_rate();
     
