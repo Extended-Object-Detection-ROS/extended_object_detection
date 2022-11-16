@@ -273,12 +273,13 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
             c_it->drawAll(image_to_draw, cv::Scalar(255, 255, 0), 2);
     }
 #endif    
-    simples_msg.header = header;
+    
     if( use_actual_time )
-        simples_msg.header.stamp = ros::Time::now();
-        
+        header.stamp = ros::Time::now();
+    simples_msg.header = header;            
     simple_objects_pub_.publish(simples_msg);
 #ifdef USE_IGRAPH
+    complex_msg.header = header;
     complex_objects_pub_.publish(complex_msg);
 #endif
     
