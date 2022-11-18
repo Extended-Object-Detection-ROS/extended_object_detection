@@ -30,6 +30,7 @@ int channels[] = { 0, 1 };
 float h_range[] = { 0, 179 };
 float s_range[] = { 0, 255 };
 const float* ranges[] = { h_range, s_range };
+bool freeze = false;
 
 static void on_trackbar_size( int, void*){
     sd->minSizePc = double(size) * 0.0001;
@@ -49,6 +50,7 @@ void pickPoint( int event, int x, int y, int, void *){
         floodFill( last_image, mask2, seed, newVal, 0, Scalar( lo, lo, lo ), Scalar( up, up, up), flags );
         mask = mask2( Range( 1, mask2.rows - 1 ), Range( 1, mask2.cols - 1 ) );
         saved_image = last_image.clone();
+        freeze = true;
     }
     else if( event == EVENT_RBUTTONDOWN && !saved_image.empty() ){
         int h_bins = 30; int s_bins = 32;
@@ -59,7 +61,8 @@ void pickPoint( int event, int x, int y, int, void *){
         /// Get the Histogram and normalize it
         calcHist( &hsv, 1, channels, mask, hist, 2, histSize, ranges, true, false );
         normalize( hist, hist, 0, 255, NORM_MINMAX, -1, Mat() );
-              
+        
+        freeze = false;
         hca->setHist(hist);
         mask.release();
     }
@@ -69,19 +72,24 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
   try
   {
-      last_image = cv_bridge::toCvShare(msg, "bgr8")->image;  
+      Mat image2draw;
+      if( !freeze){
+        last_image = cv_bridge::toCvShare(msg, "bgr8")->image;  
       
-      coloredObject.Identify(last_image, cv::Mat(), seq);
-      seq++;
-      
-      Mat image2draw = last_image.clone();
-      coloredObject.draw(image2draw,Scalar(0,255,0));
-      
-      if( !mask.empty() ){
-          vector<vector<Point> > contours;
-          vector<Vec4i> hierarchy;
-          findContours( mask, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE );
-          drawContours( image2draw, contours, -1, Scalar(0,0,255), 2, 8);
+        coloredObject.Identify(last_image, cv::Mat(), seq);
+        seq++;
+        
+        image2draw = last_image.clone();
+        coloredObject.draw(image2draw,Scalar(0,255,0));
+      }
+      else{            
+        if( !mask.empty() ){
+            image2draw = saved_image;
+            vector<vector<Point> > contours;
+            vector<Vec4i> hierarchy;
+            findContours( mask, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE );
+            drawContours( image2draw, contours, -1, Scalar(0,0,255), 2, 8);
+        }
       }
       
       cv::imshow(OUTPUT_WINDOW, image2draw);
