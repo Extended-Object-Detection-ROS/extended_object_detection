@@ -171,12 +171,12 @@ void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sen
     //ROS_INFO("Got Image!");
     // CHECK RATE
     if( !check_time(ros::Time::now()) ) {
-        ROS_WARN("Skipped frame");
+        //ROS_WARN("Skipped frame");
         return;
     }    
     double lag;
     if( !check_lag(rgb_image->header.stamp, lag) ) {
-        ROS_WARN("Dropped frame, lag = %f", lag);
+        //ROS_WARN("Dropped frame, lag = %f", lag);
         return;
     }    
     cv::Mat rgb;
@@ -196,12 +196,12 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     //ROS_INFO("Got RGBD!");    
     // CHECK RATE       
     if( !check_time(ros::Time::now()) ) {
-        ROS_WARN("Skipped frame");
+        //ROS_WARN("Skipped frame");
         return;
     }
     double lag;
     if( !check_lag(rgb_image->header.stamp, lag) ) {
-        ROS_WARN("Dropped frame, lag = %f", lag);
+        //ROS_WARN("Dropped frame, lag = %f", lag);
         return;
     }
     // TODO add possibility to exclude old stamp images (if detection goes to slow)    
