@@ -9,7 +9,7 @@ set(opencv_contrib OFF)
 set(zbar_lib OFF)
 set(TensorFlow OFF)
 set(DLib OFF)
-set(igraph OFF)
+set(igraph ON)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -120,6 +120,7 @@ set( EOD_SRC
     src/lib/detectors/ExtractedInfoIdChecker.cpp
     src/lib/detectors/ExtractedInfoStringChecker.cpp
     src/lib/detectors/UnitTranslationExtracter.cpp
+    src/lib/detectors/SquareObjectDistanceDetector.cpp
 
     # lib relations        
     src/lib/relations/ImageRangeRelation.cpp
