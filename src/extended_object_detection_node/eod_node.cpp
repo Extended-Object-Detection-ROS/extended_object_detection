@@ -178,12 +178,12 @@ void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sen
     //ROS_INFO("Got Image!");
     // CHECK RATE
     if( !check_time(ros::Time::now()) ) {
-        ROS_WARN("Skipped frame");
+        //ROS_WARN("Skipped frame");
         return;
     }    
     double lag;
     if( !check_lag(rgb_image->header.stamp, lag) ) {
-        ROS_WARN("Dropped frame, lag = %f", lag);
+        //ROS_WARN("Dropped frame, lag = %f", lag);
         return;
     }    
     cv::Mat rgb;
@@ -203,12 +203,12 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     //ROS_INFO("Got RGBD!");    
     // CHECK RATE       
     if( !check_time(ros::Time::now()) ) {
-        ROS_WARN("Skipped frame");
+        //ROS_WARN("Skipped frame");
         return;
     }
     double lag;
     if( !check_lag(rgb_image->header.stamp, lag) ) {
-        ROS_WARN("Dropped frame, lag = %f", lag);
+        //ROS_WARN("Dropped frame, lag = %f", lag);
         return;
     }
     // TODO add possibility to exclude old stamp images (if detection goes to slow)    
@@ -240,11 +240,15 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
 
 
 void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header){
-    ROS_INFO("Detecting...");
+    //ROS_INFO("Detecting...");
     if( frame_sequence != 0 ){
         detect_rate_values->push_back((ros::Time::now() - prev_detected_time).toSec());
     }
     prev_detected_time = ros::Time::now();
+    
+    // remove / from frame_id if it starts with it
+    if( header.frame_id[0] == '/')
+        header.frame_id.erase(0,1);
     
     cv::Mat image_to_draw;                
     if(publish_image_output)
@@ -302,22 +306,19 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         
     }            
 #endif    
-    // publishing and visualization
-    simples_msg.header = header;
+
+    // publishing and visualization    
     if( use_actual_time )
-        simples_msg.header.stamp = ros::Time::now();
+        header.stamp = ros::Time::now();    
+    simples_msg.header = header;
 #ifdef USE_IGRAPH
     complex_msg.header = header;
-    scenes_array_msg.header = header;
-    if( use_actual_time ){
-        complex_msg.header.stamp = ros::Time::now();
-        scenes_array_msg.header.stamp = ros::Time::now();
-    }
+    scenes_array_msg.header = header;    
 #endif  
-    
-        
+
     simple_objects_pub_.publish(simples_msg);
 #ifdef USE_IGRAPH
+    complex_msg.header = header;
     complex_objects_pub_.publish(complex_msg);
     scenes_pub_.publish(scenes_array_msg);
 #endif

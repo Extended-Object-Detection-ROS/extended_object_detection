@@ -125,6 +125,7 @@ set( EOD_SRC
     src/lib/detectors/ExtractedInfoIdChecker.cpp
     src/lib/detectors/ExtractedInfoStringChecker.cpp
     src/lib/detectors/UnitTranslationExtracter.cpp
+    src/lib/detectors/SquareObjectDistanceDetector.cpp
 
     # lib relations        
     src/lib/relations/ImageRangeRelation.cpp
