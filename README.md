@@ -7,7 +7,7 @@
 Extended Object Detection is an ROS package and has ample opportunities for describing objects for detection in the video image. 
  - Author: Moscowsky Anton \<moscowskyad AT gmail DOT com\>
  - Wiki on english: https://github.com/Extended-Object-Detection-ROS/wiki_english/wiki
- - Wiki on russian: https://github.com/Extended-Object-Detection-ROS/extended_object_detection/wiki
+ - Wiki on russian: https://github.com/Extended-Object-Detection-ROS/extended_object_detection/wiki (outdated)
  - Bug tracker: https://github.com/Extended-Object-Detection-ROS/extended_object_detection/issues
  - Youtube channel: https://youtube.com/channel/UCrZtFXAhxJIyk-T3d9-GLhw
  - ROS distro support: <a><img src="https://img.shields.io/badge/ROS-Noetic-blue" alt="ros_version_noetic" /></a> (full capabilities), <a><img src="https://img.shields.io/badge/ROS-Melodic-yellow" alt="ros_version_melodic" /></a> (partial capabilities), <a><img src="https://img.shields.io/badge/ROS-Kinetic-yellow" alt="ros_version_kinetic" /></a> (partial capabilities)
@@ -31,15 +31,15 @@ Repository
 Article
 ```bibtex
 @incollection{moscowsky_eod,
-author = {Moscowsky, A. D.},
-booktitle = {Smart Electromechanical Systems: Recognition, Identification and Modeling},
-doi = {10.1007/978-3-030-97004-8_3},
-keywords = {Computer vision,Object detection,ROS,Robotic},
-pages = {27--43},
-title = {{Extended Object Detection: Flexible Object Description System for Detection in Robotic Tasks}},
-url = {https://link.springer.com/10.1007/978-3-030-97004-8_3},
-volume = {419},
-year = {2022}
+ author = {Moscowsky, A. D.},
+ booktitle = {Smart Electromechanical Systems: Recognition, Identification and Modeling},
+ doi = {10.1007/978-3-030-97004-8_3},
+ keywords = {Computer vision,Object detection,ROS,Robotic},
+ pages = {27--43},
+ title = {{Extended Object Detection: Flexible Object Description System for Detection in Robotic Tasks}},
+ url = {https://link.springer.com/10.1007/978-3-030-97004-8_3},
+ volume = {419},
+ year = {2022}
 }
 
 ```

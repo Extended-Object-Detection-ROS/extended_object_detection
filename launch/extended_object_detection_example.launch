@@ -16,16 +16,14 @@
     
     <node name="extended_object_detection" pkg="extended_object_detection" type="extended_object_detection_node" output="screen" required="true">
         
-        <param name="objectBasePath" value="$(arg objectBasePath)"/>
-        <param name="videoProcessUpdateRate" value="5"/>
-        <param name="screenOutput" value="false"/>
-        <param name="publishImage" value="true"/>
-        <param name="publishMarkers" value="true"/>
-        <param name="subscribeDepth" value="false"/>        
-        <param name="maxContourPoints" value="-1"/>        
+        <param name="object_base" value="$(arg objectBasePath)"/>        
+        <param name="publish_image_output" value="true"/>
         
-        <rosparam param="selectedOnStartSimple">[]</rosparam>
-        <rosparam param="selectedOnStartComplex">[]</rosparam>
+        <param name="publish_markers" value="true"/>
+        <param name="subscribe_depth" value="false"/>                       
+        
+        <rosparam param="selected_on_start_simple_objects">[]</rosparam>
+        <rosparam param="selected_on_start_complex_objects">[]</rosparam>
         
         <remap from="camera/image_raw" to="/camera/image_raw"/>
         <remap from="camera/info" to="/camera/camera_info"/>
