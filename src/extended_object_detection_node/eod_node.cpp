@@ -239,6 +239,9 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     }
     prev_detected_time = ros::Time::now();
     
+    if( header.frame_id[0] == '/')
+        header.frame_id.erase(0,1);
+    
     cv::Mat image_to_draw;                
     if(publish_image_output)
         image_to_draw = rgb.clone();
@@ -341,7 +344,8 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         sensor_msgs::ImagePtr detected_image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_to_draw).toImageMsg();
         output_image_pub_.publish(detected_image_msg);
     }        
-    frame_sequence++;    
+    frame_sequence++;  
+    cv::waitKey(1);
 }
 
 extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( std::string name, int id,  eod::ExtendedObjectInfo* eoi, const cv::Mat& K){
