@@ -221,6 +221,8 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     }
     else if(depth_image->encoding == sensor_msgs::image_encodings::TYPE_32FC1){        
         depth = cv_bridge::toCvCopy(depth_image, sensor_msgs::image_encodings::TYPE_32FC1)->image;
+        //depth *= 1000;
+        depth.convertTo(depth, CV_16UC1, 1000);        
     }
     else{
         ROS_ERROR_THROTTLE(5, "Depth image has unsupported encoding [%s]", depth_image->encoding.c_str());
@@ -345,7 +347,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         output_image_pub_.publish(detected_image_msg);
     }        
     frame_sequence++;  
-    cv::waitKey(1);
+    //cv::waitKey(1);
 }
 
 extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( std::string name, int id,  eod::ExtendedObjectInfo* eoi, const cv::Mat& K){
@@ -417,7 +419,10 @@ visualization_msgs::Marker EOD_ROS::base_object_to_marker_arrow(extended_object_
     mrk.color.r = color[0]/255;
     mrk.color.g = color[1]/255;
     mrk.color.b = color[2]/255;
-    mrk.color.a = 1;
+    if( base_object.transform.translation.z == 1)
+        mrk.color.a = 0.1;
+    else
+        mrk.color.a = 1;
     return mrk;
 }
 
