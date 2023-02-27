@@ -108,10 +108,10 @@ private:
     int find_simple_obj_index_by_id(int id);
 #ifdef USE_IGRAPH
     int find_complex_obj_index_by_id(int id);
-    void scene_to_markers(std::pair<double, std::vector<std::pair<eod::SceneObject*, eod::ExtendedObjectInfo*>>> scene, int ns, visualization_msgs::MarkerArray &scene_marker_array_msg, std::string scene_name = "");
-    visualization_msgs::Marker scene_object_to_cylinder_marker(eod::SceneObject*, int ns, int id);
-    visualization_msgs::Marker scene_object_to_text_marker(eod::SceneObject*, int ns, int id);
-    visualization_msgs::Marker scene_object_to_line_marker(eod::SceneObject*, int ns, int id, double x, double y, double z);
+    void scene_to_markers(std::pair<double, std::vector<std::pair<eod::SceneObject*, eod::ExtendedObjectInfo*>>> scene, int ns, visualization_msgs::MarkerArray &scene_marker_array_msg, std::string scene_name = "", std::string frame_id = "map");
+    visualization_msgs::Marker scene_object_to_cylinder_marker(eod::SceneObject*, int ns, int id, std::string frame_id = "map");
+    visualization_msgs::Marker scene_object_to_text_marker(eod::SceneObject*, int ns, int id, std::string frame_id = "map");
+    visualization_msgs::Marker scene_object_to_line_marker(eod::SceneObject*, int ns, int id, double x, double y, double z, std::string frame_id = "map");
     void publish_map_markers(eod::Scene* scene);
 #endif    
     double get_detect_rate();
