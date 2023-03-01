@@ -43,15 +43,15 @@ public:
 private:
     // ros stuff
     ros::NodeHandle nh_, nh_p_;
-    image_transport::ImageTransport *rgb_it_;
-    image_transport::SubscriberFilter sub_rgb_;    
-    message_filters::Subscriber<sensor_msgs::CameraInfo> sub_info_;
-    boost::shared_ptr<RGBSynchronizer> rgb_sync_;
+    std::vector<image_transport::ImageTransport*> rgb_it_;
+    std::vector<image_transport::SubscriberFilter*> sub_rgb_;    
+    std::vector<message_filters::Subscriber<sensor_msgs::CameraInfo>* > sub_info_;
+    std::vector<boost::shared_ptr<RGBSynchronizer>* > rgb_sync_;
     
-    image_transport::ImageTransport *depth_it_;
-    image_transport::SubscriberFilter sub_depth_;    
-    message_filters::Subscriber<sensor_msgs::CameraInfo> sub_depth_info_;
-    boost::shared_ptr<RGBDSynchronizer> rgbd_sync_;
+    std::vector<image_transport::ImageTransport*> depth_it_;
+    std::vector<image_transport::SubscriberFilter> sub_depth_;    
+    std::vector<message_filters::Subscriber<sensor_msgs::CameraInfo> > sub_depth_info_;
+    std::vector<boost::shared_ptr<RGBDSynchronizer> > rgbd_sync_;
     
     ros::Publisher simple_objects_pub_;
     ros::Publisher simple_objects_markers_pub_;

@@ -33,15 +33,37 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     
     frame_sequence = 0;
     
-    rgb_it_ = new image_transport::ImageTransport(nh_);    
-            
-    sub_rgb_.subscribe(*rgb_it_, "camera/image_raw", 10);
-    sub_info_.subscribe(nh_, "camera/info", 10);    
+    //rgb_it_ = new image_transport::ImageTransport(nh_);                       
         
     detect_rate_values = new boost::circular_buffer<double>(10);
     
     // get params
-    nh_p_.param("subscribe_depth", subscribe_depth, false);
+    //nh_p_.param("subscribe_depth", subscribe_depth, false);
+    
+    // multicamera stuff
+    std::vector<std::string> rgb_image_topics;    
+    nh_p_.getParam("rgb_image_topics", rgb_image_topics);
+    std::vector<std::string> rgb_info_topics;    
+    nh_p_.getParam("rgb_info_topics", rgb_info_topics);
+    
+    if( rgb_image_topics.size() != rgb_info_topics.size() || rgb_image_topics.size() == 0){
+        ROS_ERROR("rgb_image_topics have to be same size as rgb_info_topics and more than 0! Exit.");
+        std::exit(-1);
+    }
+    
+    std::vector<std::string> depth_image_topics;    
+    nh_p_.getParam("depth_image_topics", depth_image_topics);
+    std::vector<std::string> depth_info_topics;    
+    nh_p_.getParam("depth_info_topics", depth_info_topics);
+    if( depth_image_topics.size() != depth_info_topics.size()){
+        ROS_ERROR("depth_image_topics have to be same size as depth_info_topics! Exit.");
+        std::exit(-1);
+    }    
+    if( depth_image_topics.size() != 0 && depth_image_topics.size() != rgb_image_topics.size() ){
+        ROS_ERROR("depth_image_topics have to be same size as rgb_image_topics or 0! Exit.");
+        std::exit(-1);
+    }
+                
     nh_p_.param("rate_limit_sec", rate_limit_sec, 0.1);
     nh_p_.param("publish_image_output", publish_image_output, false);
     nh_p_.param("use_actual_time", use_actual_time, false);
@@ -114,20 +136,36 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     private_it_ = new image_transport::ImageTransport(nh_p_);
     output_image_pub_ = private_it_->advertise("detected_image", 1);
         
-    // set up message filters
-    if( !subscribe_depth){
-        //ROS_INFO("Configuring filter on rgb image and info...");            
-        rgb_sync_.reset( new RGBSynchronizer(RGBInfoSyncPolicy(10), sub_rgb_, sub_info_) );
-        rgb_sync_->registerCallback(boost::bind(&EOD_ROS::rgb_info_cb, this, boost::placeholders::_1,  boost::placeholders::_2));                                
-    }
-    else{
-        //ROS_INFO("Configuring filter on rgbd images and infos...");        
-        sub_depth_.subscribe(*rgb_it_, "depth/image_raw", 10);
-        sub_depth_info_.subscribe(nh_, "depth/info", 10);
+    for( size_t i = 0 ; i < rgb_image_topics.size() ; i++ ){
         
-        rgbd_sync_.reset( new RGBDSynchronizer(RGBDInfoSyncPolicy(10), sub_rgb_, sub_info_, sub_depth_, sub_depth_info_) );
-        rgbd_sync_->registerCallback(boost::bind(&EOD_ROS::rgbd_info_cb, this, boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3,  boost::placeholders::_4));        
-    }          
+        ROS_INFO("Bounding %s and %s...",rgb_image_topics[i].c_str(), rgb_info_topics[i].c_str());
+    
+        rgb_it_.push_back(new image_transport::ImageTransport(nh_));                
+        sub_rgb_.push_back(new image_transport::SubscriberFilter());
+        sub_info_.push_back(new message_filters::Subscriber<sensor_msgs::CameraInfo>());
+        
+        sub_rgb_[i]->subscribe(*rgb_it_[i], rgb_image_topics[i], 10);
+        sub_info_[i]->subscribe(nh_, rgb_info_topics[i], 10); 
+        
+        // set up message filters
+        if( depth_image_topics.size() == 0 ){                
+            
+            
+            rgb_sync_.push_back(new boost::shared_ptr<RGBSynchronizer>());                                    
+            rgb_sync_[i]->reset(new RGBSynchronizer(RGBInfoSyncPolicy(10), *sub_rgb_[i], *sub_info_[i]) );
+            
+            (*rgb_sync_[i])->registerCallback(boost::bind(&EOD_ROS::rgb_info_cb, this, boost::placeholders::_1,  boost::placeholders::_2));                                
+        }
+/*        else{
+            //ROS_INFO("Configuring filter on rgbd images and infos...");        
+            sub_depth_.subscribe(*rgb_it_, "depth/image_raw", 10);
+            sub_depth_info_.subscribe(nh_, "depth/info", 10);
+            
+            rgbd_sync_.reset( new RGBDSynchronizer(RGBDInfoSyncPolicy(10), sub_rgb_, sub_info_, sub_depth_, sub_depth_info_) );
+            rgbd_sync_->registerCallback(boost::bind(&EOD_ROS::rgbd_info_cb, this, boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3,  boost::placeholders::_4));        
+        }*/          
+    
+    }
     //ROS_INFO("Configured!");
 }
 
@@ -235,7 +273,7 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
 
 
 void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header){
-    //ROS_INFO("Detecting...");
+    ROS_INFO("Detecting...");
     if( frame_sequence != 0 ){
         detect_rate_values->push_back((ros::Time::now() - prev_detected_time).toSec());
     }
