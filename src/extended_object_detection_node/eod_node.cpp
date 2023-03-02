@@ -70,6 +70,7 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     nh_p_.param("publish_markers", publish_markers, false);
     nh_p_.param("broadcast_tf", broadcast_tf, false);
     nh_p_.param("allowed_lag_sec", allowed_lag_sec, 0.0);
+    nh_p_.param("subs_queue_size", subs_queue_size, 10);
             
     std::string object_base_path;
     nh_p_.getParam("object_base",object_base_path);
@@ -138,42 +139,52 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
         
     for( size_t i = 0 ; i < rgb_image_topics.size() ; i++ ){
         
-        ROS_INFO("Bounding %s and %s...",rgb_image_topics[i].c_str(), rgb_info_topics[i].c_str());
-    
+        //ROS_INFO("Bounding %s and %s...",rgb_image_topics[i].c_str(), rgb_info_topics[i].c_str());                        
+        
         rgb_it_.push_back(new image_transport::ImageTransport(nh_));                
         sub_rgb_.push_back(new image_transport::SubscriberFilter());
         sub_info_.push_back(new message_filters::Subscriber<sensor_msgs::CameraInfo>());
         
-        sub_rgb_[i]->subscribe(*rgb_it_[i], rgb_image_topics[i], 10);
-        sub_info_[i]->subscribe(nh_, rgb_info_topics[i], 10); 
+        sub_rgb_[i]->subscribe(*rgb_it_[i], rgb_image_topics[i], subs_queue_size);
+        sub_info_[i]->subscribe(nh_, rgb_info_topics[i], subs_queue_size); 
         
         // set up message filters
         if( depth_image_topics.size() == 0 ){                
             
             
             rgb_sync_.push_back(new boost::shared_ptr<RGBSynchronizer>());                                    
-            rgb_sync_[i]->reset(new RGBSynchronizer(RGBInfoSyncPolicy(10), *sub_rgb_[i], *sub_info_[i]) );
+            rgb_sync_[i]->reset(new RGBSynchronizer(RGBInfoSyncPolicy(subs_queue_size), *sub_rgb_[i], *sub_info_[i]) );
             
             (*rgb_sync_[i])->registerCallback(boost::bind(&EOD_ROS::rgb_info_cb, this, boost::placeholders::_1,  boost::placeholders::_2));                                
         }
-/*        else{
-            //ROS_INFO("Configuring filter on rgbd images and infos...");        
-            sub_depth_.subscribe(*rgb_it_, "depth/image_raw", 10);
-            sub_depth_info_.subscribe(nh_, "depth/info", 10);
+        else{
+            depth_it_.push_back(new image_transport::ImageTransport(nh_));
+            //sub_depth_.subscribe(*rgb_it_, "depth/image_raw", 10);
+            //sub_depth_info_.subscribe(nh_, "depth/info", 10);
+            //depth_it_
+            sub_depth_.push_back(new image_transport::SubscriberFilter());
+            sub_depth_info_.push_back(new message_filters::Subscriber<sensor_msgs::CameraInfo>);
             
-            rgbd_sync_.reset( new RGBDSynchronizer(RGBDInfoSyncPolicy(10), sub_rgb_, sub_info_, sub_depth_, sub_depth_info_) );
-            rgbd_sync_->registerCallback(boost::bind(&EOD_ROS::rgbd_info_cb, this, boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3,  boost::placeholders::_4));        
-        }*/          
+            sub_depth_[i]->subscribe(*depth_it_[i], depth_image_topics[i], subs_queue_size);
+            sub_depth_info_[i]->subscribe(nh_, depth_info_topics[i], subs_queue_size);
+            
+            rgbd_sync_.push_back(new boost::shared_ptr<RGBDSynchronizer>);
+            rgbd_sync_[i]->reset( new RGBDSynchronizer(RGBDInfoSyncPolicy(subs_queue_size), *sub_rgb_[i], *sub_info_[i], *sub_depth_[i], *sub_depth_info_[i]) );
+            
+            (*rgbd_sync_[i])->registerCallback(boost::bind(&EOD_ROS::rgbd_info_cb, this, boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3,  boost::placeholders::_4));        
+        }
     
     }
     //ROS_INFO("Configured!");
 }
 
 
-bool EOD_ROS::check_time(const ros::Time& stamp){
-    if( frame_sequence == 0)
+bool EOD_ROS::check_time(const ros::Time& stamp, std::string frame_id){
+    if( frame_sequence == 0){
+        prev_detected_time[frame_id] = stamp;
         return true;        
-    return (stamp - prev_detected_time).toSec() > rate_limit_sec;
+    }
+    return (stamp - prev_detected_time[frame_id]).toSec() > rate_limit_sec;
 }
 
 
@@ -208,7 +219,7 @@ cv::Mat EOD_ROS::getD(const sensor_msgs::CameraInfoConstPtr& info_msg){
 void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sensor_msgs::CameraInfoConstPtr& rgb_info){
     //ROS_INFO("Got Image!");
     // CHECK RATE
-    if( !check_time(ros::Time::now()) ) {
+    if( !check_time(ros::Time::now(), rgb_image->header.frame_id) ) {
         //ROS_WARN("Skipped frame");
         return;
     }    
@@ -233,7 +244,7 @@ void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sen
 void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sensor_msgs::CameraInfoConstPtr& rgb_info, const sensor_msgs::ImageConstPtr& depth_image, const sensor_msgs::CameraInfoConstPtr& depth_info){
     //ROS_INFO("Got RGBD!");    
     // CHECK RATE       
-    if( !check_time(ros::Time::now()) ) {
+    if( !check_time(ros::Time::now(), rgb_image->header.frame_id) ) {
         //ROS_WARN("Skipped frame");
         return;
     }
@@ -273,11 +284,11 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
 
 
 void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header){
-    ROS_INFO("Detecting...");
+    //ROS_INFO("Detecting...");
     if( frame_sequence != 0 ){
-        detect_rate_values->push_back((ros::Time::now() - prev_detected_time).toSec());
+        detect_rate_values->push_back((ros::Time::now() - prev_detected_time[header.frame_id]).toSec());
     }
-    prev_detected_time = ros::Time::now();
+    prev_detected_time[header.frame_id] = ros::Time::now();
     
     if( header.frame_id[0] == '/')
         header.frame_id.erase(0,1);
@@ -553,7 +564,7 @@ bool EOD_ROS::set_simple_objects_cb(extended_object_detection::SetObjects::Reque
                         else{
                             // already removed
                             ROS_WARN("[set_simple_objects srv] object with id %i is already removed", object_id);
-                        }
+                       }
                     }
                 }
                 else{

@@ -49,9 +49,9 @@ private:
     std::vector<boost::shared_ptr<RGBSynchronizer>* > rgb_sync_;
     
     std::vector<image_transport::ImageTransport*> depth_it_;
-    std::vector<image_transport::SubscriberFilter> sub_depth_;    
-    std::vector<message_filters::Subscriber<sensor_msgs::CameraInfo> > sub_depth_info_;
-    std::vector<boost::shared_ptr<RGBDSynchronizer> > rgbd_sync_;
+    std::vector<image_transport::SubscriberFilter*> sub_depth_;    
+    std::vector<message_filters::Subscriber<sensor_msgs::CameraInfo>* > sub_depth_info_;
+    std::vector<boost::shared_ptr<RGBDSynchronizer>* > rgbd_sync_;
     
     ros::Publisher simple_objects_pub_;
     ros::Publisher simple_objects_markers_pub_;
@@ -76,10 +76,11 @@ private:
     bool publish_markers;
     bool broadcast_tf;
     double allowed_lag_sec;
+    int subs_queue_size;
     
     // vars
     int frame_sequence;     
-    ros::Time prev_detected_time;
+    std::map<std::string, ros::Time> prev_detected_time;
     boost::circular_buffer<double>* detect_rate_values;
     
     // callbacks
@@ -94,7 +95,7 @@ private:
     
     // functions    
     void detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header);
-    bool check_time(const ros::Time& stamp);
+    bool check_time(const ros::Time& stamp, std::string frame_id);
     bool check_lag(const ros::Time& stamp, double &lag);    
     extended_object_detection::BaseObject eoi_to_base_object(std::string name, int id, eod::ExtendedObjectInfo* eoi, const cv::Mat& K);
     cv::Mat getK(const sensor_msgs::CameraInfoConstPtr& info_msg);
