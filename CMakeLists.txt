@@ -41,7 +41,7 @@ endif(DLib)
 
 if(torch)
     #set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}/home/anton/Libs/libtorch")
-    list(APPEND CMAKE_PREFIX_PATH "/home/anton/Libs/libtorch")
+    list(APPEND CMAKE_PREFIX_PATH "/home/anton/Lib/libtorch")
     message(${CMAKE_PREFIX_PATH})
     find_package(Torch REQUIRED)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")    
@@ -130,7 +130,7 @@ set( EOD_SRC
     src/lib/detectors/ExtractedInfoStringChecker.cpp
     src/lib/detectors/UnitTranslationExtracter.cpp
     src/lib/detectors/SquareObjectDistanceDetector.cpp
-    src/lib/detectors/TorchDetector.cpp
+    src/lib/detectors/TorchYOLOv7Detector.cpp
 
     # lib relations        
     src/lib/relations/ImageRangeRelation.cpp
