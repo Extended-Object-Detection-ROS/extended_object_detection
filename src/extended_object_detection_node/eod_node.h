@@ -59,8 +59,9 @@ private:
     ros::Publisher complex_objects_pub_;
     ros::Publisher complex_objects_markers_pub_;
 #endif
-    image_transport::ImageTransport *private_it_;
-    image_transport::Publisher output_image_pub_;
+    std::map<std::string, image_transport::Publisher> output_image_pubs_;
+//     image_transport::ImageTransport *private_it_;
+//     image_transport::Publisher output_image_pub_;
     
     ros::ServiceServer set_simple_objects_srv_;
 #ifdef USE_IGRAPH
