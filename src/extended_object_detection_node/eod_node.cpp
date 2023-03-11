@@ -284,7 +284,7 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
 
 
 void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header){
-    //ROS_INFO("Detecting...");
+    ROS_INFO("Detecting...");
     if( frame_sequence != 0 ){
         detect_rate_values->push_back((ros::Time::now() - prev_detected_time[header.frame_id]).toSec());
     }
