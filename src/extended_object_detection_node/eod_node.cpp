@@ -134,9 +134,13 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
 #endif
     }
     
-    private_it_ = new image_transport::ImageTransport(nh_p_);
-    output_image_pub_ = private_it_->advertise("detected_image", 1);
-        
+    // setup output image publishers
+     //if( publish_image_output ){
+         //private_it_ = new image_transport::ImageTransport(nh_p_);
+//         output_image_pub_ = private_it_->advertise("detected_image", 1);
+     //}
+     
+    // setup subscribers
     for( size_t i = 0 ; i < rgb_image_topics.size() ; i++ ){
         
         //ROS_INFO("Bounding %s and %s...",rgb_image_topics[i].c_str(), rgb_info_topics[i].c_str());                        
@@ -322,7 +326,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
                 cmplx_msg.simple_objects.push_back(eoi_to_base_object(name_eoi.first, -1, name_eoi.second, rgb.K()));
             }                        
             complex_msg.objects.push_back(cmplx_msg);
-        }
+        }private_it_
         if(publish_image_output)
             c_it->drawAll(image_to_draw, cv::Scalar(255, 255, 0), 2);
     }
@@ -392,8 +396,14 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
 #endif
     }        
     if(publish_image_output){
+        if( output_image_pubs_.find(header.frame_id) == output_image_pubs_.end() ){
+            auto out_it = new image_transport::ImageTransport(nh_p_);
+            //printf("Adding new publisher...");
+            output_image_pubs_[header.frame_id] = out_it->advertise("detected_image_"+std::to_string(output_image_pubs_.size()), 1);
+        }
+        
         sensor_msgs::ImagePtr detected_image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_to_draw).toImageMsg();
-        output_image_pub_.publish(detected_image_msg);
+        output_image_pubs_[header.frame_id].publish(detected_image_msg);
     }        
     frame_sequence++;  
     //cv::waitKey(1);
