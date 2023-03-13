@@ -84,7 +84,7 @@
     
     <Attribute Name="DepthKinect" Type="Depth" depthScale="0.001"/>
     
-    <Attribute Name="DepthCenter" Type="Depth" depthScale="0.001" mode="2"/>
+    <Attribute Name="DepthCenter" Type="Depth" depthScale="0.001" mode="0"/>
     
     <Attribute Name="DlibFace" Type="FaceDlib" Probability="0.4" base_file_path="face_recognition/base_faces.db" base_dir_path="face_recognition/base_faces/" sp_path="face_recognition/shape_predictor_5_face_landmarks.dat" net_path="face_recognition/dlib_face_recognition_resnet_model_v1.dat"/>
     

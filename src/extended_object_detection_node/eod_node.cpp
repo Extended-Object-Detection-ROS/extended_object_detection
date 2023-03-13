@@ -269,8 +269,9 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     cv::Mat depth;    
     if (depth_image->encoding == sensor_msgs::image_encodings::TYPE_16UC1){    
         depth = cv_bridge::toCvCopy(depth_image, sensor_msgs::image_encodings::TYPE_16UC1)->image;
-        depth.convertTo(depth, CV_32F);
-        depth *= 0.001f;
+        //depth.convertTo(depth, CV_32F);
+        depth.convertTo(depth, CV_16UC1);
+        //depth *= 0.001f;
     }
     else if(depth_image->encoding == sensor_msgs::image_encodings::TYPE_32FC1){        
         depth = cv_bridge::toCvCopy(depth_image, sensor_msgs::image_encodings::TYPE_32FC1)->image;

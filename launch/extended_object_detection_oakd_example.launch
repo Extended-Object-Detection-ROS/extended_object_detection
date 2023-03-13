@@ -6,16 +6,15 @@
         
     </include>-->
     
-    <include file="$(find ritrover-oakd)/launch/rgb_stereo_publisher.launch">                
-        <arg name="point_cloud_mono" value="true"/>
-        <arg name="urdf" value="true"/>
+    <include file="$(find depthai_examples)/launch/rgb_stereo_node.launch">                
+        <!--<arg name="point_cloud_mono" value="true"/>
+        <arg name="urdf" value="true"/>-->
     </include>
     
     <node name="extended_object_detection" pkg="extended_object_detection" type="extended_object_detection_node" output="screen"  >
         
         <param name="object_base" value="$(arg objectBasePath)"/>
         
-        <param name="subscribe_depth" value="true"/>
         <param name="rate_limit_sec" value="0.1"/>
         <param name="allowed_lag_sec" value="1"/>                
         <param name="publish_image_output" value="true"/>
@@ -23,13 +22,18 @@
         <param name="broadcast_tf" value="true"/>
         
                         
-        <remap from="camera/image_raw" to="/oak/rgb/image"/>
+        <!--<remap from="camera/image_raw" to="/oak/rgb/image"/>
         <remap from="camera/info" to="/oak/rgb/camera_info"/>
         <remap from="depth/image_raw" to="/oak/stereo/depth"/>
-        <remap from="depth/info" to="/oak/stereo/camera_info"/>
+        <remap from="depth/info" to="/oak/stereo/camera_info"/>-->
         
-        <rosparam param="selected_on_start_simple_objects">[-1]</rosparam>
-        <rosparam param="selected_on_start_complex_objects">[10]</rosparam>
+        <rosparam param="rgb_image_topics">[/rgb_stereo_publisher/color/image]</rosparam>
+        <rosparam param="rgb_info_topics">[/rgb_stereo_publisher/color/camera_info]</rosparam>
+        <rosparam param="depth_image_topics">[/rgb_stereo_publisher/stereo/depth]</rosparam>
+        <rosparam param="depth_info_topics">[/rgb_stereo_publisher/stereo/camera_info]</rosparam>
+        
+        <rosparam param="selected_on_start_simple_objects">[67]</rosparam>
+        <rosparam param="selected_on_start_complex_objects">[-1]</rosparam>
         
     </node>
               
