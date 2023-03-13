@@ -16,7 +16,7 @@
         <param name="object_base" value="$(arg objectBasePath)"/>
         
         <param name="rate_limit_sec" value="0.1"/>
-        <param name="allowed_lag_sec" value="1"/>                
+        <param name="allowed_lag_sec" value="0"/>                
         <param name="publish_image_output" value="true"/>
         <param name="publish_markers" value="true"/>
         <param name="broadcast_tf" value="true"/>

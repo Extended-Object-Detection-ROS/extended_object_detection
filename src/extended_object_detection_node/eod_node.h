@@ -20,6 +20,8 @@
 #include "extended_object_detection/SimpleObjectArray.h"
 #include "extended_object_detection/ComplexObjectArray.h"
 #include "extended_object_detection/SetObjects.h"
+#include "extended_object_detection/StatsArray.h"
+#include "extended_object_detection/StatsStream.h"
 
 #include <boost/circular_buffer.hpp>
 
@@ -34,6 +36,14 @@ typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sens
 
 typedef message_filters::Synchronizer<RGBDInfoSyncPolicy> RGBDSynchronizer;
 
+
+struct StreamStats{
+    ros::Time prev_detected_time;
+    int proceeded_frames = 0;
+    int dropped_frames = 0;
+    int skipped_frames = 0;
+    boost::circular_buffer<double>* detect_rate_values;
+};
 
 class EOD_ROS{
 public:
@@ -59,9 +69,9 @@ private:
     ros::Publisher complex_objects_pub_;
     ros::Publisher complex_objects_markers_pub_;
 #endif
-    std::map<std::string, image_transport::Publisher> output_image_pubs_;
-    //image_transport::ImageTransport *private_it_;
-//     image_transport::Publisher output_image_pub_;
+    std::map<std::string, image_transport::Publisher> output_image_pubs_;    
+    ros::Publisher stats_pub_;
+    
     
     ros::ServiceServer set_simple_objects_srv_;
 #ifdef USE_IGRAPH
@@ -78,11 +88,12 @@ private:
     bool broadcast_tf;
     double allowed_lag_sec;
     int subs_queue_size;
+    int stats_window;
     
     // vars
     int frame_sequence;     
-    std::map<std::string, ros::Time> prev_detected_time;
-    boost::circular_buffer<double>* detect_rate_values;
+    std::map<std::string, StreamStats> stats;
+//     boost::circular_buffer<double>* detect_rate_values;
     
     // callbacks
     void rgb_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info);
@@ -109,7 +120,7 @@ private:
 #ifdef USE_IGRAPH
     int find_complex_obj_index_by_id(int id);
 #endif    
-    double get_detect_rate();
+    double get_detect_rate(std::string frame_id);
     
     // EOD
     eod::ObjectBase * object_base;
@@ -117,6 +128,8 @@ private:
 #ifdef USE_IGRAPH
     std::vector<eod::ComplexObjectGraph*> selected_complex_objects;
 #endif
+    
+    void publish_stats();
     
     
 };
