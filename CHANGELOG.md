@@ -10,6 +10,7 @@ Now main node can subscribe multiple cameras.
 For each subscribed camera where are statistic output.  
 Now can subscribe depth-maps in two main formats.  
 Unite output message formats.  
+Added soft mode detection for complex objects.
 
 ## [[1.1.0](https://github.com/Extended-Object-Detection-ROS/extended_object_detection/tree/r1.1.0)] - 2021-11-21
 Now core of solution is stand-alone module.
