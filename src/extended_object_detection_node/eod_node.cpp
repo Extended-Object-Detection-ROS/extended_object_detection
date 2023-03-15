@@ -340,7 +340,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
                 cmplx_msg.simple_objects.push_back(eoi_to_base_object(name_eoi.first, -1, name_eoi.second, rgb.K()));
             }                        
             complex_msg.objects.push_back(cmplx_msg);
-        }private_it_
+        }
         if(publish_image_output)
             c_it->drawAll(image_to_draw, cv::Scalar(255, 255, 0), 2);
     }
