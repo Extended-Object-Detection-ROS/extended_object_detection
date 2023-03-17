@@ -181,19 +181,15 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
 }
 
 
-bool EOD_ROS::check_time(const ros::Time& stamp, std::string frame_id){
-//     if( frame_sequence == 0){
-//         prev_detected_time[frame_id] = stamp;
-//         return true;        
-//     }
-//     return (stamp - prev_detected_time[frame_id]).toSec() > rate_limit_sec;
-    
+bool EOD_ROS::check_time(const ros::Time& stamp, std::string frame_id){    
     if (stats.find(frame_id) == stats.end()){
         stats[frame_id] = StreamStats();
         stats[frame_id].detect_rate_values = new boost::circular_buffer<double>(stats_window);
         stats[frame_id].prev_detected_time = stamp;
         return true;
     }
+    if( rate_limit_sec == 0 )
+        return true;
     return (stamp - stats[frame_id].prev_detected_time).toSec() > rate_limit_sec;    
 }
 
