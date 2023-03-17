@@ -1,6 +1,6 @@
 # Extended Object Detection
 ![EOD logo](animated_logo.gif)  
-[![GitHub issues](https://img.shields.io/github/issues/Extended-Object-Detection-ROS/extended_object_detection.svg)](https://github.com/Extended-Object-Detection-ROS/extended_object_detection/issues) [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) ![version](https://img.shields.io/badge/version-1.1.0-blue)
+[![GitHub issues](https://img.shields.io/github/issues/Extended-Object-Detection-ROS/extended_object_detection.svg)](https://github.com/Extended-Object-Detection-ROS/extended_object_detection/issues) [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) ![version](https://img.shields.io/badge/version-2.0.0-blue)
 
 ## Short information
 
