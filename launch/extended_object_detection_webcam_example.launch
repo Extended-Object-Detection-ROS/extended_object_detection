@@ -19,17 +19,19 @@
         <param name="object_base" value="$(arg objectBasePath)"/>        
         <param name="publish_image_output" value="true"/>
         
-        <param name="publish_markers" value="true"/>
-        <param name="subscribe_depth" value="false"/>                       
+        <param name="publish_markers" value="true"/>        
         
-        <rosparam param="selected_on_start_simple_objects">[]</rosparam>
-        <rosparam param="selected_on_start_complex_objects">[]</rosparam>
+        <rosparam param="rgb_image_topics">[/camera/image_raw]</rosparam>
+        <rosparam param="rgb_info_topics">[/camera/camera_info]</rosparam>
         
-        <remap from="camera/image_raw" to="/camera/image_raw"/>
-        <remap from="camera/info" to="/camera/camera_info"/>
+        <rosparam param="selected_on_start_simple_objects">[67]</rosparam>
+        <rosparam param="selected_on_start_complex_objects">[-1]</rosparam>
+        
+        <!--<remap from="camera/image_raw" to="/camera/image_raw"/>
+        <remap from="camera/info" to="/camera/camera_info"/>-->
     </node>        
     
-    <node pkg="rqt_service_caller" name="rqt_service_caller" type="rqt_service_caller"/>
+    <!--<node pkg="rqt_service_caller" name="rqt_service_caller" type="rqt_service_caller"/>-->
     
     <!-- visualization -->
     <node pkg="rviz" type="rviz" name="rviz"

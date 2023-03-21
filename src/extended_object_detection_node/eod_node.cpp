@@ -37,21 +37,45 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     
     frame_sequence = 0;
     
-    rgb_it_ = new image_transport::ImageTransport(nh_);    
-            
-    sub_rgb_.subscribe(*rgb_it_, "camera/image_raw", 10);
-    sub_info_.subscribe(nh_, "camera/info", 10);    
+    //rgb_it_ = new image_transport::ImageTransport(nh_);                       
         
-    detect_rate_values = new boost::circular_buffer<double>(10);
+    //detect_rate_values = new boost::circular_buffer<double>(10);
     
     // get params
-    nh_p_.param("subscribe_depth", subscribe_depth, false);
+    //nh_p_.param("subscribe_depth", subscribe_depth, false);
+    
+    // multicamera stuff
+    std::vector<std::string> rgb_image_topics;    
+    nh_p_.getParam("rgb_image_topics", rgb_image_topics);
+    std::vector<std::string> rgb_info_topics;    
+    nh_p_.getParam("rgb_info_topics", rgb_info_topics);
+    
+    if( rgb_image_topics.size() != rgb_info_topics.size() || rgb_image_topics.size() == 0){
+        ROS_ERROR("rgb_image_topics have to be same size as rgb_info_topics and more than 0! Exit.");
+        std::exit(-1);
+    }
+    
+    std::vector<std::string> depth_image_topics;    
+    nh_p_.getParam("depth_image_topics", depth_image_topics);
+    std::vector<std::string> depth_info_topics;    
+    nh_p_.getParam("depth_info_topics", depth_info_topics);
+    if( depth_image_topics.size() != depth_info_topics.size()){
+        ROS_ERROR("depth_image_topics have to be same size as depth_info_topics! Exit.");
+        std::exit(-1);
+    }    
+    if( depth_image_topics.size() != 0 && depth_image_topics.size() != rgb_image_topics.size() ){
+        ROS_ERROR("depth_image_topics have to be same size as rgb_image_topics or 0! Exit.");
+        std::exit(-1);
+    }
+    
     nh_p_.param("rate_limit_sec", rate_limit_sec, 0.1);
     nh_p_.param("publish_image_output", publish_image_output, false);
     nh_p_.param("use_actual_time", use_actual_time, false);
     nh_p_.param("publish_markers", publish_markers, false);
     nh_p_.param("broadcast_tf", broadcast_tf, false);
     nh_p_.param("allowed_lag_sec", allowed_lag_sec, 0.0);
+    nh_p_.param("subs_queue_size", subs_queue_size, 10);
+    nh_p_.param("stats_window", stats_window, 10);
             
     std::string object_base_path;
     nh_p_.getParam("object_base",object_base_path);
@@ -118,31 +142,62 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
 #endif
     }
     
-    private_it_ = new image_transport::ImageTransport(nh_p_);
-    output_image_pub_ = private_it_->advertise("detected_image", 1);
+    stats_pub_ = nh_p_.advertise<extended_object_detection::StatsArray>("stats", 1);
+    
+     
+    // setup subscribers
+    for( size_t i = 0 ; i < rgb_image_topics.size() ; i++ ){
         
-    // set up message filters
-    if( !subscribe_depth){
-        //ROS_INFO("Configuring filter on rgb image and info...");            
-        rgb_sync_.reset( new RGBSynchronizer(RGBInfoSyncPolicy(10), sub_rgb_, sub_info_) );
-        rgb_sync_->registerCallback(boost::bind(&EOD_ROS::rgb_info_cb, this, boost::placeholders::_1,  boost::placeholders::_2));                                
+        //ROS_INFO("Bounding %s and %s...",rgb_image_topics[i].c_str(), rgb_info_topics[i].c_str());                        
+        
+        rgb_it_.push_back(new image_transport::ImageTransport(nh_));                
+        sub_rgb_.push_back(new image_transport::SubscriberFilter());
+        sub_info_.push_back(new message_filters::Subscriber<sensor_msgs::CameraInfo>());
+        
+        sub_rgb_[i]->subscribe(*rgb_it_[i], rgb_image_topics[i], subs_queue_size);
+        sub_info_[i]->subscribe(nh_, rgb_info_topics[i], subs_queue_size); 
+        
+        // set up message filters
+        if( depth_image_topics.size() == 0 ){                
+            
+            
+            rgb_sync_.push_back(new boost::shared_ptr<RGBSynchronizer>());                                    
+            rgb_sync_[i]->reset(new RGBSynchronizer(RGBInfoSyncPolicy(subs_queue_size), *sub_rgb_[i], *sub_info_[i]) );
+            
+            (*rgb_sync_[i])->registerCallback(boost::bind(&EOD_ROS::rgb_info_cb, this, boost::placeholders::_1,  boost::placeholders::_2));                                
+        }
+        else{
+            depth_it_.push_back(new image_transport::ImageTransport(nh_));
+            //sub_depth_.subscribe(*rgb_it_, "depth/image_raw", 10);
+            //sub_depth_info_.subscribe(nh_, "depth/info", 10);
+            //depth_it_
+            sub_depth_.push_back(new image_transport::SubscriberFilter());
+            sub_depth_info_.push_back(new message_filters::Subscriber<sensor_msgs::CameraInfo>);
+            
+            sub_depth_[i]->subscribe(*depth_it_[i], depth_image_topics[i], subs_queue_size);
+            sub_depth_info_[i]->subscribe(nh_, depth_info_topics[i], subs_queue_size);
+            
+            rgbd_sync_.push_back(new boost::shared_ptr<RGBDSynchronizer>);
+            rgbd_sync_[i]->reset( new RGBDSynchronizer(RGBDInfoSyncPolicy(subs_queue_size), *sub_rgb_[i], *sub_info_[i], *sub_depth_[i], *sub_depth_info_[i]) );
+            
+            (*rgbd_sync_[i])->registerCallback(boost::bind(&EOD_ROS::rgbd_info_cb, this, boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3,  boost::placeholders::_4));        
+        }                
+    
     }
-    else{
-        //ROS_INFO("Configuring filter on rgbd images and infos...");        
-        sub_depth_.subscribe(*rgb_it_, "depth/image_raw", 10);
-        sub_depth_info_.subscribe(nh_, "depth/info", 10);
-        
-        rgbd_sync_.reset( new RGBDSynchronizer(RGBDInfoSyncPolicy(10), sub_rgb_, sub_info_, sub_depth_, sub_depth_info_) );
-        rgbd_sync_->registerCallback(boost::bind(&EOD_ROS::rgbd_info_cb, this, boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3,  boost::placeholders::_4));        
-    }          
     //ROS_INFO("Configured!");
 }
 
 
-bool EOD_ROS::check_time(const ros::Time& stamp){
-    if( frame_sequence == 0)
-        return true;        
-    return (stamp - prev_detected_time).toSec() > rate_limit_sec;
+bool EOD_ROS::check_time(const ros::Time& stamp, std::string frame_id){    
+    if (stats.find(frame_id) == stats.end()){
+        stats[frame_id] = StreamStats();
+        stats[frame_id].detect_rate_values = new boost::circular_buffer<double>(stats_window);
+        stats[frame_id].prev_detected_time = stamp;
+        return true;
+    }
+    if( rate_limit_sec == 0 )
+        return true;
+    return (stamp - stats[frame_id].prev_detected_time).toSec() > rate_limit_sec;    
 }
 
 
@@ -175,15 +230,18 @@ cv::Mat EOD_ROS::getD(const sensor_msgs::CameraInfoConstPtr& info_msg){
 
 
 void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sensor_msgs::CameraInfoConstPtr& rgb_info){
+    publish_stats();
     //ROS_INFO("Got Image!");
     // CHECK RATE
-    if( !check_time(ros::Time::now()) ) {
+    if( !check_time(ros::Time::now(), rgb_image->header.frame_id) ) {
         //ROS_WARN("Skipped frame");
+        stats[rgb_image->header.frame_id].skipped_frames++;
         return;
     }    
     double lag;
     if( !check_lag(rgb_image->header.stamp, lag) ) {
         //ROS_WARN("Dropped frame, lag = %f", lag);
+        stats[rgb_image->header.frame_id].dropped_frames++;
         return;
     }    
     cv::Mat rgb;
@@ -200,15 +258,18 @@ void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sen
 
 
 void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sensor_msgs::CameraInfoConstPtr& rgb_info, const sensor_msgs::ImageConstPtr& depth_image, const sensor_msgs::CameraInfoConstPtr& depth_info){
+    publish_stats();
     //ROS_INFO("Got RGBD!");    
     // CHECK RATE       
-    if( !check_time(ros::Time::now()) ) {
+    if( !check_time(ros::Time::now(), rgb_image->header.frame_id) ) {
         //ROS_WARN("Skipped frame");
+        stats[rgb_image->header.frame_id].skipped_frames++;
         return;
     }
     double lag;
     if( !check_lag(rgb_image->header.stamp, lag) ) {
         //ROS_WARN("Dropped frame, lag = %f", lag);
+        stats[rgb_image->header.frame_id].dropped_frames++;
         return;
     }
     // TODO add possibility to exclude old stamp images (if detection goes to slow)    
@@ -223,8 +284,9 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     cv::Mat depth;    
     if (depth_image->encoding == sensor_msgs::image_encodings::TYPE_16UC1){    
         depth = cv_bridge::toCvCopy(depth_image, sensor_msgs::image_encodings::TYPE_16UC1)->image;
-        depth.convertTo(depth, CV_32F);
-        depth *= 0.001f;
+        //depth.convertTo(depth, CV_32F);
+        depth.convertTo(depth, CV_16UC1);
+        //depth *= 0.001f;
     }
     else if(depth_image->encoding == sensor_msgs::image_encodings::TYPE_32FC1){        
         depth = cv_bridge::toCvCopy(depth_image, sensor_msgs::image_encodings::TYPE_32FC1)->image;
@@ -242,11 +304,12 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
 
 
 void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header){
-    //ROS_INFO("Detecting...");
-    if( frame_sequence != 0 ){
-        detect_rate_values->push_back((ros::Time::now() - prev_detected_time).toSec());
+    // store data for detect rate calculus
+    if( stats[header.frame_id].proceeded_frames != 0){
+        stats[header.frame_id].detect_rate_values->push_back((ros::Time::now() - stats[header.frame_id].prev_detected_time).toSec());
     }
-    prev_detected_time = ros::Time::now();
+    
+    stats[header.frame_id].prev_detected_time = ros::Time::now();    
     
     // remove / from frame_id if it starts with it
     if( header.frame_id[0] == '/')
@@ -393,10 +456,17 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
 #endif
     }        
     if(publish_image_output){
+        if( output_image_pubs_.find(header.frame_id) == output_image_pubs_.end() ){
+            auto out_it = new image_transport::ImageTransport(nh_p_);
+            //printf("Adding new publisher...");
+            output_image_pubs_[header.frame_id] = out_it->advertise("detected_image_"+std::to_string(output_image_pubs_.size()), 1);
+        }
+        
         sensor_msgs::ImagePtr detected_image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_to_draw).toImageMsg();
-        output_image_pub_.publish(detected_image_msg);
+        output_image_pubs_[header.frame_id].publish(detected_image_msg);
     }        
-    frame_sequence++;  
+    frame_sequence++;
+    stats[header.frame_id].proceeded_frames++;    
     //cv::waitKey(1);
 }
 
@@ -458,7 +528,7 @@ visualization_msgs::Marker EOD_ROS::base_object_to_marker_arrow(extended_object_
     mrk.ns = base_object.type_name +"_arrow";
     mrk.id = id;
     mrk.type = visualization_msgs::Marker::ARROW; 
-    mrk.lifetime = ros::Duration(get_detect_rate());
+    mrk.lifetime = ros::Duration(get_detect_rate(header.frame_id));
     mrk.points.push_back(geometry_msgs::Point());
     geometry_msgs::Point end = fromVector(base_object.transform.translation);
     mrk.points.push_back(end);
@@ -483,7 +553,7 @@ visualization_msgs::Marker EOD_ROS::base_object_to_marker_frame(extended_object_
     mrk.ns = base_object.type_name +"_frame";
     mrk.id = id;
     mrk.type = visualization_msgs::Marker::LINE_STRIP;    
-    mrk.lifetime = ros::Duration(get_detect_rate());
+    mrk.lifetime = ros::Duration(get_detect_rate(header.frame_id));
     for( auto& corner : base_object.rect.cornerTranslates )
         mrk.points.push_back(fromVector(corner));
     mrk.points.push_back(mrk.points[0]);    
@@ -505,7 +575,7 @@ visualization_msgs::Marker EOD_ROS::base_object_to_marker_text(extended_object_d
     mrk.ns = base_object.type_name +"_text";
     mrk.id = id;
     mrk.type = visualization_msgs::Marker::TEXT_VIEW_FACING; 
-    mrk.lifetime = ros::Duration(get_detect_rate());
+    mrk.lifetime = ros::Duration(get_detect_rate(header.frame_id));
     mrk.pose.position = fromVector(base_object.transform.translation);    
     mrk.pose.position.y = base_object.rect.cornerTranslates[0].y - 0.14; // place text upper top frame part
     mrk.text = std::to_string(base_object.type_id)+":"+base_object.type_name+"["+std::to_string(base_object.score).substr(0,4)+"]";
@@ -565,7 +635,7 @@ bool EOD_ROS::set_simple_objects_cb(extended_object_detection::SetObjects::Reque
                         else{
                             // already removed
                             ROS_WARN("[set_simple_objects srv] object with id %i is already removed", object_id);
-                        }
+                       }
                     }
                 }
                 else{
@@ -657,7 +727,7 @@ void EOD_ROS::scene_to_markers(std::pair<double, std::vector<std::pair<eod::Scen
     marker.header.frame_id = frame_id;
     marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     marker.ns = std::to_string(ns)+"_main_text";
-    marker.lifetime = ros::Duration(get_detect_rate());
+    marker.lifetime = ros::Duration(get_detect_rate(frame_id));
     marker.pose.position.x = cx;
     marker.pose.position.y = cy;
     marker.pose.position.z = cz + 0.4;
@@ -687,7 +757,7 @@ visualization_msgs::Marker EOD_ROS::scene_object_to_line_marker(eod::SceneObject
     marker.type = visualization_msgs::Marker::LINE_STRIP;
     marker.ns = std::to_string(ns)+"_line";
     marker.id = id;
-    marker.lifetime = ros::Duration(get_detect_rate());
+    marker.lifetime = ros::Duration(get_detect_rate(frame_id));
     geometry_msgs::Point start;
     start.x = scene_obj->x;
     start.y = scene_obj->y;
@@ -714,7 +784,7 @@ visualization_msgs::Marker EOD_ROS::scene_object_to_cylinder_marker(eod::SceneOb
     marker.type = visualization_msgs::Marker::CYLINDER;
     marker.ns = std::to_string(ns)+"_cylinder";
     marker.id = id;
-    marker.lifetime = ros::Duration(get_detect_rate());
+    marker.lifetime = ros::Duration(get_detect_rate(frame_id));
     marker.pose.position.x = scene_obj->x;
     marker.pose.position.y = scene_obj->y;
     marker.pose.position.z = scene_obj->z;
@@ -734,7 +804,7 @@ visualization_msgs::Marker EOD_ROS::scene_object_to_text_marker(eod::SceneObject
     marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     marker.ns = std::to_string(ns)+"_text";
     marker.id = id;
-    marker.lifetime = ros::Duration(get_detect_rate());
+    marker.lifetime = ros::Duration(get_detect_rate(frame_id));
     marker.pose.position.x = scene_obj->x;
     marker.pose.position.y = scene_obj->y;
     marker.pose.position.z = scene_obj->z + scene_obj->h * 1.5;
@@ -764,15 +834,28 @@ void EOD_ROS::publish_map_markers(eod::Scene* scene){
 #endif
 
 
-double EOD_ROS::get_detect_rate(){
-    if( detect_rate_values->empty() )
+double EOD_ROS::get_detect_rate(std::string frame_id){
+    if( stats[frame_id].detect_rate_values->empty() )
         return 0;
     double sum_rate = 0;
-    for(auto& rate : *detect_rate_values)
+    for(auto& rate : *(stats[frame_id].detect_rate_values))
         sum_rate += rate;
-    return sum_rate / detect_rate_values->size();
+    return sum_rate / stats[frame_id].detect_rate_values->size();
 }
 
+void EOD_ROS::publish_stats(){
+    extended_object_detection::StatsArray stats_array;
+    for( const auto& stat : stats ){
+        extended_object_detection::StatsStream stream;
+        stream.frame_id = stat.first;
+        stream.proceeded_frames = stat.second.proceeded_frames;
+        stream.dropped_frames = stat.second.dropped_frames;
+        stream.skipped_frames = stat.second.skipped_frames;
+        stream.mean_rate = get_detect_rate(stat.first);
+        stats_array.streams.push_back(stream);
+    }
+    stats_pub_.publish(stats_array);    
+}
 
 int main(int argc, char **argv)
 {

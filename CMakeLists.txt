@@ -7,9 +7,10 @@ add_compile_options(-std=c++11)
 ## Optional parts of library
 set(opencv_contrib OFF)
 set(zbar_lib OFF)
-set(TensorFlow OFF)
 set(DLib OFF)
 set(igraph ON)
+set(torch ON)
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -39,6 +40,15 @@ if(DLib)
     add_subdirectory(/home/anton/Lib/dlib dlib_build)
 endif(DLib)
 
+if(torch)
+    #set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}/home/anton/Libs/libtorch")
+    list(APPEND CMAKE_PREFIX_PATH "/home/anton/Lib/libtorch")
+    message(${CMAKE_PREFIX_PATH})
+    find_package(Torch REQUIRED)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")    
+endif(torch)
+
+
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -58,6 +68,8 @@ add_message_files(
   SceneObject.msg
   Scene.msg
   SceneArray.msg
+  StatsStream.msg
+  StatsArray.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -126,6 +138,7 @@ set( EOD_SRC
     src/lib/detectors/ExtractedInfoStringChecker.cpp
     src/lib/detectors/UnitTranslationExtracter.cpp
     src/lib/detectors/SquareObjectDistanceDetector.cpp
+    src/lib/detectors/TorchYOLOv7Detector.cpp
 
     # lib relations        
     src/lib/relations/ImageRangeRelation.cpp
@@ -151,9 +164,6 @@ add_executable(
     ${EOD_SRC}
 )
 
-if(TensorFlow)
-    target_compile_definitions(extended_object_detection_node PUBLIC USE_TF) 
-endif(TensorFlow)
 
 if(opencv_contrib)
     target_compile_definitions(extended_object_detection_node PUBLIC USE_OPENCV_CONTRIB)         
@@ -170,6 +180,10 @@ endif(DLib)
 if(igraph)
     target_compile_definitions(extended_object_detection_node PUBLIC USE_IGRAPH)    
 endif(igraph)
+
+if(torch)
+    target_compile_definitions(extended_object_detection_node PUBLIC USE_TORCH) 
+endif(torch)
 
 #collect hsv color c++ utility
 add_executable(
@@ -502,11 +516,30 @@ if(igraph)
     )
 endif(igraph)
 
+if(torch)    
+    set_property(TARGET extended_object_detection_node PROPERTY CXX_STANDARD 14)
+    set_property(TARGET offline_video PROPERTY CXX_STANDARD 14)
+    set_property(TARGET offline_image PROPERTY CXX_STANDARD 14)
+
+    target_link_libraries(extended_object_detection_node  
+        ${TORCH_LIBRARIES}
+    )
+    
+    target_link_libraries(offline_video  
+        ${TORCH_LIBRARIES}
+    )
+    
+    target_link_libraries(offline_image  
+        ${TORCH_LIBRARIES}
+    )
+endif(torch)
+
 
 target_link_libraries(extended_object_detection_node  
   ${OpenCV_LIBRARIES}
   ${TinyXML_LIBRARIES}
   ${catkin_LIBRARIES}    
+  
 )
 
 target_link_libraries(hsv_color_params_collector_node  

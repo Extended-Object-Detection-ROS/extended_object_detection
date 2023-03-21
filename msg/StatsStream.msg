@@ -1,0 +1,5 @@
+string frame_id
+int32 proceeded_frames
+int32 skipped_frames
+int32 dropped_frames
+float64 mean_rate

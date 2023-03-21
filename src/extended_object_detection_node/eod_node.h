@@ -19,6 +19,8 @@
 
 #include "extended_object_detection/BaseObject.h"
 #include "extended_object_detection/SetObjects.h"
+#include "extended_object_detection/StatsArray.h"
+#include "extended_object_detection/StatsStream.h"
 
 #include <boost/circular_buffer.hpp>
 
@@ -34,6 +36,14 @@ typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sens
 typedef message_filters::Synchronizer<RGBDInfoSyncPolicy> RGBDSynchronizer;
 
 
+struct StreamStats{
+    ros::Time prev_detected_time;
+    int proceeded_frames = 0;
+    int dropped_frames = 0;
+    int skipped_frames = 0;
+    boost::circular_buffer<double>* detect_rate_values;
+};
+
 class EOD_ROS{
 public:
     EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p);
@@ -42,15 +52,15 @@ public:
 private:
     // ros stuff
     ros::NodeHandle nh_, nh_p_;
-    image_transport::ImageTransport *rgb_it_;
-    image_transport::SubscriberFilter sub_rgb_;    
-    message_filters::Subscriber<sensor_msgs::CameraInfo> sub_info_;
-    boost::shared_ptr<RGBSynchronizer> rgb_sync_;
+    std::vector<image_transport::ImageTransport*> rgb_it_;
+    std::vector<image_transport::SubscriberFilter*> sub_rgb_;    
+    std::vector<message_filters::Subscriber<sensor_msgs::CameraInfo>* > sub_info_;
+    std::vector<boost::shared_ptr<RGBSynchronizer>* > rgb_sync_;
     
-    image_transport::ImageTransport *depth_it_;
-    image_transport::SubscriberFilter sub_depth_;    
-    message_filters::Subscriber<sensor_msgs::CameraInfo> sub_depth_info_;
-    boost::shared_ptr<RGBDSynchronizer> rgbd_sync_;
+    std::vector<image_transport::ImageTransport*> depth_it_;
+    std::vector<image_transport::SubscriberFilter*> sub_depth_;    
+    std::vector<message_filters::Subscriber<sensor_msgs::CameraInfo>* > sub_depth_info_;
+    std::vector<boost::shared_ptr<RGBDSynchronizer>* > rgbd_sync_;
     
     ros::Publisher simple_objects_pub_;
     ros::Publisher simple_objects_markers_pub_;
@@ -61,8 +71,9 @@ private:
     ros::Publisher scenes_markers_pub_;
     ros::Publisher map_markers_pub_;
 #endif
-    image_transport::ImageTransport *private_it_;
-    image_transport::Publisher output_image_pub_;
+    std::map<std::string, image_transport::Publisher> output_image_pubs_;    
+    ros::Publisher stats_pub_;
+    
     
     ros::ServiceServer set_simple_objects_srv_;
 #ifdef USE_IGRAPH
@@ -78,11 +89,13 @@ private:
     bool publish_markers;
     bool broadcast_tf;
     double allowed_lag_sec;
+    int subs_queue_size;
+    int stats_window;
     
     // vars
     int frame_sequence;     
-    ros::Time prev_detected_time;
-    boost::circular_buffer<double>* detect_rate_values;
+    std::map<std::string, StreamStats> stats;
+//     boost::circular_buffer<double>* detect_rate_values;
     
     // callbacks
     void rgb_info_cb(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& info);
@@ -96,7 +109,7 @@ private:
     
     // functions    
     void detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header);
-    bool check_time(const ros::Time& stamp);
+    bool check_time(const ros::Time& stamp, std::string frame_id);
     bool check_lag(const ros::Time& stamp, double &lag);    
     extended_object_detection::BaseObject eoi_to_base_object(std::string name, int id, eod::ExtendedObjectInfo* eoi, const cv::Mat& K);
     cv::Mat getK(const sensor_msgs::CameraInfoConstPtr& info_msg);
@@ -114,7 +127,7 @@ private:
     visualization_msgs::Marker scene_object_to_line_marker(eod::SceneObject*, int ns, int id, double x, double y, double z, std::string frame_id = "map");
     void publish_map_markers(eod::Scene* scene);
 #endif    
-    double get_detect_rate();
+    double get_detect_rate(std::string frame_id);
     
     // EOD
     eod::ObjectBase * object_base;
@@ -122,6 +135,8 @@ private:
 #ifdef USE_IGRAPH
     std::vector<eod::ComplexObjectGraph*> selected_complex_objects;    
 #endif
+    
+    void publish_stats();
     
     
 };
