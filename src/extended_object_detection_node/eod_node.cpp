@@ -443,14 +443,30 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         complex_objects_markers_pub_.publish(cmplx_mrk_array_msg);
         // scenes
         visualization_msgs::MarkerArray scene_marker_array_msg;       
+//         for(auto& scene_it : object_base->scenes){
+//             int ns = 0;
+//             for( auto& scene : scene_it->results ){            
+//                 scene_to_markers(scene, ns, scene_marker_array_msg, header, scene_it->name, scene_it->frame_id);            
+//                 ns++;            
+//             }
+//             publish_map_markers(scene_it);
+//         }
+        
         for(auto& scene_it : object_base->scenes){
             int ns = 0;
-            for( auto& scene : scene_it->results ){            
-                scene_to_markers(scene, ns, scene_marker_array_msg, header, scene_it->name, scene_it->frame_id);            
-                ns++;            
+            int max = -1;
+        
+            for( int i = 0 ; i < scene_it->results.size(); i++){
+                if( scene_it->results[max].first < scene_it->results[i].first)
+                    max = i;            
+            }
+            
+            if( max > -1){
+                scene_to_markers(scene_it->results[max], ns, scene_marker_array_msg, header, scene_it->name, scene_it->frame_id);
             }
             publish_map_markers(scene_it);
         }
+        
         scenes_markers_pub_.publish(scene_marker_array_msg);
         
 #endif
