@@ -446,7 +446,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         for(auto& scene_it : object_base->scenes){
             int ns = 0;
             for( auto& scene : scene_it->results ){            
-                scene_to_markers(scene, ns, scene_marker_array_msg, scene_it->name, scene_it->frame_id);            
+                scene_to_markers(scene, ns, scene_marker_array_msg, header, scene_it->name, scene_it->frame_id);            
                 ns++;            
             }
             publish_map_markers(scene_it);
@@ -709,7 +709,7 @@ bool EOD_ROS::set_complex_objects_cb(extended_object_detection::SetObjects::Requ
     return true;
 }
 
-void EOD_ROS::scene_to_markers(std::pair<double, std::vector<std::pair<eod::SceneObject*, eod::ExtendedObjectInfo*>>> scene, int ns, visualization_msgs::MarkerArray &scene_marker_array_msg, std::string scene_name, std::string frame_id){
+void EOD_ROS::scene_to_markers(std::pair<double, std::vector<std::pair<eod::SceneObject*, eod::ExtendedObjectInfo*>>> scene, int ns, visualization_msgs::MarkerArray &scene_marker_array_msg, std_msgs::Header header, std::string scene_name, std::string frame_id){
     // calc center
     double cx = 0, cy = 0, cz = 0;
     for( auto& obj : scene.second ){
@@ -727,7 +727,7 @@ void EOD_ROS::scene_to_markers(std::pair<double, std::vector<std::pair<eod::Scen
     marker.header.frame_id = frame_id;
     marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     marker.ns = std::to_string(ns)+"_main_text";
-    marker.lifetime = ros::Duration(get_detect_rate(frame_id));
+    marker.lifetime = ros::Duration(get_detect_rate(header.frame_id));
     marker.pose.position.x = cx;
     marker.pose.position.y = cy;
     marker.pose.position.z = cz + 0.4;
@@ -743,21 +743,21 @@ void EOD_ROS::scene_to_markers(std::pair<double, std::vector<std::pair<eod::Scen
     // add objects
     int id = 0;
     for( auto& obj : scene.second ){
-        scene_marker_array_msg.markers.push_back(scene_object_to_cylinder_marker(obj.first, ns, id, frame_id));
-        scene_marker_array_msg.markers.push_back(scene_object_to_text_marker(obj.first, ns, id, frame_id));        
-        scene_marker_array_msg.markers.push_back(scene_object_to_line_marker(obj.first, ns, id, cx, cy, cz, frame_id));
+        scene_marker_array_msg.markers.push_back(scene_object_to_cylinder_marker(obj.first, ns, id, marker.lifetime, frame_id));
+        scene_marker_array_msg.markers.push_back(scene_object_to_text_marker(obj.first, ns, id, marker.lifetime, frame_id));        
+        scene_marker_array_msg.markers.push_back(scene_object_to_line_marker(obj.first, ns, id, marker.lifetime, cx, cy, cz, frame_id));
         id++;
     }        
 }
 
-visualization_msgs::Marker EOD_ROS::scene_object_to_line_marker(eod::SceneObject* scene_obj, int ns, int id, double x, double y, double z, std::string frame_id){
+visualization_msgs::Marker EOD_ROS::scene_object_to_line_marker(eod::SceneObject* scene_obj, int ns, int id, ros::Duration lifetime, double x, double y, double z, std::string frame_id){
     visualization_msgs::Marker marker;
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = frame_id;
     marker.type = visualization_msgs::Marker::LINE_STRIP;
     marker.ns = std::to_string(ns)+"_line";
     marker.id = id;
-    marker.lifetime = ros::Duration(get_detect_rate(frame_id));
+    marker.lifetime = lifetime;
     geometry_msgs::Point start;
     start.x = scene_obj->x;
     start.y = scene_obj->y;
@@ -777,14 +777,14 @@ visualization_msgs::Marker EOD_ROS::scene_object_to_line_marker(eod::SceneObject
     return marker;    
 }
 
-visualization_msgs::Marker EOD_ROS::scene_object_to_cylinder_marker(eod::SceneObject* scene_obj, int ns, int id, std::string frame_id){
+visualization_msgs::Marker EOD_ROS::scene_object_to_cylinder_marker(eod::SceneObject* scene_obj, int ns, int id, ros::Duration lifetime, std::string frame_id){
     visualization_msgs::Marker marker;
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = frame_id;
     marker.type = visualization_msgs::Marker::CYLINDER;
     marker.ns = std::to_string(ns)+"_cylinder";
+    marker.lifetime = lifetime;
     marker.id = id;
-    marker.lifetime = ros::Duration(get_detect_rate(frame_id));
     marker.pose.position.x = scene_obj->x;
     marker.pose.position.y = scene_obj->y;
     marker.pose.position.z = scene_obj->z;
@@ -797,14 +797,14 @@ visualization_msgs::Marker EOD_ROS::scene_object_to_cylinder_marker(eod::SceneOb
     return marker;
 }
 
-visualization_msgs::Marker EOD_ROS::scene_object_to_text_marker(eod::SceneObject* scene_obj, int ns, int id, std::string frame_id){
+visualization_msgs::Marker EOD_ROS::scene_object_to_text_marker(eod::SceneObject* scene_obj, int ns, int id, ros::Duration lifetime, std::string frame_id){
     visualization_msgs::Marker marker;
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = frame_id;
     marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     marker.ns = std::to_string(ns)+"_text";
     marker.id = id;
-    marker.lifetime = ros::Duration(get_detect_rate(frame_id));
+    marker.lifetime = lifetime;
     marker.pose.position.x = scene_obj->x;
     marker.pose.position.y = scene_obj->y;
     marker.pose.position.z = scene_obj->z + scene_obj->h * 1.5;
@@ -822,8 +822,8 @@ void EOD_ROS::publish_map_markers(eod::Scene* scene){
     visualization_msgs::MarkerArray mrk_arr;    
     int id=0;
     for( auto& obj : scene->scene_objects ){
-        mrk_arr.markers.push_back(scene_object_to_cylinder_marker(obj, 0, id, scene->frame_id));
-        mrk_arr.markers.push_back(scene_object_to_text_marker(obj, 0, id, scene->frame_id));
+        mrk_arr.markers.push_back(scene_object_to_cylinder_marker(obj, 0, id, ros::Duration(0), scene->frame_id));
+        mrk_arr.markers.push_back(scene_object_to_text_marker(obj, 0, id, ros::Duration(0), scene->frame_id));
         id++;        
     }
     for( auto& marker : mrk_arr.markers ){
@@ -835,6 +835,8 @@ void EOD_ROS::publish_map_markers(eod::Scene* scene){
 
 
 double EOD_ROS::get_detect_rate(std::string frame_id){
+    if( stats.find(frame_id) == stats.end() )
+        return 0;
     if( stats[frame_id].detect_rate_values->empty() )
         return 0;
     double sum_rate = 0;
