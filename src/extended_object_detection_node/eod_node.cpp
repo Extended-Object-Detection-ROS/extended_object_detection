@@ -777,7 +777,7 @@ visualization_msgs::Marker EOD_ROS::scene_object_to_line_marker(eod::SceneObject
     return marker;    
 }
 
-visualization_msgs::Marker EOD_ROS::scene_object_to_cylinder_marker(eod::SceneObject* scene_obj, int ns, int id, ros::Duration lifetime, std::string frame_id){
+visualization_msgs::Marker EOD_ROS::scene_object_to_cylinder_marker(eod::SceneObject* scene_obj, int ns, int id, ros::Duration lifetime, std::string frame_id, double alpha){
     visualization_msgs::Marker marker;
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = frame_id;
@@ -793,7 +793,7 @@ visualization_msgs::Marker EOD_ROS::scene_object_to_cylinder_marker(eod::SceneOb
     marker.scale.z = scene_obj->h;
     marker.pose.orientation.w = 1;
     marker.color.g = 1;
-    marker.color.a = 1;
+    marker.color.a = alpha;
     return marker;
 }
 
@@ -822,7 +822,7 @@ void EOD_ROS::publish_map_markers(eod::Scene* scene){
     visualization_msgs::MarkerArray mrk_arr;    
     int id=0;
     for( auto& obj : scene->scene_objects ){
-        mrk_arr.markers.push_back(scene_object_to_cylinder_marker(obj, 0, id, ros::Duration(0), scene->frame_id));
+        mrk_arr.markers.push_back(scene_object_to_cylinder_marker(obj, 0, id, ros::Duration(0), scene->frame_id, 0.5));
         mrk_arr.markers.push_back(scene_object_to_text_marker(obj, 0, id, ros::Duration(0), scene->frame_id));
         id++;        
     }

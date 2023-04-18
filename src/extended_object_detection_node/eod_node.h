@@ -123,7 +123,7 @@ private:
     int find_complex_obj_index_by_id(int id);
     
     void scene_to_markers(std::pair<double, std::vector<std::pair<eod::SceneObject*, eod::ExtendedObjectInfo*>>> scene, int ns, visualization_msgs::MarkerArray &scene_marker_array_msg, std_msgs::Header header, std::string scene_name = "", std::string frame_id = "map");
-    visualization_msgs::Marker scene_object_to_cylinder_marker(eod::SceneObject*, int ns, int id, ros::Duration lifetime, std::string frame_id = "map");
+    visualization_msgs::Marker scene_object_to_cylinder_marker(eod::SceneObject*, int ns, int id, ros::Duration lifetime, std::string frame_id = "map", double alpha = 1);
     visualization_msgs::Marker scene_object_to_text_marker(eod::SceneObject*, int ns, int id, ros::Duration lifetime, std::string frame_id = "map");
     visualization_msgs::Marker scene_object_to_line_marker(eod::SceneObject*, int ns, int id, ros::Duration lifetime, double x, double y, double z, std::string frame_id = "map");
     void publish_map_markers(eod::Scene* scene);
