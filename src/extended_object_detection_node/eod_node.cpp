@@ -838,8 +838,8 @@ void EOD_ROS::publish_map_markers(eod::Scene* scene){
     visualization_msgs::MarkerArray mrk_arr;    
     int id=0;
     for( auto& obj : scene->scene_objects ){
-        mrk_arr.markers.push_back(scene_object_to_cylinder_marker(obj, 0, id, ros::Duration(0), scene->frame_id, 0.5));
         mrk_arr.markers.push_back(scene_object_to_text_marker(obj, 0, id, ros::Duration(0), scene->frame_id));
+        mrk_arr.markers.push_back(scene_object_to_cylinder_marker(obj, 0, id, ros::Duration(0), scene->frame_id, 0.5));        
         id++;        
     }
     for( auto& marker : mrk_arr.markers ){
