@@ -108,6 +108,7 @@ set( EOD_SRC
     src/lib/types/Clusterization.cpp   
     src/lib/types/InfoImage.cpp
     src/lib/types/Scene.cpp
+    src/lib/types/Graph.cpp
     # lib utils
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
