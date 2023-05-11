@@ -8,7 +8,7 @@ add_compile_options(-std=c++11)
 set(opencv_contrib OFF)
 set(zbar_lib OFF)
 set(DLib OFF)
-set(igraph OFF)
+set(igraph ON)
 set(torch OFF)
 
 ## Find catkin macros and libraries

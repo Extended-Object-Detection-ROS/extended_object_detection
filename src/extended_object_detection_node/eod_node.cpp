@@ -245,7 +245,7 @@ void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sen
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.", rgb_image->encoding.c_str());
         return;
     }    
-    eod::InfoImage ii = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info) );
+    eod::InfoImage ii = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence);
     detect(ii, eod::InfoImage(), rgb_image->header);
 }
 
@@ -290,8 +290,8 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
         ROS_ERROR_THROTTLE(5, "Depth image has unsupported encoding [%s]", depth_image->encoding.c_str());
     }    
     //ROS_INFO("Depth type is %i", depth.type());
-    eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info) );
-    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info) );            
+    eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence);
+    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info), frame_sequence);            
     detect(ii_rgb, ii_depth, rgb_image->header);
 }
 
