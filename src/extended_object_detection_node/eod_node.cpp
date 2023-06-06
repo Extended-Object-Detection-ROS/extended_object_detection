@@ -296,8 +296,10 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     }    
     //ROS_INFO("Depth type is %i", depth.type());
     eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence, rgb_image->header.stamp.toSec(), rgb_image->header.frame_id);
-    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info), frame_sequence, depth_image->header.stamp.toSec(), rgb_image->header.frame_id);            
-    detect(ii_rgb, ii_depth, depth_image->header);
+    
+    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info), frame_sequence, depth_image->header.stamp.toSec(), depth_image->header.frame_id);            
+    
+    detect(ii_rgb, ii_depth, rgb_image->header);
 }
 
 
