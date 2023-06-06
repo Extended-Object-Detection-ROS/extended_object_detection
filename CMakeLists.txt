@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 project(extended_object_detection)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -8,7 +8,7 @@ add_compile_options(-std=c++11)
 set(opencv_contrib OFF)
 set(zbar_lib OFF)
 set(DLib OFF)
-set(igraph ON)
+set(igraph OFF)
 set(torch OFF)
 
 ## Find catkin macros and libraries
@@ -24,7 +24,8 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   cmake_modules
   tf2
-  tf2_ros
+  tf2_ros  
+  depthai_ros_extended_msgs
 )
 
 find_package(OpenCV REQUIRED)  
@@ -46,7 +47,6 @@ if(torch)
     find_package(Torch REQUIRED)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")    
 endif(torch)
-
 
 
 ################################################
@@ -78,11 +78,11 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
-  geometry_msgs
+  geometry_msgs  
 )
 
 catkin_package(
-   CATKIN_DEPENDS cv_bridge std_msgs sensor_msgs image_transport roscpp image_geometry cmake_modules message_runtime
+   CATKIN_DEPENDS cv_bridge std_msgs sensor_msgs image_transport roscpp image_geometry cmake_modules message_runtime depthai_ros_extended_msgs
    DEPENDS TinyXML
 )
 
@@ -156,8 +156,11 @@ add_executable(
     extended_object_detection_node
     src/extended_object_detection_node/eod_node.cpp
     ${EOD_SRC}
+    src/lib/detectors/ROSSubscriberBaseDetector.cpp
+    src/lib/detectors/ROSSubscriberOpenPoseRaw.cpp
 )
 
+target_compile_definitions(extended_object_detection_node PUBLIC USE_ROS)
 
 if(opencv_contrib)
     target_compile_definitions(extended_object_detection_node PUBLIC USE_OPENCV_CONTRIB)         

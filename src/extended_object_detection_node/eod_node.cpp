@@ -29,17 +29,9 @@ geometry_msgs::Point fromVector(const geometry_msgs::Vector3& vector){
 
 EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     nh_ = nh;
-    nh_p_ = nh_p;
-    
+    nh_p_ = nh_p;    
     frame_sequence = 0;
-    
-    //rgb_it_ = new image_transport::ImageTransport(nh_);                       
-        
-    //detect_rate_values = new boost::circular_buffer<double>(10);
-    
-    // get params
-    //nh_p_.param("subscribe_depth", subscribe_depth, false);
-    
+            
     // multicamera stuff
     std::vector<std::string> rgb_image_topics;    
     nh_p_.getParam("rgb_image_topics", rgb_image_topics);
@@ -177,6 +169,19 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
         }                
     
     }
+    
+    // ROS-connctend attributes
+#if (USE_ROS)
+    for( const auto& attribute : object_base->attributes ){
+        //if( attribute->Type == eod::ROS_SUB_OPENPOSE_RAW_A ){
+        auto ptr = dynamic_cast<eod::ROSSubscriberOpenPoseRaw*>(attribute);
+        if( ptr != nullptr){
+            ptr->subscriber = nh.subscribe(ptr->topic_name(), 10, &eod::ROSSubscriberOpenPoseRaw::callback, ptr); 
+        }
+        
+    }
+#endif
+    
     //ROS_INFO("Configured!");
 }
 
@@ -245,7 +250,7 @@ void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sen
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.", rgb_image->encoding.c_str());
         return;
     }    
-    eod::InfoImage ii = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence);
+    eod::InfoImage ii = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence, rgb_image->header.stamp.toSec(), rgb_image->header.frame_id);
     detect(ii, eod::InfoImage(), rgb_image->header);
 }
 
@@ -290,9 +295,9 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
         ROS_ERROR_THROTTLE(5, "Depth image has unsupported encoding [%s]", depth_image->encoding.c_str());
     }    
     //ROS_INFO("Depth type is %i", depth.type());
-    eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence);
-    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info), frame_sequence);            
-    detect(ii_rgb, ii_depth, rgb_image->header);
+    eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence, rgb_image->header.stamp.toSec(), rgb_image->header.frame_id);
+    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info), frame_sequence, depth_image->header.stamp.toSec(), rgb_image->header.frame_id);            
+    detect(ii_rgb, ii_depth, depth_image->header);
 }
 
 
