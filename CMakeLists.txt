@@ -155,8 +155,7 @@ set ( EOD_INCLUDE
 add_executable(
     extended_object_detection_node
     src/extended_object_detection_node/eod_node.cpp
-    ${EOD_SRC}
-    src/lib/detectors/ROSSubscriberBaseDetector.cpp
+    ${EOD_SRC}    
     src/lib/detectors/ROSSubscriberOpenPoseRaw.cpp
 )
 

@@ -153,9 +153,7 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
         }
         else{
             depth_it_.push_back(new image_transport::ImageTransport(nh_));
-            //sub_depth_.subscribe(*rgb_it_, "depth/image_raw", 10);
-            //sub_depth_info_.subscribe(nh_, "depth/info", 10);
-            //depth_it_
+            
             sub_depth_.push_back(new image_transport::SubscriberFilter());
             sub_depth_info_.push_back(new message_filters::Subscriber<sensor_msgs::CameraInfo>);
             
@@ -168,17 +166,14 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
             (*rgbd_sync_[i])->registerCallback(boost::bind(&EOD_ROS::rgbd_info_cb, this, boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3,  boost::placeholders::_4));        
         }                
     
-    }
-    
+    }    
     // ROS-connctend attributes
 #if (USE_ROS)
-    for( const auto& attribute : object_base->attributes ){
-        //if( attribute->Type == eod::ROS_SUB_OPENPOSE_RAW_A ){
-        auto ptr = dynamic_cast<eod::ROSSubscriberOpenPoseRaw*>(attribute);
+    for( const auto& attribute : object_base->attributes ){        
+        auto ptr = dynamic_cast<eod::ROSSubscriberSuperBaseAttribute*>(attribute);
         if( ptr != nullptr){
-            ptr->subscriber = nh.subscribe(ptr->topic_name(), 10, &eod::ROSSubscriberOpenPoseRaw::callback, ptr); 
-        }
-        
+            ptr->Connect2ROS(nh);            
+        }        
     }
 #endif
     
