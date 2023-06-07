@@ -693,9 +693,11 @@ int main(int argc, char **argv)
     
     ROS_INFO("Extended object detector started...");
     
+    ros::AsyncSpinner spinner(0);
+    spinner.start(); 
     EOD_ROS eod_ros(nh_, nh_p_);
-    
-    ros::spin();
+    ros::waitForShutdown();
+    //ros::spin();
                 
     return 0;
 }
