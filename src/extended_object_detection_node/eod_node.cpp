@@ -245,7 +245,7 @@ void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sen
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.", rgb_image->encoding.c_str());
         return;
     }    
-    eod::InfoImage ii = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence, rgb_image->header.stamp.toSec(), rgb_image->header.frame_id);
+    eod::InfoImage ii = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence, rgb_image->header.stamp.sec, rgb_image->header.stamp.nsec, rgb_image->header.frame_id);
     detect(ii, eod::InfoImage(), rgb_image->header);
 }
 
@@ -289,10 +289,15 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     else{
         ROS_ERROR_THROTTLE(5, "Depth image has unsupported encoding [%s]", depth_image->encoding.c_str());
     }    
-    //ROS_INFO("Depth type is %i", depth.type());
+    /*
     eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence, rgb_image->header.stamp.toSec(), rgb_image->header.frame_id);
     
     eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info), frame_sequence, depth_image->header.stamp.toSec(), depth_image->header.frame_id);            
+    */
+    eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence, rgb_image->header.stamp.sec, rgb_image->header.stamp.nsec, rgb_image->header.frame_id);
+    
+    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info), frame_sequence, depth_image->header.stamp.sec, depth_image->header.stamp.nsec, depth_image->header.frame_id);            
+    
     
     detect(ii_rgb, ii_depth, rgb_image->header);
 }
@@ -419,7 +424,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     }        
     frame_sequence++;
     stats[header.frame_id].proceeded_frames++;    
-    //cv::waitKey(1);
+    cv::waitKey(1);
 }
 
 extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( std::string name, int id,  eod::ExtendedObjectInfo* eoi, const cv::Mat& K){
@@ -693,11 +698,11 @@ int main(int argc, char **argv)
     
     ROS_INFO("Extended object detector started...");
     
-    ros::AsyncSpinner spinner(0);
-    spinner.start(); 
+    //ros::AsyncSpinner spinner(0);
+    //spinner.start(); 
     EOD_ROS eod_ros(nh_, nh_p_);
-    ros::waitForShutdown();
-    //ros::spin();
+    //ros::waitForShutdown();
+    ros::spin();
                 
     return 0;
 }
