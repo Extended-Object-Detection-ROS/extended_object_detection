@@ -424,11 +424,10 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     }        
     frame_sequence++;
     stats[header.frame_id].proceeded_frames++;    
-    cv::waitKey(1);
+    cv::waitKey(1); // NOTE for debugging detectors
 }
 
-extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( std::string name, int id,  eod::ExtendedObjectInfo* eoi, const cv::Mat& K){
-    //ROS_INFO("Forming...");
+extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( std::string name, int id,  eod::ExtendedObjectInfo* eoi, const cv::Mat& K){    
     extended_object_detection::BaseObject bo;
     // common
     bo.type_id = id;
@@ -696,13 +695,19 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "extended_object_detection_node");
     ros::NodeHandle nh_, nh_p_("~");
     
-    ROS_INFO("Extended object detector started...");
-    
-    //ros::AsyncSpinner spinner(0);
-    //spinner.start(); 
+    ROS_INFO("Extended object detector is starting...");
+
+#if (USE_ROS)    
+    // with subscribers inside attributes it is better to use async spinner
+    ros::AsyncSpinner spinner(0);
+    spinner.start(); 
+#endif    
     EOD_ROS eod_ros(nh_, nh_p_);
-    //ros::waitForShutdown();
+#if (USE_ROS)    
+    ros::waitForShutdown();
+#else
     ros::spin();
-                
+#endif
+    
     return 0;
 }
