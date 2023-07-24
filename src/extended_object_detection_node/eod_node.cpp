@@ -697,17 +697,21 @@ int main(int argc, char **argv)
     
     ROS_INFO("Extended object detector is starting...");
 
+    /*
 #if (USE_ROS)    
     // with subscribers inside attributes it is better to use async spinner
     ros::AsyncSpinner spinner(0);
     spinner.start(); 
 #endif    
+*/
     EOD_ROS eod_ros(nh_, nh_p_);
+/*
 #if (USE_ROS)    
     ros::waitForShutdown();
 #else
     ros::spin();
 #endif
-    
+*/
+    ros::spin();
     return 0;
 }
