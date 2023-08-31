@@ -35,14 +35,7 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     nh_ = nh;
     nh_p_ = nh_p;
     
-    frame_sequence = 0;
-    
-    //rgb_it_ = new image_transport::ImageTransport(nh_);                       
-        
-    //detect_rate_values = new boost::circular_buffer<double>(10);
-    
-    // get params
-    //nh_p_.param("subscribe_depth", subscribe_depth, false);
+    frame_sequence = 0;        
     
     // multicamera stuff
     std::vector<std::string> rgb_image_topics;    
@@ -81,11 +74,13 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     nh_p_.getParam("object_base",object_base_path);
     
     // load base
+    ROS_INFO("Loading object base...");
     object_base = new eod::ObjectBase();
     if( !object_base->loadFromXML(object_base_path) ){
         ROS_ERROR("Error during loading object base in path '%s'!", object_base_path.c_str());
         std::exit(-1);
     }
+    ROS_INFO("Object base loaded!");
     
     // // object selection
     std::vector<int>selected_on_start_simple_objects;
@@ -743,7 +738,7 @@ void EOD_ROS::scene_to_markers(std::pair<double, std::vector<std::pair<eod::Scen
     marker.header.frame_id = frame_id;
     marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     marker.ns = std::to_string(ns)+"_main_text";
-    marker.lifetime = ros::Duration(get_detect_rate(header.frame_id));
+    //marker.lifetime = ros::Duration(get_detect_rate(header.frame_id));
     marker.pose.position.x = cx;
     marker.pose.position.y = cy;
     marker.pose.position.z = cz + 0.4;
