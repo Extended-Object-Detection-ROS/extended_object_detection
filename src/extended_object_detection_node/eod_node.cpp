@@ -255,13 +255,13 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     //ROS_INFO("Got RGBD!");    
     // CHECK RATE       
     if( !check_time(ros::Time::now(), rgb_image->header.frame_id) ) {
-        //ROS_WARN("Skipped frame");
+        ROS_WARN("Skipped frame");
         stats[rgb_image->header.frame_id].skipped_frames++;
         return;
     }
     double lag;
     if( !check_lag(rgb_image->header.stamp, lag) ) {
-        //ROS_WARN("Dropped frame, lag = %f", lag);
+        ROS_WARN("Dropped frame, lag = %f", lag);
         stats[rgb_image->header.frame_id].dropped_frames++;
         return;
     }
@@ -289,21 +289,17 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     else{
         ROS_ERROR_THROTTLE(5, "Depth image has unsupported encoding [%s]", depth_image->encoding.c_str());
     }    
-    /*
-    eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence, rgb_image->header.stamp.toSec(), rgb_image->header.frame_id);
     
-    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info), frame_sequence, depth_image->header.stamp.toSec(), depth_image->header.frame_id);            
-    */
     eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence, rgb_image->header.stamp.sec, rgb_image->header.stamp.nsec, rgb_image->header.frame_id);
     
     eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info), frame_sequence, depth_image->header.stamp.sec, depth_image->header.stamp.nsec, depth_image->header.frame_id);            
-    
-    
+        
     detect(ii_rgb, ii_depth, rgb_image->header);
 }
 
 
 void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header){
+    //printf("DETECT START\n");
     // store data for detect rate calculus
     if( stats[header.frame_id].proceeded_frames != 0){
         stats[header.frame_id].detect_rate_values->push_back((ros::Time::now() - stats[header.frame_id].prev_detected_time).toSec());
@@ -324,6 +320,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         s_it->Identify(rgb, depth, frame_sequence);                        
         for(auto& eoi : s_it->objects)
             simples_msg.objects.push_back(eoi_to_base_object(s_it->name, s_it->ID, &eoi, rgb.K()));
+        //printf("DRAW\n");
         if(publish_image_output)
             s_it->draw(image_to_draw, cv::Scalar(0, 255, 0));
     }
@@ -343,7 +340,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
                 cmplx_msg.simple_objects.push_back(eoi_to_base_object(name_eoi.first, -1, name_eoi.second, rgb.K()));
             }                        
             complex_msg.objects.push_back(cmplx_msg);
-        }
+        }        
         if(publish_image_output)
             c_it->drawAll(image_to_draw, cv::Scalar(255, 255, 0), 2);
     }
@@ -358,6 +355,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     complex_objects_pub_.publish(complex_msg);
 #endif
     
+    //printf("TF\n");
     if(broadcast_tf){
         geometry_msgs::TransformStamped trsfrm;
         trsfrm.header = header;
@@ -384,7 +382,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         }
 #endif                        
     }
-    
+    //printf("MARKERS\n");
     if(publish_markers){
         visualization_msgs::MarkerArray mrk_array_msg;    
         int id_cnt = 0;        
@@ -424,7 +422,8 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     }        
     frame_sequence++;
     stats[header.frame_id].proceeded_frames++;    
-    cv::waitKey(1); // NOTE for debugging detectors
+    //cv::waitKey(1); // NOTE for debugging detectors
+    //printf("DONE\n");
 }
 
 extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( std::string name, int id,  eod::ExtendedObjectInfo* eoi, const cv::Mat& K){    
@@ -697,21 +696,21 @@ int main(int argc, char **argv)
     
     ROS_INFO("Extended object detector is starting...");
 
-    /*
+
 #if (USE_ROS)    
     // with subscribers inside attributes it is better to use async spinner
     ros::AsyncSpinner spinner(0);
     spinner.start(); 
 #endif    
-*/
+
     EOD_ROS eod_ros(nh_, nh_p_);
-/*
+
 #if (USE_ROS)    
     ros::waitForShutdown();
 #else
     ros::spin();
 #endif
-*/
-    ros::spin();
+
+    //ros::spin();
     return 0;
 }
