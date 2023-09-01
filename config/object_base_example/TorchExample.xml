@@ -1,0 +1,56 @@
+<?xml version="1.0" ?>
+
+<AttributeLib>
+    
+
+    
+    <Attribute Name="torch" Type="torchyolov7" model_path="/home/anton/Projects/yolov7/yolov7-tiny.torchscript.pt" input_size="640" Probability="0.61">
+        <Filter Type="NMS" threshold="0.1"/>
+    </Attribute>
+    
+    
+    
+    <!--<Attribute Name="torch" Type="torchyolov7" model_path="/home/anton/Projects/yolov7/yolov7.torchscript.pt" input_size="640"/>-->
+    
+    <!--<Attribute Name="torch" Type="torchyolov7" model_path="/home/anton/Projects/yolov7/yolov7-w6-pose.torchscript.pt" input_size="640"/>-->
+       
+            
+</AttributeLib>
+
+
+
+<SimpleObjectBase>            
+
+    <SimpleObject Name="torch" ID="0"  Probability="0.2">
+        <Attribute Type="Detect">torch</Attribute>    
+    </SimpleObject>
+
+    
+</SimpleObjectBase>
+
+
+
+<RelationLib>        
+    
+    <RelationShip Type="3DRange" Name="RangeExtractor" mode="1" dist="0" prob="1"/>
+    
+    <RelationShip Type="3DRange" Name="Near" mode="0" distLow="0" distHigh="1.5"/>
+    <RelationShip Type="3DRange" Name="Middle" mode="0" distLow="1.5" distHigh="3"/>
+    <RelationShip Type="3DRange" Name="Far" mode="0" distLow="3" distHigh="6"/>
+    <RelationShip Type="3DRange" Name="Inf" mode="0" distLow="6" distHigh="100"/>
+        
+</RelationLib>
+
+
+
+<ComplexObjectBase>
+        
+
+</ComplexObjectBase>
+
+
+<SceneBase>
+  
+  
+</SceneBase>
+
