@@ -699,18 +699,18 @@ int main(int argc, char **argv)
 
 #if (USE_ROS)    
     // with subscribers inside attributes it is better to use async spinner
-    //ros::AsyncSpinner spinner(0);
-    //spinner.start(); 
+    ros::AsyncSpinner spinner(0);
+    spinner.start(); 
 #endif    
 
     EOD_ROS eod_ros(nh_, nh_p_);
 
 #if (USE_ROS)    
-    //ros::waitForShutdown();
+    ros::waitForShutdown();
 #else
     ros::spin();
 #endif
 
-    ros::spin();
+    //ros::spin();
     return 0;
 }
