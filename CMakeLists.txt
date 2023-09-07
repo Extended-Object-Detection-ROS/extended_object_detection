@@ -60,6 +60,7 @@ add_message_files(
   Track.msg
   ExtractedInfo.msg
   Contour.msg
+  Keypoints.msg
   BaseObject.msg
   SimpleObjectArray.msg
   ComplexObject.msg

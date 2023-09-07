@@ -7,7 +7,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include "geometry_utils.h"
 #include <geometry_msgs/TransformStamped.h>
-
+#include <extended_object_detection/ImagePoint.h>
 
 geometry_msgs::Vector3 fromCvVector(const cv::Vec3d& cv_vector){
     geometry_msgs::Vector3 ros_vector;
@@ -390,6 +390,9 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
             mrk_array_msg.markers.push_back(base_object_to_marker_arrow(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
             mrk_array_msg.markers.push_back(base_object_to_marker_frame(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
             mrk_array_msg.markers.push_back(base_object_to_marker_text(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
+            mrk_array_msg.markers.push_back(base_object_to_marker_kpt(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
+            mrk_array_msg.markers.push_back(base_object_to_marker_kpt_connections(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
+            
             id_cnt++;
         }
         simple_objects_markers_pub_.publish(mrk_array_msg);
@@ -400,6 +403,9 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
             cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_arrow(co.complex_object, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
             cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_frame(co.complex_object, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
             cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_text(co.complex_object, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
+            cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_kpt(co.complex_object, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
+            cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_kpt_connections(co.complex_object, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
+            
             id_cnt++;
             for( auto& so : co.simple_objects){
                 cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_frame(so, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
@@ -426,6 +432,10 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     //printf("DONE\n");
 }
 
+
+//
+// EOI --> BaseObject
+//
 extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( std::string name, int id,  eod::ExtendedObjectInfo* eoi, const cv::Mat& K){    
     extended_object_detection::BaseObject bo;
     // common
@@ -468,9 +478,27 @@ extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( std::string n
     
     // translation to rect's corners
     geometry_msgs::Vector3 temp_translation;
-    for( auto& corner_p : eoi->getCorners() ){
+    for( const auto& corner_p : eoi->getCorners() ){
         bo.rect.cornerTranslates.push_back(fromCvVector(eod::get_translation(eod::float2intPoint(corner_p), K, bo.transform.translation.z)));
-    }             
+    }   
+    
+    // keypoints
+    for( const auto& kpt : eoi->keypoints ){
+        bo.keypoints.labels.push_back(kpt.label);
+        bo.keypoints.scores.push_back(kpt.score);
+        extended_object_detection::ImagePoint imp;
+        imp.x = kpt.x;
+        imp.y = kpt.y;        
+        bo.keypoints.points.push_back(imp);
+        bo.keypoints.translates.push_back(fromCvVector(eod::get_translation(eod::float2intPoint(kpt), K, bo.transform.translation.z)));
+    }
+    for( const auto& con : eoi->keypoint_connection ){
+        extended_object_detection::ImagePoint imp;
+        imp.x = con.first;
+        imp.y = con.second;
+        bo.keypoints.connections.push_back(imp);
+    }
+    
         
     //TODO tracks    
     return bo;
@@ -542,6 +570,51 @@ visualization_msgs::Marker EOD_ROS::base_object_to_marker_text(extended_object_d
     mrk.color.g = color[1]/255;
     mrk.color.b = color[2]/255;
     mrk.color.a = 1;
+    return mrk;
+}
+
+
+visualization_msgs::Marker EOD_ROS::base_object_to_marker_kpt(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id){
+    visualization_msgs::Marker mrk;
+    mrk.header = header;    
+    mrk.ns = base_object.type_name +"_keypoints";
+    mrk.id = id;
+    mrk.type = visualization_msgs::Marker::POINTS; 
+    mrk.lifetime = ros::Duration(get_detect_rate(header.frame_id));
+    mrk.scale.x = 0.02;
+    mrk.scale.y = 0.02;
+    mrk.scale.z = 0.02; 
+    mrk.pose.orientation.w = 1;
+    mrk.color.r = color[0]/255;
+    mrk.color.g = color[1]/255;
+    mrk.color.b = color[2]/255;
+    mrk.color.a = 1;
+    for( const auto& kpt : base_object.keypoints.translates ){
+        mrk.points.push_back(fromVector(kpt));
+    }
+    return mrk;
+}
+
+
+visualization_msgs::Marker EOD_ROS::base_object_to_marker_kpt_connections(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id){
+    visualization_msgs::Marker mrk;
+    mrk.header = header;    
+    mrk.ns = base_object.type_name +"_keypoint_connections";
+    mrk.id = id;
+    mrk.type = visualization_msgs::Marker::LINE_LIST; 
+    mrk.lifetime = ros::Duration(get_detect_rate(header.frame_id));
+    mrk.scale.x = 0.01;
+    mrk.scale.y = 0.01;
+    mrk.scale.z = 0.01; 
+    mrk.pose.orientation.w = 1;
+    mrk.color.r = color[0]/255;
+    mrk.color.g = color[1]/255;
+    mrk.color.b = color[2]/255;
+    mrk.color.a = 1;
+    for( const auto& con : base_object.keypoints.connections ){        
+        mrk.points.push_back(fromVector(base_object.keypoints.translates[con.x]));
+        mrk.points.push_back(fromVector(base_object.keypoints.translates[con.y]));
+    }
     return mrk;
 }
 

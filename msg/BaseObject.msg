@@ -18,6 +18,9 @@ geometry_msgs/Transform transform
 ## object frames on image and 3d coordinates
 extended_object_detection/Rect rect         
 
+## keypoint data
+extended_object_detection/Keypoints keypoints
+
 # information about tracking if it is enabled
 extended_object_detection/Track track       
 
