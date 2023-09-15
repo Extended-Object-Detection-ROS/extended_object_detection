@@ -134,6 +134,7 @@ set( EOD_SRC
     src/lib/detectors/UnitTranslationExtracter.cpp
     src/lib/detectors/SquareObjectDistanceDetector.cpp
     src/lib/detectors/TorchYOLOv7Detector.cpp
+    src/lib/detectors/KeypointPoseDetector.cpp
 
     # lib relations        
     src/lib/relations/ImageRangeRelation.cpp
