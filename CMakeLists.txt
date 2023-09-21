@@ -10,7 +10,7 @@ set(zbar_lib OFF)
 set(DLib OFF)
 set(igraph OFF)
 set(torch OFF)
-set(OAK OFF)
+set(OAK ON)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -26,7 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
   cmake_modules
   tf2
   tf2_ros    
-#   depthai_ros_extended_msgs
+  depthai_ros_extended_msgs
 )
 
 find_package(OpenCV REQUIRED)  
