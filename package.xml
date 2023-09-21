@@ -32,7 +32,7 @@
   <depend>sensor_msgs</depend>
   <depend>image_transport</depend>
   <depend>image_geometry</depend>  
-  <depend>depthai_ros_extended_msgs</depend>
+  <!--<depend>depthai_ros_extended_msgs</depend>-->
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
