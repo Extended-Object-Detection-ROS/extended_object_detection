@@ -89,6 +89,7 @@ private:
     double allowed_lag_sec;
     int subs_queue_size;
     int stats_window;
+    bool print_info;
     
     // vars
     int frame_sequence;     

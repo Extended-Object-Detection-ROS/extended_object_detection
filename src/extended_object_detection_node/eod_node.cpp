@@ -72,6 +72,7 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     nh_p_.param("allowed_lag_sec", allowed_lag_sec, 0.0);
     nh_p_.param("subs_queue_size", subs_queue_size, 10);
     nh_p_.param("stats_window", stats_window, 10);
+    nh_p_.param("print_info", print_info, true);
             
     std::string object_base_path;
     nh_p_.getParam("object_base",object_base_path);
@@ -410,6 +411,14 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
             auto out_it = new image_transport::ImageTransport(nh_p_);
             //printf("Adding new publisher...");
             output_image_pubs_[header.frame_id] = out_it->advertise("detected_image_"+std::to_string(output_image_pubs_.size()), 1);
+        }
+        
+        if( print_info ){
+            
+            std::ostringstream ss;
+            ss << std::fixed << std::setprecision(2) << get_detect_rate(header.frame_id);                                                
+            
+            putText(image_to_draw, "Rate:"+ss.str()+" Frame:"+std::to_string(stats[header.frame_id].proceeded_frames), cv::Point(2, 10), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0, 255, 0), 1);
         }
         
         sensor_msgs::ImagePtr detected_image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_to_draw).toImageMsg();
