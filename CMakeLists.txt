@@ -10,6 +10,7 @@ set(zbar_lib OFF)
 set(DLib OFF)
 set(igraph OFF)
 set(torch OFF)
+set(tracking OFF)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -179,6 +180,10 @@ endif(igraph)
 if(torch)
     target_compile_definitions(extended_object_detection_node PUBLIC USE_TORCH) 
 endif(torch)
+
+if(tracking)
+    target_compile_definitions(extended_object_detection_node PUBLIC USE_TRACKING) 
+endif(tracking)
 
 #collect hsv color c++ utility
 add_executable(
