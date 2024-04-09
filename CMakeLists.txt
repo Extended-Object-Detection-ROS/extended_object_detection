@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(extended_object_detection)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
 
 ## Optional parts of library
 set(opencv_contrib OFF)
@@ -11,6 +9,9 @@ set(DLib OFF)
 set(igraph OFF)
 set(torch OFF)
 set(tracking OFF)
+
+set(OFFLINE OFF)
+set(UTILS OFF)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -40,12 +41,13 @@ if(DLib)
     add_subdirectory(/home/anton/Lib/dlib dlib_build)
 endif(DLib)
 
-if(torch)
-    #set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}/home/anton/Libs/libtorch")
-    list(APPEND CMAKE_PREFIX_PATH "/home/anton/Lib/libtorch")
-    message(${CMAKE_PREFIX_PATH})
+if(torch)    
+    set(Torch_DIR "/home/robofob/Lib/libtorch/share/cmake/Torch/")    
     find_package(Torch REQUIRED)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")    
+    add_compile_options(-std=c++17)
+else()
+    add_compile_options(-std=c++11)
 endif(torch)
 
 
@@ -186,109 +188,10 @@ if(tracking)
 endif(tracking)
 
 #collect hsv color c++ utility
-add_executable(
-    hsv_color_params_collector_node
-    src/utils/hsv_color_params_collector.cpp
-    # types
-    src/lib/types/ExtendedObjectInfo.cpp
-    src/lib/types/Attribute.cpp
-    src/lib/types/SimpleObject.cpp
-    src/lib/types/Filtering.cpp
-    src/lib/types/Clusterization.cpp    
-    src/lib/types/InfoImage.cpp
-    # utils    
-    src/lib/utils/geometry_utils.cpp
-    src/lib/utils/drawing_utils.cpp
-    src/lib/utils/contour_utils.cpp
-    # detectors
-    src/lib/detectors/HsvColorDetector.cpp
-    src/lib/detectors/SizeDetector.cpp
-)
-    
-#collect histogram color c++ utility with point
-add_executable(
-    hist_color_params_collector_point_node
-    src/utils/hist_color_params_collector_point.cpp
-    # types
-    src/lib/types/ExtendedObjectInfo.cpp
-    src/lib/types/Attribute.cpp
-    src/lib/types/SimpleObject.cpp
-    src/lib/types/Filtering.cpp
-    src/lib/types/Clusterization.cpp    
-    src/lib/types/InfoImage.cpp
-    # utils
-    src/lib/utils/geometry_utils.cpp
-    src/lib/utils/drawing_utils.cpp
-    src/lib/utils/contour_utils.cpp
-    # detectors
-    src/lib/detectors/HistColorDetector.cpp
-    src/lib/detectors/SizeDetector.cpp
-)
-
-#collect histogram color c++ utility with contour
-add_executable(
-    hist_color_params_collector_contour_node
-    src/utils/hist_color_params_collector_contour.cpp
-    # types
-    src/lib/types/ExtendedObjectInfo.cpp
-    src/lib/types/Attribute.cpp
-    src/lib/types/SimpleObject.cpp
-    src/lib/types/Filtering.cpp
-    src/lib/types/Clusterization.cpp   
-    src/lib/types/InfoImage.cpp
-    # utils   
-    src/lib/utils/geometry_utils.cpp
-    src/lib/utils/drawing_utils.cpp
-    src/lib/utils/contour_utils.cpp
-    # detectors
-    src/lib/detectors/HistColorDetector.cpp
-    src/lib/detectors/SizeDetector.cpp
-)
-    
-#collect hough circle c++ utility
-add_executable(
-    hough_circle_params_collector_node
-    src/utils/hough_circle_params_collector.cpp
-    # types
-    src/lib/types/ExtendedObjectInfo.cpp
-    src/lib/types/Attribute.cpp
-    src/lib/types/SimpleObject.cpp
-    src/lib/types/Filtering.cpp
-    src/lib/types/Clusterization.cpp    
-    src/lib/types/InfoImage.cpp
-    # utils   
-    src/lib/utils/geometry_utils.cpp
-    src/lib/utils/drawing_utils.cpp
-    src/lib/utils/contour_utils.cpp
-    # detectors
-    src/lib/detectors/HoughDetector.cpp
-    src/lib/detectors/SizeDetector.cpp
-)
-
-#collect blob params c++ utility
-add_executable(
-    blob_params_collector_node
-    src/utils/blob_params_collector.cpp
-    # types
-    src/lib/types/ExtendedObjectInfo.cpp
-    src/lib/types/Attribute.cpp
-    src/lib/types/SimpleObject.cpp
-    src/lib/types/Filtering.cpp
-    src/lib/types/Clusterization.cpp   
-    src/lib/types/InfoImage.cpp
-    # utils    
-    src/lib/utils/geometry_utils.cpp
-    src/lib/utils/drawing_utils.cpp
-    src/lib/utils/contour_utils.cpp
-    # detectors
-    src/lib/detectors/BlobDetector.cpp    
-)
-    
-# dlib face descriptors saver
-if(DLib)
+if(UTILS)
     add_executable(
-        face_dlib_descriptors_extractor
-        src/utils/face_dlib_descriptors_extractor.cpp
+        hsv_color_params_collector_node
+        src/utils/hsv_color_params_collector.cpp
         # types
         src/lib/types/ExtendedObjectInfo.cpp
         src/lib/types/Attribute.cpp
@@ -301,41 +204,144 @@ if(DLib)
         src/lib/utils/drawing_utils.cpp
         src/lib/utils/contour_utils.cpp
         # detectors
-        src/lib/detectors/FaceDlibDetector.cpp
+        src/lib/detectors/HsvColorDetector.cpp
+        src/lib/detectors/SizeDetector.cpp
     )
+        
+    #collect histogram color c++ utility with point
+    add_executable(
+        hist_color_params_collector_point_node
+        src/utils/hist_color_params_collector_point.cpp
+        # types
+        src/lib/types/ExtendedObjectInfo.cpp
+        src/lib/types/Attribute.cpp
+        src/lib/types/SimpleObject.cpp
+        src/lib/types/Filtering.cpp
+        src/lib/types/Clusterization.cpp    
+        src/lib/types/InfoImage.cpp
+        # utils
+        src/lib/utils/geometry_utils.cpp
+        src/lib/utils/drawing_utils.cpp
+        src/lib/utils/contour_utils.cpp
+        # detectors
+        src/lib/detectors/HistColorDetector.cpp
+        src/lib/detectors/SizeDetector.cpp
+    )
+
+    #collect histogram color c++ utility with contour
+    add_executable(
+        hist_color_params_collector_contour_node
+        src/utils/hist_color_params_collector_contour.cpp
+        # types
+        src/lib/types/ExtendedObjectInfo.cpp
+        src/lib/types/Attribute.cpp
+        src/lib/types/SimpleObject.cpp
+        src/lib/types/Filtering.cpp
+        src/lib/types/Clusterization.cpp   
+        src/lib/types/InfoImage.cpp
+        # utils   
+        src/lib/utils/geometry_utils.cpp
+        src/lib/utils/drawing_utils.cpp
+        src/lib/utils/contour_utils.cpp
+        # detectors
+        src/lib/detectors/HistColorDetector.cpp
+        src/lib/detectors/SizeDetector.cpp
+    )
+        
+    #collect hough circle c++ utility
+    add_executable(
+        hough_circle_params_collector_node
+        src/utils/hough_circle_params_collector.cpp
+        # types
+        src/lib/types/ExtendedObjectInfo.cpp
+        src/lib/types/Attribute.cpp
+        src/lib/types/SimpleObject.cpp
+        src/lib/types/Filtering.cpp
+        src/lib/types/Clusterization.cpp    
+        src/lib/types/InfoImage.cpp
+        # utils   
+        src/lib/utils/geometry_utils.cpp
+        src/lib/utils/drawing_utils.cpp
+        src/lib/utils/contour_utils.cpp
+        # detectors
+        src/lib/detectors/HoughDetector.cpp
+        src/lib/detectors/SizeDetector.cpp
+    )
+
+    #collect blob params c++ utility
+    add_executable(
+        blob_params_collector_node
+        src/utils/blob_params_collector.cpp
+        # types
+        src/lib/types/ExtendedObjectInfo.cpp
+        src/lib/types/Attribute.cpp
+        src/lib/types/SimpleObject.cpp
+        src/lib/types/Filtering.cpp
+        src/lib/types/Clusterization.cpp   
+        src/lib/types/InfoImage.cpp
+        # utils    
+        src/lib/utils/geometry_utils.cpp
+        src/lib/utils/drawing_utils.cpp
+        src/lib/utils/contour_utils.cpp
+        # detectors
+        src/lib/detectors/BlobDetector.cpp    
+    )
+        
+    # dlib face descriptors saver
+    if(DLib)
+        add_executable(
+            face_dlib_descriptors_extractor
+            src/utils/face_dlib_descriptors_extractor.cpp
+            # types
+            src/lib/types/ExtendedObjectInfo.cpp
+            src/lib/types/Attribute.cpp
+            src/lib/types/SimpleObject.cpp
+            src/lib/types/Filtering.cpp
+            src/lib/types/Clusterization.cpp    
+            src/lib/types/InfoImage.cpp
+            # utils    
+            src/lib/utils/geometry_utils.cpp
+            src/lib/utils/drawing_utils.cpp
+            src/lib/utils/contour_utils.cpp
+            # detectors
+            src/lib/detectors/FaceDlibDetector.cpp
+        )
+        
+        target_compile_definitions(face_dlib_descriptors_extractor PUBLIC USE_DLIB)
+    endif(DLib)
+endif(UTILS)
     
-    target_compile_definitions(face_dlib_descriptors_extractor PUBLIC USE_DLIB)
-endif(DLib)
-    
-#offline video processor
-add_executable(
-    offline_video
-    src/offline/offline_video.cpp
-    ${EOD_SRC}
-)
+if(OFFLINE)
+    #offline video processor
+    add_executable(
+        offline_video
+        src/offline/offline_video.cpp
+        ${EOD_SRC}
+    )
 
-#offline image processor
-add_executable(
-    offline_image
-    src/offline/offline_image.cpp
-    ${EOD_SRC}
-)
+    #offline image processor
+    add_executable(
+        offline_image
+        src/offline/offline_image.cpp
+        ${EOD_SRC}
+    )
 
-if(TensorFlow)
-    target_compile_definitions(offline_video PUBLIC USE_TF)
-    target_compile_definitions(offline_image PUBLIC USE_TF) 
-endif(TensorFlow)
+    if(TensorFlow)
+        target_compile_definitions(offline_video PUBLIC USE_TF)
+        target_compile_definitions(offline_image PUBLIC USE_TF) 
+    endif(TensorFlow)
 
 
-if(opencv_contrib)
-    target_compile_definitions(offline_video PUBLIC USE_OPENCV_CONTRIB)
-    target_compile_definitions(offline_image PUBLIC USE_OPENCV_CONTRIB)         
-endif(opencv_contrib)
-    
-if(igraph)
-    target_compile_definitions(offline_video PUBLIC USE_IGRAPH)
-    target_compile_definitions(offline_image PUBLIC USE_IGRAPH)         
-endif(igraph)
+    if(opencv_contrib)
+        target_compile_definitions(offline_video PUBLIC USE_OPENCV_CONTRIB)
+        target_compile_definitions(offline_image PUBLIC USE_OPENCV_CONTRIB)         
+    endif(opencv_contrib)
+        
+    if(igraph)
+        target_compile_definitions(offline_video PUBLIC USE_IGRAPH)
+        target_compile_definitions(offline_image PUBLIC USE_IGRAPH)         
+    endif(igraph)
+endif(OFFLINE)
     
 add_dependencies(extended_object_detection_node
     extended_object_detection_generate_messages_cpp
@@ -378,85 +384,89 @@ if(igraph)
         PRIVATE
         /usr/local/src/igraph-0.7.1/include/
     )
-    
+    if(OFFLINE)
+        target_include_directories(
+            offline_video
+            PRIVATE
+            /usr/local/src/igraph-0.7.1/include/
+        )
+        
+        target_include_directories(
+            offline_image
+            PRIVATE
+            /usr/local/src/igraph-0.7.1/include/
+        )
+    endif(OFFSET)
+endif(igraph)
+
+if(UTILS)
+    target_include_directories(
+        hsv_color_params_collector_node
+        PRIVATE
+        include
+        ${EOD_INCLUDE}
+        ${OpenCV_INCLUDE_DIRS}    
+        ${catkin_INCLUDE_DIRS}
+    )
+
+    target_include_directories(
+        hist_color_params_collector_point_node
+        PRIVATE
+        include
+        ${EOD_INCLUDE}
+        ${OpenCV_INCLUDE_DIRS}    
+        ${catkin_INCLUDE_DIRS}
+    )
+
+    target_include_directories(
+        hist_color_params_collector_contour_node
+        PRIVATE
+        include
+        ${EOD_INCLUDE}
+        ${OpenCV_INCLUDE_DIRS}    
+        ${catkin_INCLUDE_DIRS}
+    )
+
+    target_include_directories(
+        hough_circle_params_collector_node
+        PRIVATE
+        include
+        ${EOD_INCLUDE}
+        ${OpenCV_INCLUDE_DIRS}    
+        ${catkin_INCLUDE_DIRS}
+    )
+
+    target_include_directories(
+        blob_params_collector_node
+        PRIVATE
+        include
+        ${EOD_INCLUDE}
+        ${OpenCV_INCLUDE_DIRS}    
+        ${catkin_INCLUDE_DIRS}
+    )
+endif(UTILS)
+
+if(OFFLINE)
     target_include_directories(
         offline_video
         PRIVATE
-        /usr/local/src/igraph-0.7.1/include/
+        include
+        ${EOD_INCLUDE}
+        ${OpenCV_INCLUDE_DIRS}
+        ${TinyXML_INCLUDE_DIRS}
+        ${catkin_INCLUDE_DIRS}
     )
-    
+
     target_include_directories(
         offline_image
         PRIVATE
-        /usr/local/src/igraph-0.7.1/include/
+        include
+        ${EOD_INCLUDE}
+        ${OpenCV_INCLUDE_DIRS}
+        ${TinyXML_INCLUDE_DIRS}
+        ${catkin_INCLUDE_DIRS}
     )
-endif(igraph)
-
-
-target_include_directories(
-    hsv_color_params_collector_node
-    PRIVATE
-    include
-    ${EOD_INCLUDE}
-    ${OpenCV_INCLUDE_DIRS}    
-    ${catkin_INCLUDE_DIRS}
-)
-
-target_include_directories(
-    hist_color_params_collector_point_node
-    PRIVATE
-    include
-    ${EOD_INCLUDE}
-    ${OpenCV_INCLUDE_DIRS}    
-    ${catkin_INCLUDE_DIRS}
-)
-
-target_include_directories(
-    hist_color_params_collector_contour_node
-    PRIVATE
-    include
-    ${EOD_INCLUDE}
-    ${OpenCV_INCLUDE_DIRS}    
-    ${catkin_INCLUDE_DIRS}
-)
-
-target_include_directories(
-    hough_circle_params_collector_node
-    PRIVATE
-    include
-    ${EOD_INCLUDE}
-    ${OpenCV_INCLUDE_DIRS}    
-    ${catkin_INCLUDE_DIRS}
-)
-
-target_include_directories(
-    blob_params_collector_node
-    PRIVATE
-    include
-    ${EOD_INCLUDE}
-    ${OpenCV_INCLUDE_DIRS}    
-    ${catkin_INCLUDE_DIRS}
-)
-
-target_include_directories(
-    offline_video
-    PRIVATE
-    include
-    ${EOD_INCLUDE}
-    ${OpenCV_INCLUDE_DIRS}
-    ${TinyXML_INCLUDE_DIRS}
-    ${catkin_INCLUDE_DIRS}
-)
-
-target_include_directories(
-    offline_image
-    PRIVATE
-    include
-    ${EOD_INCLUDE}
-    ${OpenCV_INCLUDE_DIRS}
-    ${TinyXML_INCLUDE_DIRS}
-    ${catkin_INCLUDE_DIRS}
-)
+endif(OFFLINE)
 
 if(TensorFlow)
     target_link_libraries(extended_object_detection_node  
@@ -464,10 +474,12 @@ if(TensorFlow)
         /usr/local/src/lib/libtensorflow_framework.so
     )
     
-    target_link_libraries(offline_video  
-        /usr/local/src/lib/libtensorflow_cc.so
-        /usr/local/src/lib/libtensorflow_framework.so
-    )
+    if(OFFLINE)
+        target_link_libraries(offline_video  
+            /usr/local/src/lib/libtensorflow_cc.so
+            /usr/local/src/lib/libtensorflow_framework.so
+        )
+    endif(OFFLINE)
 endif(TensorFlow)
 
 if(zbar_lib)
@@ -481,24 +493,28 @@ if(DLib)
         dlib::dlib
     )
     
+    if(OFFLINE)
     target_link_libraries(offline_video  
         dlib::dlib
     )
+    endif(OFFLINE)
 
-    target_include_directories(
-        face_dlib_descriptors_extractor
-        PRIVATE
-        include
-        ${EOD_INCLUDE}
-        ${OpenCV_INCLUDE_DIRS}    
-        ${catkin_INCLUDE_DIRS}
-    )
-    
-    target_link_libraries(face_dlib_descriptors_extractor  
-        ${OpenCV_LIBRARIES}
-        ${catkin_LIBRARIES}    
-        dlib::dlib
-    )
+    if(UTILS)
+        target_include_directories(
+            face_dlib_descriptors_extractor
+            PRIVATE
+            include
+            ${EOD_INCLUDE}
+            ${OpenCV_INCLUDE_DIRS}    
+            ${catkin_INCLUDE_DIRS}
+        )
+        
+        target_link_libraries(face_dlib_descriptors_extractor  
+            ${OpenCV_LIBRARIES}
+            ${catkin_LIBRARIES}    
+            dlib::dlib
+        )
+    endif(UTILS)
 
 endif(DLib)
 
@@ -507,31 +523,49 @@ if(igraph)
         /usr/local/lib/libigraph.so
     )
     
-    target_link_libraries(offline_video  
-        /usr/local/lib/libigraph.so
-    )
-    
-    target_link_libraries(offline_image  
-        /usr/local/lib/libigraph.so
-    )
+    if(OFFLINE)
+        target_link_libraries(offline_video  
+            /usr/local/lib/libigraph.so
+        )
+        
+        target_link_libraries(offline_image  
+            /usr/local/lib/libigraph.so
+        )
+    endif(OFFLINE)
 endif(igraph)
 
 if(torch)    
-    set_property(TARGET extended_object_detection_node PROPERTY CXX_STANDARD 14)
-    set_property(TARGET offline_video PROPERTY CXX_STANDARD 14)
-    set_property(TARGET offline_image PROPERTY CXX_STANDARD 14)
+    set_property(TARGET extended_object_detection_node PROPERTY CXX_STANDARD 17)
+    if(OFFLINE)
+        set_property(TARGET offline_video PROPERTY CXX_STANDARD 17)
+        set_property(TARGET offline_image PROPERTY CXX_STANDARD 17)
+    endif(OFFLINE)
+    
+    if(UTILS)
+        set_property(TARGET hough_circle_params_collector_node PROPERTY CXX_STANDARD 17)
+        set_property(TARGET hist_color_params_collector_contour_node PROPERTY CXX_STANDARD 17)
+        set_property(TARGET hist_color_params_collector_point_node PROPERTY CXX_STANDARD 17)
+        set_property(TARGET blob_params_collector_node PROPERTY CXX_STANDARD 17)
+        set_property(TARGET hsv_color_params_collector_node PROPERTY CXX_STANDARD 17)
+    endif(UTILS)
+    
+#     set_property(TARGET extended_object_detection_node PROPERTY CXX_STANDARD 17)
+#     set_property(TARGET offline_video PROPERTY CXX_STANDARD 17)
+#     set_property(TARGET offline_image PROPERTY CXX_STANDARD 17)
 
     target_link_libraries(extended_object_detection_node  
         ${TORCH_LIBRARIES}
     )
     
-    target_link_libraries(offline_video  
-        ${TORCH_LIBRARIES}
-    )
-    
-    target_link_libraries(offline_image  
-        ${TORCH_LIBRARIES}
-    )
+    if(OFFLINE)
+        target_link_libraries(offline_video  
+            ${TORCH_LIBRARIES}
+        )
+        
+        target_link_libraries(offline_image  
+            ${TORCH_LIBRARIES}
+        )
+    endif(OFFLINE)
 endif(torch)
 
 
@@ -542,39 +576,43 @@ target_link_libraries(extended_object_detection_node
   
 )
 
-target_link_libraries(hsv_color_params_collector_node  
-  ${OpenCV_LIBRARIES}
-  ${catkin_LIBRARIES}    
-)
+if(UTILS)
+    target_link_libraries(hsv_color_params_collector_node  
+    ${OpenCV_LIBRARIES}
+    ${catkin_LIBRARIES}    
+    )
 
-target_link_libraries(hist_color_params_collector_point_node  
-  ${OpenCV_LIBRARIES}
-  ${catkin_LIBRARIES}    
-)
+    target_link_libraries(hist_color_params_collector_point_node  
+    ${OpenCV_LIBRARIES}
+    ${catkin_LIBRARIES}    
+    )
 
-target_link_libraries(hist_color_params_collector_contour_node  
-  ${OpenCV_LIBRARIES}
-  ${catkin_LIBRARIES}    
-)
+    target_link_libraries(hist_color_params_collector_contour_node  
+    ${OpenCV_LIBRARIES}
+    ${catkin_LIBRARIES}    
+    )
 
-target_link_libraries(hough_circle_params_collector_node  
-  ${OpenCV_LIBRARIES}
-  ${catkin_LIBRARIES}    
-)
+    target_link_libraries(hough_circle_params_collector_node  
+    ${OpenCV_LIBRARIES}
+    ${catkin_LIBRARIES}    
+    )
 
-target_link_libraries(blob_params_collector_node  
-  ${OpenCV_LIBRARIES}
-  ${catkin_LIBRARIES}    
-)
+    target_link_libraries(blob_params_collector_node  
+    ${OpenCV_LIBRARIES}
+    ${catkin_LIBRARIES}    
+    )
+endif(UTILS)
 
-target_link_libraries(offline_video  
-  ${OpenCV_LIBRARIES}
-  ${TinyXML_LIBRARIES}
-  ${catkin_LIBRARIES}      
-)
+if(OFFLINE)
+    target_link_libraries(offline_video  
+    ${OpenCV_LIBRARIES}
+    ${TinyXML_LIBRARIES}
+    ${catkin_LIBRARIES}      
+    )
 
-target_link_libraries(offline_image  
-  ${OpenCV_LIBRARIES}
-  ${TinyXML_LIBRARIES}
-  ${catkin_LIBRARIES}      
-)
+    target_link_libraries(offline_image  
+    ${OpenCV_LIBRARIES}
+    ${TinyXML_LIBRARIES}
+    ${catkin_LIBRARIES}      
+    )
+endif(OFFLINE)
