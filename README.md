@@ -4,7 +4,7 @@
 
 ## TR;DL install
 ```
-git clone --recurse-submodules [https://git.robofob.ru/eod/extended_object_detection_ros1.git](https://github.com/Extended-Object-Detection-ROS/extended_object_detection/)
+git clone --recurse-submodules https://github.com/Extended-Object-Detection-ROS/extended_object_detection
 ```
 
 
