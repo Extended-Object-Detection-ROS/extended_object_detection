@@ -7,7 +7,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include "geometry_utils.h"
 #include <geometry_msgs/TransformStamped.h>
-
+#include <extended_object_detection/ImagePoint.h>
 
 geometry_msgs::Vector3 fromCvVector(const cv::Vec3d& cv_vector){
     geometry_msgs::Vector3 ros_vector;
@@ -29,17 +29,9 @@ geometry_msgs::Point fromVector(const geometry_msgs::Vector3& vector){
 
 EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
     nh_ = nh;
-    nh_p_ = nh_p;
-    
+    nh_p_ = nh_p;    
     frame_sequence = 0;
-    
-    //rgb_it_ = new image_transport::ImageTransport(nh_);                       
-        
-    //detect_rate_values = new boost::circular_buffer<double>(10);
-    
-    // get params
-    //nh_p_.param("subscribe_depth", subscribe_depth, false);
-    
+            
     // multicamera stuff
     std::vector<std::string> rgb_image_topics;    
     nh_p_.getParam("rgb_image_topics", rgb_image_topics);
@@ -162,9 +154,7 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
         }
         else{
             depth_it_.push_back(new image_transport::ImageTransport(nh_));
-            //sub_depth_.subscribe(*rgb_it_, "depth/image_raw", 10);
-            //sub_depth_info_.subscribe(nh_, "depth/info", 10);
-            //depth_it_
+            
             sub_depth_.push_back(new image_transport::SubscriberFilter());
             sub_depth_info_.push_back(new message_filters::Subscriber<sensor_msgs::CameraInfo>);
             
@@ -177,7 +167,17 @@ EOD_ROS::EOD_ROS(ros::NodeHandle nh, ros::NodeHandle nh_p){
             (*rgbd_sync_[i])->registerCallback(boost::bind(&EOD_ROS::rgbd_info_cb, this, boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3,  boost::placeholders::_4));        
         }                
     
+    }    
+    // ROS-connctend attributes
+#if (USE_ROS)
+    for( const auto& attribute : object_base->attributes ){        
+        auto ptr = dynamic_cast<eod::ROSSubscriberSuperBaseAttribute*>(attribute);
+        if( ptr != nullptr){
+            ptr->Connect2ROS(nh);            
+        }        
     }
+#endif
+    
     //ROS_INFO("Configured!");
 }
 
@@ -246,7 +246,7 @@ void EOD_ROS::rgb_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const sen
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.", rgb_image->encoding.c_str());
         return;
     }    
-    eod::InfoImage ii = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence);
+    eod::InfoImage ii = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence, rgb_image->header.stamp.sec, rgb_image->header.stamp.nsec, rgb_image->header.frame_id);
     detect(ii, eod::InfoImage(), rgb_image->header);
 }
 
@@ -256,13 +256,13 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     //ROS_INFO("Got RGBD!");    
     // CHECK RATE       
     if( !check_time(ros::Time::now(), rgb_image->header.frame_id) ) {
-        //ROS_WARN("Skipped frame");
+        ROS_WARN("Skipped frame");
         stats[rgb_image->header.frame_id].skipped_frames++;
         return;
     }
     double lag;
     if( !check_lag(rgb_image->header.stamp, lag) ) {
-        //ROS_WARN("Dropped frame, lag = %f", lag);
+        ROS_WARN("Dropped frame, lag = %f", lag);
         stats[rgb_image->header.frame_id].dropped_frames++;
         return;
     }
@@ -290,14 +290,17 @@ void EOD_ROS::rgbd_info_cb(const sensor_msgs::ImageConstPtr& rgb_image, const se
     else{
         ROS_ERROR_THROTTLE(5, "Depth image has unsupported encoding [%s]", depth_image->encoding.c_str());
     }    
-    //ROS_INFO("Depth type is %i", depth.type());
-    eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence);
-    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info), frame_sequence);            
+    
+    eod::InfoImage ii_rgb = eod::InfoImage(rgb, getK(rgb_info), getD(rgb_info), frame_sequence, rgb_image->header.stamp.sec, rgb_image->header.stamp.nsec, rgb_image->header.frame_id);
+    
+    eod::InfoImage ii_depth = eod::InfoImage(depth, getK(depth_info), getD(depth_info), frame_sequence, depth_image->header.stamp.sec, depth_image->header.stamp.nsec, depth_image->header.frame_id);            
+        
     detect(ii_rgb, ii_depth, rgb_image->header);
 }
 
 
 void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std_msgs::Header header){
+    //printf("DETECT START\n");
     // store data for detect rate calculus
     if( stats[header.frame_id].proceeded_frames != 0){
         stats[header.frame_id].detect_rate_values->push_back((ros::Time::now() - stats[header.frame_id].prev_detected_time).toSec());
@@ -318,6 +321,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         s_it->Identify(rgb, depth, frame_sequence);                        
         for(auto& eoi : s_it->objects)
             simples_msg.objects.push_back(eoi_to_base_object(s_it->name, s_it->ID, &eoi, rgb.K()));
+        //printf("DRAW\n");
         if(publish_image_output)
             s_it->draw(image_to_draw, cv::Scalar(0, 255, 0));
     }
@@ -337,7 +341,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
                 cmplx_msg.simple_objects.push_back(eoi_to_base_object(name_eoi.first, -1, name_eoi.second, rgb.K()));
             }                        
             complex_msg.objects.push_back(cmplx_msg);
-        }
+        }        
         if(publish_image_output)
             c_it->drawAll(image_to_draw, cv::Scalar(255, 255, 0), 2);
     }
@@ -352,6 +356,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     complex_objects_pub_.publish(complex_msg);
 #endif
     
+    //printf("TF\n");
     if(broadcast_tf){
         geometry_msgs::TransformStamped trsfrm;
         trsfrm.header = header;
@@ -378,7 +383,7 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
         }
 #endif                        
     }
-    
+    //printf("MARKERS\n");
     if(publish_markers){
         visualization_msgs::MarkerArray mrk_array_msg;    
         int id_cnt = 0;        
@@ -386,6 +391,9 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
             mrk_array_msg.markers.push_back(base_object_to_marker_arrow(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
             mrk_array_msg.markers.push_back(base_object_to_marker_frame(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
             mrk_array_msg.markers.push_back(base_object_to_marker_text(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
+            mrk_array_msg.markers.push_back(base_object_to_marker_kpt(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
+            mrk_array_msg.markers.push_back(base_object_to_marker_kpt_connections(bo, rgb.K(), header, cv::Scalar(0, 255, 0),id_cnt));
+            
             id_cnt++;
         }
         simple_objects_markers_pub_.publish(mrk_array_msg);
@@ -396,6 +404,9 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
             cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_arrow(co.complex_object, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
             cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_frame(co.complex_object, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
             cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_text(co.complex_object, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
+            cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_kpt(co.complex_object, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
+            cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_kpt_connections(co.complex_object, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
+            
             id_cnt++;
             for( auto& so : co.simple_objects){
                 cmplx_mrk_array_msg.markers.push_back(base_object_to_marker_frame(so, rgb.K(), header, cv::Scalar(0, 255, 255),id_cnt));
@@ -426,11 +437,15 @@ void EOD_ROS::detect(const eod::InfoImage& rgb, const eod::InfoImage& depth, std
     }        
     frame_sequence++;
     stats[header.frame_id].proceeded_frames++;    
-    //cv::waitKey(1);
+    //cv::waitKey(1); // NOTE for debugging detectors
+    //printf("DONE\n");
 }
 
-extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( std::string name, int id,  eod::ExtendedObjectInfo* eoi, const cv::Mat& K){
-    //ROS_INFO("Forming...");
+
+//
+// EOI --> BaseObject
+//
+extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( std::string name, int id,  eod::ExtendedObjectInfo* eoi, const cv::Mat& K){    
     extended_object_detection::BaseObject bo;
     // common
     bo.type_id = id;
@@ -472,9 +487,27 @@ extended_object_detection::BaseObject EOD_ROS::eoi_to_base_object( std::string n
     
     // translation to rect's corners
     geometry_msgs::Vector3 temp_translation;
-    for( auto& corner_p : eoi->getCorners() ){
+    for( const auto& corner_p : eoi->getCorners() ){
         bo.rect.cornerTranslates.push_back(fromCvVector(eod::get_translation(eod::float2intPoint(corner_p), K, bo.transform.translation.z)));
-    }             
+    }   
+    
+    // keypoints
+    for( const auto& kpt : eoi->keypoints ){
+        bo.keypoints.labels.push_back(kpt.label);
+        bo.keypoints.scores.push_back(kpt.score);
+        extended_object_detection::ImagePoint imp;
+        imp.x = kpt.x;
+        imp.y = kpt.y;        
+        bo.keypoints.points.push_back(imp);
+        bo.keypoints.translates.push_back(fromCvVector(eod::get_translation(eod::float2intPoint(kpt), K, bo.transform.translation.z)));
+    }
+    for( const auto& con : eoi->keypoint_connection ){
+        extended_object_detection::ImagePoint imp;
+        imp.x = con.first;
+        imp.y = con.second;
+        bo.keypoints.connections.push_back(imp);
+    }
+    
         
     //TODO tracks    
     return bo;
@@ -546,6 +579,51 @@ visualization_msgs::Marker EOD_ROS::base_object_to_marker_text(extended_object_d
     mrk.color.g = color[1]/255;
     mrk.color.b = color[2]/255;
     mrk.color.a = 1;
+    return mrk;
+}
+
+
+visualization_msgs::Marker EOD_ROS::base_object_to_marker_kpt(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id){
+    visualization_msgs::Marker mrk;
+    mrk.header = header;    
+    mrk.ns = base_object.type_name +"_keypoints";
+    mrk.id = id;
+    mrk.type = visualization_msgs::Marker::POINTS; 
+    mrk.lifetime = ros::Duration(get_detect_rate(header.frame_id));
+    mrk.scale.x = 0.02;
+    mrk.scale.y = 0.02;
+    mrk.scale.z = 0.02; 
+    mrk.pose.orientation.w = 1;
+    mrk.color.r = color[0]/255;
+    mrk.color.g = color[1]/255;
+    mrk.color.b = color[2]/255;
+    mrk.color.a = 1;
+    for( const auto& kpt : base_object.keypoints.translates ){
+        mrk.points.push_back(fromVector(kpt));
+    }
+    return mrk;
+}
+
+
+visualization_msgs::Marker EOD_ROS::base_object_to_marker_kpt_connections(extended_object_detection::BaseObject& base_object, const cv::Mat& K, std_msgs::Header header, cv::Scalar color, int id){
+    visualization_msgs::Marker mrk;
+    mrk.header = header;    
+    mrk.ns = base_object.type_name +"_keypoint_connections";
+    mrk.id = id;
+    mrk.type = visualization_msgs::Marker::LINE_LIST; 
+    mrk.lifetime = ros::Duration(get_detect_rate(header.frame_id));
+    mrk.scale.x = 0.01;
+    mrk.scale.y = 0.01;
+    mrk.scale.z = 0.01; 
+    mrk.pose.orientation.w = 1;
+    mrk.color.r = color[0]/255;
+    mrk.color.g = color[1]/255;
+    mrk.color.b = color[2]/255;
+    mrk.color.a = 1;
+    for( const auto& con : base_object.keypoints.connections ){        
+        mrk.points.push_back(fromVector(base_object.keypoints.translates[con.x]));
+        mrk.points.push_back(fromVector(base_object.keypoints.translates[con.y]));
+    }
     return mrk;
 }
 
@@ -698,11 +776,23 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "extended_object_detection_node");
     ros::NodeHandle nh_, nh_p_("~");
     
-    ROS_INFO("Extended object detector started...");
-    
+    ROS_INFO("Extended object detector is starting...");
+
+
+#if (USE_ROS)    
+    // with subscribers inside attributes it is better to use async spinner
+    ros::AsyncSpinner spinner(0);
+    spinner.start(); 
+#endif    
+
     EOD_ROS eod_ros(nh_, nh_p_);
-    
+
+#if (USE_ROS)    
+    ros::waitForShutdown();
+#else
     ros::spin();
-                
+#endif
+
+    //ros::spin();
     return 0;
 }

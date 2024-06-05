@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 project(extended_object_detection)
 
 
@@ -9,9 +9,10 @@ set(DLib OFF)
 set(igraph OFF)
 set(torch OFF)
 set(tracking OFF)
-
 set(OFFLINE OFF)
 set(UTILS OFF)
+set(OAK OFF)
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -26,7 +27,8 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   cmake_modules
   tf2
-  tf2_ros
+  tf2_ros    
+#   depthai_ros_extended_msgs
 )
 
 find_package(OpenCV REQUIRED)  
@@ -51,7 +53,6 @@ else()
 endif(torch)
 
 
-
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
@@ -63,6 +64,7 @@ add_message_files(
   Track.msg
   ExtractedInfo.msg
   Contour.msg
+  Keypoints.msg
   BaseObject.msg
   SimpleObjectArray.msg
   ComplexObject.msg
@@ -81,13 +83,14 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
-  geometry_msgs
+  geometry_msgs  
 )
 
 catkin_package(
-   CATKIN_DEPENDS cv_bridge std_msgs sensor_msgs image_transport roscpp image_geometry cmake_modules message_runtime
-   DEPENDS TinyXML
+   CATKIN_DEPENDS cv_bridge std_msgs sensor_msgs image_transport roscpp image_geometry cmake_modules message_runtime #depthai_ros_extended_msgs
+   DEPENDS TinyXML   
 )
+
 
 ###########
 ## Build ##
@@ -95,6 +98,7 @@ catkin_package(
 set( EOD_SRC
     # lib common
     src/lib/ObjectBase.cpp
+    
     # types
     src/lib/types/ComplexObjectGraph.cpp
     src/lib/types/ComplexObject.cpp
@@ -106,10 +110,12 @@ set( EOD_SRC
     src/lib/types/Filtering.cpp    
     src/lib/types/Clusterization.cpp   
     src/lib/types/InfoImage.cpp
+    
     # lib utils
     src/lib/utils/geometry_utils.cpp
     src/lib/utils/drawing_utils.cpp
     src/lib/utils/contour_utils.cpp
+    
     # lib detectors
     src/lib/detectors/HsvColorDetector.cpp
     src/lib/detectors/HaarCascadeDetector.cpp
@@ -139,6 +145,7 @@ set( EOD_SRC
     src/lib/detectors/KeypointPoseDetector.cpp
     src/lib/detectors/DummyHumanPoseDetector.cpp
 
+
     # lib relations        
     src/lib/relations/ImageRangeRelation.cpp
     src/lib/relations/LogicRelations.cpp
@@ -160,9 +167,14 @@ set ( EOD_INCLUDE
 add_executable(
     extended_object_detection_node
     src/extended_object_detection_node/eod_node.cpp
-    ${EOD_SRC}
+    ${EOD_SRC}    
+    src/lib/detectors/ROSSubscriberOpenPoseRaw.cpp
 )
 
+if( OAK )
+    target_compile_definitions(extended_object_detection_node PUBLIC USE_ROS)
+    target_compile_definitions(extended_object_detection_node PUBLIC USE_OAK)
+endif( OAK )
 
 if(opencv_contrib)
     target_compile_definitions(extended_object_detection_node PUBLIC USE_OPENCV_CONTRIB)         
@@ -406,7 +418,7 @@ if(UTILS)
         PRIVATE
         include
         ${EOD_INCLUDE}
-        ${OpenCV_INCLUDE_DIRS}    
+        ${OpenCV_INCLUDE_DIRS}    <<<<<<< HEAD
         ${catkin_INCLUDE_DIRS}
     )
 
