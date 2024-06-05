@@ -12,7 +12,7 @@ git clone --recurse-submodules https://github.com/Extended-Object-Detection-ROS/
 
 Extended Object Detection is an ROS package and has ample opportunities for describing objects for detection in the video image. 
  - Author: Moscowsky Anton \<moscowskyad AT gmail DOT com\>
- - Wiki on english: [https://git.robofob.ru/eod/extended_object_detection_ros1/wiki](https://github.com/Extended-Object-Detection-ROS/wiki_english/wiki)
+ - Wiki on english: https://github.com/Extended-Object-Detection-ROS/wiki_english/wiki
  - Youtube channel: https://youtube.com/channel/UCrZtFXAhxJIyk-T3d9-GLhw
  - ROS distro support: <a><img src="https://img.shields.io/badge/ROS-Noetic-blue" alt="ros_version_noetic" /></a> (full capabilities), <a><img src="https://img.shields.io/badge/ROS-Melodic-yellow" alt="ros_version_melodic" /></a> (partial capabilities), <a><img src="https://img.shields.io/badge/ROS-Kinetic-yellow" alt="ros_version_kinetic" /></a> (partial capabilities)
 
